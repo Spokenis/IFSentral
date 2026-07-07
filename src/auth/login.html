@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>IFSentral | Login</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/icheck-bootstrap/3.0.1/icheck-bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <style>
+    :root {
+      --ifsc-primary: #1B7D3D;
+      --ifsc-secondary: #0D4620;
+      --ifsc-light: #2A9B4A;
+    }
+    
+    /* Estilo para a mensagem de erro */
+    #login-status-msg {
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    
+    /* IFSC Theme Colors */
+    .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+      background-color: var(--ifsc-primary) !important;
+      border-color: var(--ifsc-primary) !important;
+    }
+    .btn-primary:hover {
+      background-color: var(--ifsc-secondary) !important;
+    }
+    
+    .card-primary .card-header {
+      background-color: var(--ifsc-primary) !important;
+    }
+    
+    .card-primary {
+      border-top-color: var(--ifsc-primary) !important;
+    }
+    
+    .icheck-primary input:checked ~ label::before {
+      background-color: var(--ifsc-primary) !important;
+      border-color: var(--ifsc-primary) !important;
+    }
+  </style>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <a href="../pages/index.html"><b>IF</b>Sentral</a>
+  </div>
+  <div class="card card-outline card-primary">
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Faça login para iniciar sua sessão</p>
+
+      <form id="login-form">
+        <div class="input-group mb-3">
+          <input type="email" class="form-control" placeholder="Email" id="email" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <div class="input-group mb-3">
+          <input type="password" class="form-control" placeholder="Senha" id="password" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-8">
+            <div class="icheck-primary">
+              <input type="checkbox" id="remember">
+              <label for="remember">
+                Lembrar-me
+              </label>
+            </div>
+          </div>
+          <div class="col-4">
+            <button type="submit" class="btn btn-primary btn-block" id="login-button">Entrar</button>
+          </div>
+        </div>
+        
+        <div id="login-status-msg"></div>
+
+      </form>
+
+      <p class="mb-1">
+        <a href="#">Esqueci minha senha</a>
+      </p>
+      <p class="mb-0">
+        <a href="register.html" class="text-center">Criar uma nova conta</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
+<script>
+    const loginForm = document.getElementById('login-form');
+    const statusMsg = document.getElementById('login-status-msg');
+    const loginButton = document.getElementById('login-button');
+    const API_URL = 'login_api.php';
+
+    loginForm.addEventListener('submit', async function(event) {
+        event.preventDefault(); // Impede o envio tradicional do formulário
+        
+        statusMsg.innerHTML = 'Autenticando...';
+        statusMsg.style.color = 'black';
+        loginButton.disabled = true;
+
+        const data = {
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value
+        };
+
+        // Inclui opção 'remember'
+        data.remember = document.getElementById('remember').checked;
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data),
+                // ESSENCIAL: Permite que o cookie de sessão seja enviado
+                // e recebido pelo navegador.
+                credentials: 'include' 
+            });
+
+            const resultado = await response.json();
+
+            if (!response.ok) {
+                // Se a API retornar um erro (ex: 401 Unauthorized)
+                throw new Error(resultado.error || 'Erro desconhecido');
+            }
+
+            // Sucesso!
+            statusMsg.innerHTML = `<span style="color: green;">${resultado.message} Redirecionando...</span>`;
+            
+            // Redireciona para a página de "Meus Projetos" após o login
+            // (a mesma que estava no 'action' original do seu formulário)
+            window.location.href = '../pages/meus-projetos.php';
+
+        } catch (error) {
+            statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            loginButton.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Projeto</title>
+    <style>
+        :root { --ifsc-primary: #1B7D3D; --ifsc-secondary: #0D4620; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1, h2 { color: var(--ifsc-primary); border-bottom: 2px solid var(--ifsc-primary); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="number"], textarea { width: 95%; padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+        input[type="checkbox"] { width: auto; }
+        textarea { min-height: 80px; }
+        button { padding: 10px 16px; font-size: 16px; color: #fff; background-color: var(--ifsc-primary); border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: var(--ifsc-secondary); }
+        #status-msg-post, #status-msg-get { margin-top: 15px; }
+        .item-lista { border: 1px solid #e9e9e9; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+        .item-lista h3 { margin-top: 0; }
+        .item-lista small { color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Gerenciar Projetos</h1>
+
+        <h2>Criar Novo Projeto</h2>
+        <form id="form-criar">
+            <div class="form-group">
+                <label for="proj-name">Nome do Projeto:</label>
+                <input type="text" id="proj-name" required>
+            </div>
+            <div class="form-group">
+                <label for="proj-desc">Descrição:</label>
+                <textarea id="proj-desc"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="proj-max-users">Máximo de Usuários (deixe 0 ou em branco para ilimitado):</label>
+                <input type="number" id="proj-max-users" min="0" value="0">
+            </div>
+            <div class="form-group">
+                <input type="checkbox" id="proj-public" style="width: auto; margin-right: 5px;">
+                <label for="proj-public" style="display: inline;">Projeto Público</label>
+            </div>
+            <button type="submit">Criar Projeto</button>
+            <div id="status-msg-post"></div>
+        </form>
+
+        <hr style="margin: 40px 0;">
+
+        <h2>Projetos Criados</h2>
+        <div id="status-msg-get"></div>
+        <div id="lista-projetos-container"></div>
+    </div>
+
+    <script src="../assets/js/fetch-helpers.js"></script>
+    <script>
+        const URL_CRIAR = 'criar_projeto.php';
+        const URL_LISTAR = 'listar_projetos.php';
+
+        const listaContainer = document.getElementById('lista-projetos-container');
+        const statusMsgGet = document.getElementById('status-msg-get');
+        const formCriar = document.getElementById('form-criar');
+        const statusMsgPost = document.getElementById('status-msg-post');
+
+        async function carregarProjetos() {
+            listaContainer.innerHTML = '';
+            statusMsgGet.innerHTML = 'Carregando projetos...';
+
+            try {
+                const response = await fetch(URL_LISTAR);
+                const projects = await safeJson(response);
+
+                if (projects.error) throw new Error(projects.error);
+                if (projects.length === 0) {
+                    statusMsgGet.innerHTML = 'Nenhum projeto criado.';
+                    return;
+                }
+                statusMsgGet.innerHTML = ''; 
+
+                projects.forEach(proj => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item-lista';
+                    const dataFormatada = new Date(proj.createdAt).toLocaleString('pt-BR');
+                    
+                    itemDiv.innerHTML = `
+                        <h3>${proj.name} (ID: ${proj.id})</h3>
+                        <p>${proj.description || '<i>Sem descrição</i>'}</p>
+                        <small>Visibilidade: ${proj.public == 1 ? 'Público' : 'Privado'}</small><br>
+                        <small>Código de Convite: <strong>${proj.invitation}</strong></small><br>
+                        <small>Criado em: ${dataFormatada}</small>
+                    `;
+                    listaContainer.appendChild(itemDiv);
+                });
+            } catch (error) {
+                statusMsgGet.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        }
+        
+        formCriar.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            statusMsgPost.innerHTML = 'Salvando...';
+
+            const maxUsersVal = parseInt(document.getElementById('proj-max-users').value);
+            
+            const data = {
+                name: document.getElementById('proj-name').value,
+                description: document.getElementById('proj-desc').value,
+                public: document.getElementById('proj-public').checked ? 1 : 0, // Converter boolean para inteiro
+                maxUsers: maxUsersVal > 0 ? maxUsersVal : null 
+            };
+
+            try {
+                const response = await fetch(URL_CRIAR, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                const resultado = await safeJson(response);
+
+                statusMsgPost.innerHTML = `<span style="color: green;">${resultado.message} (Código: ${resultado.invitation_code})</span>`;
+                formCriar.reset();
+                carregarProjetos(); 
+
+            } catch (error) {
+                statusMsgPost.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        });
+        
+        carregarProjetos();
+    </script>
+</body>
+</html>

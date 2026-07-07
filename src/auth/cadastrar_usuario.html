@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Usuário</title>
+    <style>
+        :root { --ifsc-primary: #1B7D3D; --ifsc-secondary: #0D4620; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1, h2 { color: var(--ifsc-primary); border-bottom: 2px solid var(--ifsc-primary); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="email"], input[type="password"], select { width: 95%; padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 10px 16px; font-size: 16px; color: #fff; background-color: var(--ifsc-primary); border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: var(--ifsc-secondary); }
+        #status-msg-post, #status-msg-get { margin-top: 15px; }
+        .item-lista { border: 1px solid #e9e9e9; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+        .item-lista h3 { margin-top: 0; }
+        .item-lista small { color: #555; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Gerenciar Usuários</h1>
+
+        <h2>Cadastrar Novo Usuário</h2>
+        <form id="form-cadastrar">
+            <div class="form-group">
+                <label for="user-name">Nome Completo:</label>
+                <input type="text" id="user-name" required>
+            </div>
+            <div class="form-group">
+                <label for="user-email">Email:</label>
+                <input type="email" id="user-email" required>
+            </div>
+            <div class="form-group">
+                <label for="user-username">Nome de Usuário (login):</label>
+                <input type="text" id="user-username" required>
+            </div>
+            <div class="form-group">
+                <label for="user-password">Senha:</label>
+                <input type="password" id="user-password" required>
+            </div>
+            <div class="form-group">
+                <label for="user-profile">Perfil:</label>
+                <select id="user-profile">
+                    <option value="User">User</option>
+                    <option value="Moderator">Moderator</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+            <button type="submit">Cadastrar Usuário</button>
+            <div id="status-msg-post"></div>
+        </form>
+
+        <hr style="margin: 40px 0;">
+
+        <h2>Usuários Cadastrados</h2>
+        <div id="status-msg-get"></div>
+        <div id="lista-usuarios-container"></div>
+    </div>
+
+    <script>
+        const URL_CADASTRAR = 'cadastrar_usuario.php';
+        const URL_LISTAR = '../api/listar_usuarios.php';
+
+        const listaContainer = document.getElementById('lista-usuarios-container');
+        const statusMsgGet = document.getElementById('status-msg-get');
+        const formCadastrar = document.getElementById('form-cadastrar');
+        const statusMsgPost = document.getElementById('status-msg-post');
+
+        async function carregarUsuarios() {
+            listaContainer.innerHTML = '';
+            statusMsgGet.innerHTML = 'Carregando usuários...';
+
+            try {
+                const response = await fetch(URL_LISTAR);
+                if (!response.ok) throw new Error(await response.text());
+                const users = await response.json();
+
+                if (users.error) throw new Error(users.error);
+                if (users.length === 0) {
+                    statusMsgGet.innerHTML = 'Nenhum usuário cadastrado.';
+                    return;
+                }
+                statusMsgGet.innerHTML = ''; 
+
+                users.forEach(user => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'item-lista';
+                    const dataFormatada = new Date(user.createdAt).toLocaleString('pt-BR');
+                    
+                    itemDiv.innerHTML = `
+                        <h3>${user.name} (@${user.username}) - ID: ${user.id}</h3>
+                        <small>Email: ${user.email} | Perfil: ${user.profile}</small><br>
+                        <small>Cadastrado em: ${dataFormatada}</small>
+                    `;
+                    listaContainer.appendChild(itemDiv);
+                });
+            } catch (error) {
+                statusMsgGet.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        }
+        
+        formCadastrar.addEventListener('submit', async function(event) {
+            event.preventDefault();
+            statusMsgPost.innerHTML = 'Salvando...';
+
+            const data = {
+                name: document.getElementById('user-name').value,
+                email: document.getElementById('user-email').value,
+                username: document.getElementById('user-username').value,
+                password: document.getElementById('user-password').value,
+                profile: document.getElementById('user-profile').value
+            };
+
+            try {
+                const response = await fetch(URL_CADASTRAR, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const resultado = await response.json();
+                if (!response.ok) throw new Error(resultado.error || 'Erro desconhecido');
+
+                statusMsgPost.innerHTML = `<span style="color: green;">${resultado.message}</span>`;
+                formCadastrar.reset();
+                carregarUsuarios(); 
+
+            } catch (error) {
+                statusMsgPost.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        });
+        
+        carregarUsuarios();
+    </script>
+</body>
+</html>

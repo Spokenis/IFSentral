@@ -1,0 +1,52 @@
+# Environment files - NUNCA commitar credenciais!
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# OS
+Thumbs.db
+*.tmp
+
+# Logs
+*.log
+logs/
+
+# Cache
+cache/
+tmp/
+temp/
+
+# Composer
+vendor/
+composer.lock
+
+# Node (se usar transpiladores)
+node_modules/
+package-lock.json
+
+# Backups
+*.backup
+*.bak
+*.original
+
+# Senhas e chaves
+*.pem
+*.key
+*.crt
+secrets/
+
+# Dados sensíveis
+data/sensitive/
+uploads/private/
+
+# Testes locais
+test-*.php
+*-test.php

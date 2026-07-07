@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard IoT (PHP)</title>
+    <style>
+        :root { --ifsc-primary: #1B7D3D; --ifsc-secondary: #0D4620; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; color: #333; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #fff; padding: 25px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        h1, h2 { color: var(--ifsc-primary); border-bottom: 2px solid var(--ifsc-primary); padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; font-weight: 600; }
+        input[type="text"], input[type="number"], textarea { width: 95%; padding: 8px 12px; font-size: 16px; border: 1px solid #ddd; border-radius: 4px; }
+        textarea { font-family: monospace; min-height: 100px; }
+        button { padding: 10px 16px; font-size: 16px; color: #fff; background-color: var(--ifsc-primary); border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: var(--ifsc-secondary); }
+        .enviar-btn { background-color: var(--ifsc-primary); }
+        .enviar-btn:hover { background-color: var(--ifsc-secondary); }
+        #status-msg-get, #status-msg-post { margin-top: 15px; }
+        .dado-item { background-color: #fafafa; border: 1px solid #e9e9e9; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+        .dado-item pre { background-color: #eef; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .dado-item time { font-size: 0.9em; color: #555; font-style: italic; }
+        .api-key-input { border: 1px solid #dc3545; } /* Destaca o campo da API Key */
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Dashboard IoT (PHP)</h1>
+        
+        <div class="form-group">
+            <label for="api-key">Sua Chave de API (X-Api-Key):</label>
+            <input type="text" id="api-key" class="api-key-input" placeholder="Cole sua chave de API de 64 caracteres aqui">
+        </div>
+
+        <h2>Enviar Novo Dado</h2>
+        <form id="form-enviar">
+            <div class="form-group">
+                <label for="post-device-id">ID do Dispositivo:</label>
+                <input type="number" id="post-device-id" value="1" required>
+            </div>
+            <div class="form-group">
+                <label for="post-payload">Payload (em formato JSON):</label>
+                <textarea id="post-payload" required>{ "temperatura": 25.5, "umidade": 60 }</textarea>
+            </div>
+            <button type="submit" class="enviar-btn">Enviar Payload</button>
+            <div id="status-msg-post"></div>
+        </form>
+
+        <hr style="margin: 40px 0;">
+
+        <h2>Últimas 10 Leituras</h2>
+        <div class="form-group">
+            <label for="get-device-id">ID do Dispositivo:</label>
+            <input type="number" id="get-device-id" value="1">
+            <button id="buscar-btn">Buscar Dados</button>
+        </div>
+        <div id="status-msg-get"></div>
+        <div id="dados-container"></div>
+    </div>
+
+    <script src="../assets/js/fetch-helpers.js"></script>
+    <script>
+        const URL_BUSCAR = '../api/buscar_payloads.php';
+        const URL_ENVIAR = '../api/enviar_payload.php';
+
+        const apiKeyInput = document.getElementById('api-key');
+
+        // --- LÓGICA PARA BUSCAR DADOS (GET) ---
+        const buscarBtn = document.getElementById('buscar-btn');
+        const getDeviceIdInput = document.getElementById('get-device-id');
+        const dadosContainer = document.getElementById('dados-container');
+        const statusMsgGet = document.getElementById('status-msg-get');
+
+        buscarBtn.addEventListener('click', buscarDados);
+
+        async function buscarDados() {
+            const deviceId = getDeviceIdInput.value;
+            const apiKey = apiKeyInput.value; // Pega a API Key
+            
+            dadosContainer.innerHTML = '';
+            statusMsgGet.innerHTML = 'Buscando dados...';
+
+            if (!deviceId || !apiKey) {
+                statusMsgGet.innerHTML = '<span style="color: red;">Insira o ID do Dispositivo e a Chave de API.</span>';
+                return;
+            }
+
+            try {
+                const response = await fetch(`${URL_BUSCAR}?device_id=${deviceId}`, {
+                    method: 'GET',
+                    headers: {
+                        'X-Api-Key': apiKey // Envia a chave no cabeçalho
+                    }
+                });
+                
+                const dados = await safeJson(response);
+
+                if (dados.length === 0) {
+                    statusMsgGet.innerHTML = 'Nenhum dado encontrado.';
+                    return;
+                }
+                statusMsgGet.innerHTML = ''; 
+
+                dados.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'dado-item';
+                    const dataFormatada = new Date(item.created_at).toLocaleString('pt-BR');
+                    const payloadFormatado = JSON.stringify(item.payload, null, 2);
+
+                    itemDiv.innerHTML = `
+                        <time>Recebido em: ${dataFormatada}</time>
+                        <pre>${payloadFormatado}</pre>
+                    `;
+                    dadosContainer.appendChild(itemDiv);
+                });
+
+            } catch (error) {
+                console.error('Falha ao buscar dados:', error);
+                statusMsgGet.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        }
+        
+        // --- LÓGICA PARA ENVIAR DADOS (POST) ---
+        const formEnviar = document.getElementById('form-enviar');
+        const postDeviceIdInput = document.getElementById('post-device-id');
+        const postPayloadInput = document.getElementById('post-payload');
+        const statusMsgPost = document.getElementById('status-msg-post');
+
+        formEnviar.addEventListener('submit', enviarDados);
+
+        async function enviarDados(event) {
+            event.preventDefault(); 
+            statusMsgPost.innerHTML = 'Enviando...';
+            const apiKey = apiKeyInput.value; // Pega a API Key
+
+            if (!apiKey) {
+                 statusMsgPost.innerHTML = '<span style="color: red;">Por favor, insira sua Chave de API.</span>';
+                 return;
+            }
+
+            let payloadObjeto;
+            try {
+                payloadObjeto = JSON.parse(postPayloadInput.value);
+            } catch (e) {
+                statusMsgPost.innerHTML = '<span style="color: red;">Erro: O Payload não é um JSON válido.</span>';
+                return;
+            }
+
+            const dadosParaEnviar = {
+                device_id: parseInt(postDeviceIdInput.value),
+                payload: payloadObjeto
+            };
+
+            try {
+                const response = await fetch(URL_ENVIAR, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Api-Key': apiKey // Envia a chave no cabeçalho
+                    },
+                    body: JSON.stringify(dadosParaEnviar)
+                });
+
+                const resultado = await safeJson(response);
+
+                statusMsgPost.innerHTML = `<span style="color: green;">Sucesso! ${resultado.message}</span>`;
+                
+                if(getDeviceIdInput.value == postDeviceIdInput.value) {
+                    buscarDados();
+                }
+
+            } catch (error) {
+                console.error('Falha ao enviar dados:', error);
+                statusMsgPost.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            }
+        }
+        
+        // Não carrega mais os dados automaticamente, pois precisa da API Key
+        // buscarDados(); 
+    </script>
+</body>
+</html>
