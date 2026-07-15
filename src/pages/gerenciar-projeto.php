@@ -57,187 +57,187 @@ try {
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css">
   
   <style>
-    :root {
-      --ifsc-primary: #1B7D3D;
-      --ifsc-secondary: #0D4620;
-      --ifsc-light: #2A9B4A;
-    }
-    
-    .wrapper { display: flex; flex-direction: column; min-height: 100vh; }
-    .content-wrapper { flex: 1; }
-    .card-primary.card-tabs .nav-tabs .nav-link:not(.active) { color: rgba(255, 255, 255, 0.8); }
-    .card-primary.card-tabs .nav-tabs .nav-link:not(.active):hover { color: #ffffff; }
-    #project-tags-container .badge {
-        font-size: 0.9rem;
-        margin-right: 5px;
+      :root {
+        --ifsc-primary: #1B7D3D;
+        --ifsc-secondary: #0D4620;
+        --ifsc-light: #2A9B4A;
+      }
+      
+      .wrapper { display: flex; flex-direction: column; min-height: 100vh; }
+      .content-wrapper { flex: 1; }
+      .card-primary.card-tabs .nav-tabs .nav-link:not(.active) { color: rgba(255, 255, 255, 0.8); }
+      .card-primary.card-tabs .nav-tabs .nav-link:not(.active):hover { color: #ffffff; }
+      #project-tags-container .badge {
+          font-size: 0.9rem;
+          margin-right: 5px;
+          color: white !important;
+      }
+      .badge-warning { color: #212529 !important; }
+      #grafico-visualizacao-container {
+          min-height: 350px;
+          height: 350px;
+          max-height: 350px;
+          position: relative;
+      }
+      .grafico-actions .btn {
+        margin-left: 5px;
+      }
+      
+      /* IFSC Theme Colors (Botões Primary e Info unificados) */
+      .btn-primary, .btn-primary:focus, .btn-primary:active, .btn-info {
+        background-color: var(--ifsc-primary) !important;
+        border-color: var(--ifsc-primary) !important;
         color: white !important;
-    }
-    .badge-warning { color: #212529 !important; }
-    #grafico-visualizacao-container {
-        min-height: 350px;
-        height: 350px;
-        max-height: 350px;
+        box-shadow: none !important;
+      }
+      .btn-primary:hover, .btn-info:hover {
+        background-color: var(--ifsc-secondary) !important;
+        border-color: var(--ifsc-secondary) !important;
+      }
+      
+      /* Padronização de Botões de Contorno (Filtros de Tempo) */
+      .btn-outline-primary {
+        color: var(--ifsc-primary) !important;
+        border-color: var(--ifsc-primary) !important;
+      }
+      .btn-outline-primary:hover, .btn-outline-primary.active {
+        background-color: var(--ifsc-primary) !important;
+        color: white !important;
+      }
+      
+      .card-primary .card-header {
+        background-color: var(--ifsc-primary) !important;
+      }
+      
+      .card-primary {
+        border-top-color: var(--ifsc-primary) !important;
+      }
+      
+      .navbar-light .navbar-brand {
+        color: var(--ifsc-primary) !important;
+      }
+      
+      /* Suavização das Labels do Formulário */
+      #form-grafico label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.4rem;
+      }
+
+      /* Ajuste de Altura e Borda do Select2 para alinhar com inputs padrão */
+      .select2-container .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #ced4da !important;
+        border-radius: 0.25rem !important;
+        box-shadow: none !important;
+      }
+      .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 36px !important;
+        color: #495057 !important;
+        padding-left: 12px !important;
+      }
+      .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 36px !important;
+      }
+      
+      /* Estilos para formulário de gráficos */
+      .dataset-item {
+        background: #f8f9fa;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        padding: 15px;
+        margin-bottom: 15px;
         position: relative;
-    }
-    .grafico-actions .btn {
-      margin-left: 5px;
-    }
-    
-    /* IFSC Theme Colors */
-    .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
-      background-color: var(--ifsc-primary) !important;
-      border-color: var(--ifsc-primary) !important;
-    }
-    .btn-primary:hover {
-      background-color: var(--ifsc-secondary) !important;
-    }
-    
-    .card-primary .card-header {
-      background-color: var(--ifsc-primary) !important;
-    }
-    
-    .card-primary {
-      border-top-color: var(--ifsc-primary) !important;
-    }
-    
-    .navbar-light .navbar-brand {
-      color: var(--ifsc-primary) !important;
-    }
-    
-    /* Estilos para formulário de gráficos */
-    .dataset-item {
-      background: #f8f9fa;
-      border: 1px solid #ddd;
-      border-radius: 5px;
-      padding: 15px;
-      margin-bottom: 15px;
-      position: relative;
-    }
-    
-    .dataset-item.selected {
-      background: #d4edda;
-      border-color: var(--ifsc-primary);
-    }
-    
-    .dataset-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-    
-    .btn-remove-dataset {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 5px 10px;
-      font-size: 0.8rem;
-    }
-    
-    .preview-chart {
-      background: #f8f9fa;
-      border: 2px dashed #ddd;
-      border-radius: 5px;
-      padding: 20px;
-      min-height: 300px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .time-range-buttons {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 15px;
-    }
-    
-    .time-range-buttons .btn {
-      flex: 1;
-    }
-    
-    .time-range-buttons .btn.active {
-      background-color: var(--ifsc-primary) !important;
-      color: white !important;
-    }
-    
-    /* Fullscreen styles */
-    .card:fullscreen {
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-      background: white;
-      overflow: auto;
-    }
-    
-    .card:fullscreen .card-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .card:fullscreen canvas {
-      min-height: 80vh !important;
-      max-height: 80vh !important;
-    }
-    
-    /* Tooltip personalizado */
-    .chartjs-tooltip {
-      opacity: 1;
-      position: absolute;
-      background: rgba(0, 0, 0, 0.8);
-      color: white;
-      border-radius: 3px;
-      pointer-events: none;
-      transform: translate(-50%, 0);
-      transition: all .1s ease;
-      z-index: 1000;
-    }
-    
-    /* Cursor para gráficos com zoom */
-    canvas {
-      cursor: crosshair;
-    }
-    
-    canvas:active {
-      cursor: grabbing;
-    }
+      }
+      
+      .dataset-item.selected {
+        background: #d4edda;
+        border-color: var(--ifsc-primary);
+      }
+      
+      .dataset-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      
+      .btn-remove-dataset {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 5px 10px;
+        font-size: 0.8rem;
+      }
+      
+      .preview-chart {
+        background: #f8f9fa;
+        border: 2px dashed #ddd;
+        border-radius: 5px;
+        padding: 20px;
+        min-height: 300px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      
+      .time-range-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+      }
+      
+      .time-range-buttons .btn {
+        flex: 1;
+      }
+      
+      /* Fullscreen styles */
+      .card:fullscreen {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background: white;
+        overflow: auto;
+      }
+      
+      .card:fullscreen .card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      
+      .card:fullscreen canvas {
+        min-height: 80vh !important;
+        max-height: 80vh !important;
+      }
+      
+      /* Tooltip personalizado */
+      .chartjs-tooltip {
+        opacity: 1;
+        position: absolute;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        border-radius: 3px;
+        pointer-events: none;
+        transform: translate(-50%, 0);
+        transition: all .1s ease;
+        z-index: 1000;
+      }
+      
+      /* Cursor para gráficos com zoom */
+      canvas {
+        cursor: crosshair;
+      }
+      
+      canvas:active {
+        cursor: grabbing;
+      }
   </style>
 </head>
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link">Meus Projetos</a></li>
-          <li class="nav-item"><a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="documentacao.php" class="nav-link">Documentação da API</a></li>
-        </ul>
-      </div>
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link navbar-user-avatar" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($username_logado); ?></span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="perfil.php" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -326,22 +326,22 @@ try {
                         <div class="card-body">
                           
                           <div class="form-group">
-                            <label for="chart-name">Nome do Gráfico:</label>
+                            <label for="chart-name">Nome do Gráfico</label>
                             <input type="text" id="chart-name" class="form-control" placeholder="Ex: Temperatura vs Umidade" required>
                           </div>
                           
                           <div class="form-group">
-                            <label for="chart-type">Tipo de Gráfico:</label>
-                            <select id="chart-type" class="form-control" required>
-                              <option value="linha">Linha</option>
-                              <option value="barra">Barra</option>
-                              <option value="area">Área</option>
-                              <option value="scatter">Dispersão</option>
-                            </select>
-                          </div>
-                          
+                          <label for="chart-type">Tipo de Gráfico</label>
+                          <select id="chart-type" class="form-control select2" style="width: 100%;" required>
+                            <option value="linha">Linha</option>
+                            <option value="barra">Barra</option>
+                            <option value="area">Área</option>
+                            <option value="scatter">Dispersão</option>
+                          </select>
+                        </div>
+                                              
                           <div class="form-group">
-                            <label>Intervalo de Tempo:</label>
+                            <label>Intervalo de Tempo</label>
                             <div class="time-range-buttons">
                               <button type="button" class="btn btn-outline-primary time-range-btn" data-range="24h">Últimas 24h</button>
                               <button type="button" class="btn btn-outline-primary time-range-btn" data-range="7d">7 dias</button>
@@ -352,26 +352,26 @@ try {
                           
                           <div class="form-row" id="custom-dates" style="display:none;">
                             <div class="form-group col-md-6">
-                              <label for="date-start">Data Início:</label>
+                              <label for="date-start">Data Início</label>
                               <input type="datetime-local" id="date-start" class="form-control">
                             </div>
                             <div class="form-group col-md-6">
-                              <label for="date-end">Data Fim:</label>
+                              <label for="date-end">Data Fim</label>
                               <input type="datetime-local" id="date-end" class="form-control">
                             </div>
                           </div>
                           
-                          <hr>
+                          <hr class="my-4">
                           
                           <div class="form-group">
-                            <label for="select-device">Selecionar Dispositivo:</label>
+                            <label for="select-device">Dispositivo</label>
                             <select id="select-device" class="form-control select2" style="width: 100%;">
                               <option value="">-- Escolha um dispositivo --</option>
                             </select>
                           </div>
                           
                           <div class="form-group">
-                            <label for="select-variable">Selecionar Variável:</label>
+                            <label for="select-variable">Variável</label>
                             <select id="select-variable" class="form-control" disabled>
                               <option value="">-- Carregando opções --</option>
                             </select>
@@ -379,19 +379,19 @@ try {
                           
                           <div class="form-row">
                             <div class="form-group col-md-6">
-                              <label for="variable-axis">Eixo:</label>
+                              <label for="variable-axis">Eixo de Plotagem</label>
                               <select id="variable-axis" class="form-control">
-                                <option value="y">Y (Valores)</option>
-                                <option value="x">X (Tempo/Categoria)</option>
+                                <option value="y">Y (Valores / Medições)</option>
+                                <option value="x">X (Tempo / Categoria)</option>
                               </select>
                             </div>
                             <div class="form-group col-md-6">
-                              <label for="variable-color">Cor:</label>
-                              <input type="color" id="variable-color" class="form-control" value="#1B7D3D">
+                              <label for="variable-color">Cor da Linha</label>
+                              <input type="color" id="variable-color" class="form-control p-1" value="#1B7D3D" style="height: 38px;">
                             </div>
                           </div>
                           
-                          <button type="button" class="btn btn-info btn-block" id="btn-add-dataset">
+                          <button type="button" class="btn btn-info btn-block mt-3" id="btn-add-dataset">
                             <i class="fas fa-plus mr-2"></i> Adicionar Dataset
                           </button>
                           
@@ -658,9 +658,7 @@ try {
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2025 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-  </footer>
+    <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 
@@ -1657,9 +1655,9 @@ try {
     }
     
     // --- RENDERIZAR GRÁFICO NO CANVAS ---
+    // --- RENDERIZAR GRÁFICO NO CANVAS (Refatorado para a nova API) ---
     async function renderizarGraficoNoCanvas(grafico, canvasId) {
       try {
-        // Obter dados do gráfico
         const url = `${API_OBTER_DADOS_GRAFICO}?chart_id=${grafico.id}`;
         const response = await fetch(url, { credentials: 'include' });
         
@@ -1669,102 +1667,100 @@ try {
         }
         
         const dados = await response.json();
-        const payloads = dados.payloads || [];
         
-        if (payloads.length === 0) {
-          console.warn(`Nenhum payload para o gráfico ${grafico.id}`);
+        // Verifica o novo formato de resposta (baseado em datasets mastigados pelo banco)
+        if (!dados.success || !dados.datasets || dados.datasets.length === 0) {
+          console.warn(`Nenhum dado retornado para o gráfico ${grafico.id}`);
           return;
         }
         
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
         
-        // Processar dados para Chart.js
         const chartType = grafico.chart_type;
+        const actualChartType = converterTipoGrafico(chartType);
         const isAreaChart = chartType === 'area';
         
-        // Converter tipo se necessário
-        const actualChartType = chartType === 'area' ? 'line' : chartType;
-        
-        const labels = payloads.map(p => {
-          const date = new Date(p.timestamp);
-          return date.toLocaleDateString('pt-BR');
+        // 1. Extrair e ordenar todos os timestamps únicos (Eixo X)
+        // Isso garante que se um sensor falhou por 5 min, o gráfico não fique desalinhado com o outro
+        const allTimestamps = new Set();
+        dados.datasets.forEach(ds => {
+          if (ds.data && ds.data.length > 0) {
+             ds.data.forEach(point => {
+               if (point.x) allTimestamps.add(point.x);
+             });
+          }
         });
-        
-        // Criar datasets
-        let chartDatasets = [];
-        
-        if (grafico.is_advanced && grafico.datasets && grafico.datasets.length > 0) {
-          // Gráfico avançado com múltiplos datasets
-          grafico.datasets.forEach((dataset, index) => {
-            const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
-            const color = dataset.color || colors[index % colors.length];
-            
-            // Filtrar payloads para este dataset
-            const dsPayloads = payloads.filter(p => 
-              p.device_id == dataset.device_id
-            );
-            
-            // Extrair valores JSON
-            const values = dsPayloads.map(p => {
-              try {
-                const json = typeof p.payload === 'string' ? JSON.parse(p.payload) : p.payload;
-                return json[dataset.variable_name] || null;
-              } catch (e) {
-                return null;
-              }
-            });
-            
-            const datasetConfig = {
-              label: dataset.alias || `${dataset.device_name} - ${dataset.variable_name}`,
-              data: values,
-              borderColor: color,
-              backgroundColor: (actualChartType === 'pie' || actualChartType === 'doughnut') ? color : `${color}33`,
-              borderWidth: 2,
-              tension: 0.4
-            };
-            
-            // Adicionar fill para gráfico de área
-            if (isAreaChart) {
-              datasetConfig.fill = true;
-            }
-            
-            chartDatasets.push(datasetConfig);
-          });
-        } else {
-          // Gráfico simples - uma única variável
-          const values = payloads.map(p => {
-            try {
-              const json = typeof p.payload === 'string' ? JSON.parse(p.payload) : p.payload;
-              return json[grafico.json_key] || null;
-            } catch (e) {
-              return null;
-            }
-          });
+
+        if (allTimestamps.size === 0) {
+           console.warn(`Datasets vazios para o gráfico ${grafico.id}`);
+           return;
+        }
+
+        const sortedTimestamps = Array.from(allTimestamps).sort();
+
+// 2. Formatar os rótulos de tempo (Data e Hora) imunes a fuso horário do Navegador
+        const labels = sortedTimestamps.map(ts => {
+          // ts = "2026-07-08 14:30:00"
+          const parts = ts.split(/[- :]/); // Divide em [Ano, Mês, Dia, Hora, Minuto, Segundo]
           
+          if (parts.length >= 5) {
+            // O JS espera o mês indexado em 0 (Janeiro = 0, Julho = 6)
+            const date = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5] || 0);
+            
+            return date.toLocaleString('pt-BR', {
+              day: '2-digit', month: '2-digit',
+              hour: '2-digit', minute: '2-digit'
+            });
+          }
+          return ts; // Fallback se a string vier num formato bizarro
+        });
+
+        // 3. Montar a configuração de Datasets nativa do Chart.js
+        const chartDatasets = dados.datasets.map((ds, index) => {
+          const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+          const color = ds.color || colors[index % colors.length];
+
+          const dataMap = {};
+          if (ds.data) {
+             ds.data.forEach(point => {
+                dataMap[point.x] = point.y;
+             });
+          }
+
+          const alignedValues = sortedTimestamps.map(ts => {
+             return dataMap[ts] !== undefined ? dataMap[ts] : null;
+          });
+
           const datasetConfig = {
-            label: grafico.json_key,
-            data: values,
-            borderColor: '#36A2EB',
-            backgroundColor: '#36A2EB33',
+            label: ds.alias || ds.variable_name,
+            data: alignedValues,
+            borderColor: color,
+            backgroundColor: (actualChartType === 'pie' || actualChartType === 'doughnut') ? color : `${color}33`,
             borderWidth: 2,
             tension: 0.4
           };
-          
-          // Adicionar fill para gráfico de área
-          if (isAreaChart) {
+
+          // Truques específicos de renderização baseados no tipo original
+          if (chartType === 'area') {
             datasetConfig.fill = true;
           }
           
-          chartDatasets.push(datasetConfig);
-        }
-        
+          if (chartType === 'scatter') {
+            datasetConfig.showLine = false; // Remove a linha
+            datasetConfig.pointRadius = 5;  // Aumenta a bolinha para ficar visível
+            datasetConfig.pointHoverRadius = 7;
+          }
+
+          return datasetConfig;
+        });
+
         // Destruir gráfico anterior se existir
         if (window[`chart_${canvasId}`]) {
           window[`chart_${canvasId}`].destroy();
         }
         
-        // Criar gráfico
+        // 4. Instanciar e renderizar o gráfico
         const ctx = canvas.getContext('2d');
         window[`chart_${canvasId}`] = new Chart(ctx, {
           type: actualChartType,
@@ -1806,13 +1802,6 @@ try {
                 labels: {
                   usePointStyle: true,
                   padding: 15
-                },
-                onClick: function(e, legendItem, legend) {
-                  const index = legendItem.datasetIndex;
-                  const ci = legend.chart;
-                  const meta = ci.getDatasetMeta(index);
-                  meta.hidden = meta.hidden === null ? !ci.data.datasets[index].hidden : null;
-                  ci.update();
                 }
               },
               title: {
@@ -2110,26 +2099,13 @@ try {
         return;
       }
       
-      container.innerHTML = `<canvas id="previewChart"></canvas>`;
+      container.innerHTML = `<canvas id="previewChart" style="min-height: 300px;"></canvas>`;
       
-      // Dados fake para preview
-      const labels = Array.from({length: 10}, (_, i) => `${i}:00`);
-      const chartData = {
-        labels: labels,
-        datasets: datasets.map(ds => ({
-          label: ds.alias + ` (${ds.device_name})`,
-          data: Array.from({length: 10}, () => Math.floor(Math.random() * 100)),
-          borderColor: ds.color,
-          backgroundColor: ds.color + '33',
-          tension: 0.1
-        }))
-      };
+      // Dados fake estruturados corretamente para o eixo X
+      const labels = Array.from({length: 10}, (_, i) => `${i + 8}:00`);
       
       const chartType = $('#chart-type').val() || 'linha';
-      let chartTypeValue = converterTipoGrafico(chartType);
-      
-      // Se for tipo 'area', configurar preenchimento
-      const isAreaChart = chartType === 'area';
+      let actualChartType = converterTipoGrafico(chartType);
       
       if (chartPreview) {
         chartPreview.destroy();
@@ -2140,30 +2116,47 @@ try {
           label: ds.alias + ` (${ds.device_name})`,
           data: Array.from({length: 10}, () => Math.floor(Math.random() * 100)),
           borderColor: ds.color,
-          backgroundColor: isAreaChart ? ds.color + '33' : ds.color + '33',
+          backgroundColor: (actualChartType === 'pie' || actualChartType === 'doughnut') ? ds.color : ds.color + '33',
           tension: 0.4
         };
         
-        // Adicionar fill para gráfico de área
-        if (isAreaChart) {
+        // Aplica o preenchimento para gráficos de área
+        if (chartType === 'area') {
           config.fill = true;
+        }
+        
+        // Aplica a regra correta para exibir a Dispersão no preview
+        if (chartType === 'scatter') {
+          config.showLine = false;
+          config.pointRadius = 5;
+          config.pointHoverRadius = 7;
         }
         
         return config;
       });
       
-      chartPreview = new Chart(document.getElementById('previewChart'), {
-        type: chartTypeValue,
+      const ctx = document.getElementById('previewChart').getContext('2d');
+      chartPreview = new Chart(ctx, {
+        type: actualChartType,
         data: {
           labels: labels,
           datasets: datasetConfig
         },
         options: {
           responsive: true,
-          maintainAspectRatio: true,
+          maintainAspectRatio: false, // Crucial para não estourar a altura da div
           interaction: {
             mode: 'index',
             intersect: false,
+          },
+          scales: actualChartType === 'pie' || actualChartType === 'doughnut' ? {} : {
+            y: {
+              beginAtZero: true,
+              grid: { drawBorder: false }
+            },
+            x: {
+              grid: { display: false }
+            }
           },
           plugins: {
             legend: { 
@@ -2173,59 +2166,23 @@ try {
                 usePointStyle: true,
                 padding: 10
               }
-            },
-            tooltip: {
-              enabled: true,
-              mode: 'index',
-              intersect: false,
-              backgroundColor: 'rgba(0,0,0,0.8)',
-              padding: 10,
-              callbacks: {
-                label: function(context) {
-                  let label = context.dataset.label || '';
-                  if (label) {
-                    label += ': ';
-                  }
-                  if (context.parsed.y !== null) {
-                    label += Number(context.parsed.y).toFixed(2);
-                  }
-                  return label;
-                }
-              }
-            },
-            zoom: chartTypeValue === 'pie' || chartTypeValue === 'doughnut' ? {} : {
-              zoom: {
-                wheel: {
-                  enabled: true,
-                  speed: 0.1
-                },
-                pinch: {
-                  enabled: true
-                },
-                mode: 'x',
-              },
-              pan: {
-                enabled: true,
-                mode: 'x',
-                modifierKey: 'shift'
-              }
             }
           }
         }
       });
     }
     
-    // ===== CONVERTER TIPO DE GRÁFICO - PT para EN =====
+// ===== CONVERTER TIPO DE GRÁFICO  =====
     function converterTipoGrafico(tipo) {
       const mapa = {
         'linha': 'line',
         'barra': 'bar',
         'pizza': 'pie',
         'rosca': 'doughnut',
-        'area': 'line',  // Chart.js não tem tipo 'area', usa 'line' com fill
-        'scatter': 'scatter'
+        'area': 'line',
+        'scatter': 'line' // Forçamos 'line' para o Chart.js aceitar nosso Eixo X temporal
       };
-      return mapa[tipo] || 'line';  // Default para 'line' se tipo não reconhecido
+      return mapa[tipo] || 'line';
     }
     
     // ===== SALVAR GRÁFICO AVANÇADO =====
@@ -2280,9 +2237,11 @@ try {
       }
     }
     
-    // ===== INICIALIZAÇÃO FINAL =====
+// ===== INICIALIZAÇÃO FINAL =====
     // Select2
-    $('.select2').select2({ theme: 'bootstrap' });
+    $('.select2').select2({ 
+        width: '100%' // Força a largura total mesmo com a aba escondida
+    });
     
     // Event Listeners do formulário de gráficos
     $('#select-device').on('change', carregarVariaveisFormulario);

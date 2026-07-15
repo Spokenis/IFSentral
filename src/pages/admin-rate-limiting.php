@@ -1,16 +1,28 @@
 <?php 
 require '../auth/auth_check.php';
+require '../config/db.php';
 
-// Verificar se é admin
+// Verificar se é admin (carrega profile da sessão/banco antes do header.php)
+$identifier = $_SESSION['user_id'] ?? $_SESSION['email'] ?? null;
+$column = isset($_SESSION['user_id']) ? 'id' : 'email';
+
+if ($identifier) {
+    $stmt = $conn->prepare("SELECT profile FROM users WHERE $column = ? AND deletedAt IS NULL");
+    $stmt->execute([$identifier]);
+    $profile_logado = $stmt->fetchColumn() ?: 'User';
+} else {
+    $profile_logado = 'User';
+}
+
 if ($profile_logado !== 'Admin') {
     header('Location: meus-projetos.php');
     exit;
 }
 
-require '../config/db.php';
 require '../core/RateLimiter.php';
 
 use App\Core\RateLimiter;
+
 
 // Inicializar Rate Limiter
 $rateLimiter = new RateLimiter($conn);
@@ -81,22 +93,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link">Meus Projetos</a></li>
-          <li class="nav-item"><a href="admin-rate-limiting.php" class="nav-link active">Admin - Rate Limit</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -252,9 +249,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2026 <a href="index.html">IFSentral</a>.</strong>
-  </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 

@@ -141,38 +141,7 @@ try {
   ?>
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link active">Meus Projetos</a></li>
-          <li class="nav-item"><a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="documentacao.php" class="nav-link">Documentação da API</a></li>
-        </ul>
-      </div>
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($username_logado); ?></span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="#" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -289,9 +258,7 @@ try {
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2025 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-  </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 
@@ -321,7 +288,7 @@ try {
     const btnToggleMqttPwd = document.getElementById('btn-toggle-mqtt-pwd');
     const btnCopyMqttPwd = document.getElementById('btn-copy-mqtt-pwd');
     
-    // --- *** NOVOS Elementos DOM (Filtros) *** ---
+    // --- Elementos DOM (Filtros) ---
     const formFiltros = document.getElementById('form-filtros');
     const filterLimit = document.getElementById('filter-limit');
     const filterStart = document.getElementById('filter-start');
@@ -334,9 +301,8 @@ try {
     const API_BUSCAR = '../api/buscar_payloads.php';
 
     let DEVICE_API_KEY = null;
-    let MQTT_PASSWORD_VISIBLE = false; 
 
-    // Função 1: Carrega os detalhes do dispositivo (nome, api_key)
+    // Função 1: Carrega os detalhes do dispositivo
     async function carregarDetalhesDispositivo() {
         try {
             const response = await fetch(`${API_OBTER_DISPOSITIVO}?device_id=${DEVICE_ID}`, { 
@@ -355,10 +321,7 @@ try {
             apiInfoId.textContent = device.id;
             apiInfoKey.textContent = device.api_key;
             
-            // Carrega credenciais MQTT (se disponíveis)
             await carregarCredenciaisMQTT();
-            
-            // Carrega os payloads (com os filtros padrão)
             await carregarPayloads();
 
         } catch (error) {
@@ -367,15 +330,12 @@ try {
         }
     }
 
-    // Função 1.5: Carrega credenciais MQTT
+    // Função 1.5: Carrega credenciais MQTT (Apenas dados não-sensíveis no load)
     async function carregarCredenciaisMQTT() {
         try {
-            // ✅ SEGURO: Usa API Key (não sequencial) em vez de device_id
             const response = await fetch(API_MQTT_CREDENTIALS, {
                 credentials: 'include',
-                headers: {
-                    'X-Api-Key': DEVICE_API_KEY
-                }
+                headers: { 'X-Api-Key': DEVICE_API_KEY }
             });
             const mqtt_creds = await safeJson(response);
             
@@ -388,12 +348,8 @@ try {
             }
             
             mqttUsername.textContent = mqtt_creds.mqtt_username;
-            mqttPassword.textContent = mqtt_creds.mqtt_password;
-            mqttPassword.dataset.password = mqtt_creds.mqtt_password;
+            mqttPassword.textContent = '••••••••••••••••';
             mqttPassword.dataset.visible = 'false';
-            
-            // Mascara a senha inicialmente
-            maskMQTTPassword();
             
         } catch (error) {
             console.warn('Não foi possível carregar credenciais MQTT:', error.message);
@@ -402,75 +358,89 @@ try {
         }
     }
 
-    // Função auxiliar: Mascara a senha MQTT
-    function maskMQTTPassword() {
-        const password = mqttPassword.dataset.password;
-        if (!password) return;
-        
-        if (mqttPassword.dataset.visible === 'true') {
-            mqttPassword.textContent = password;
-            btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye-slash"></i>';
-        } else {
-            // Mostra apenas os últimos 4 caracteres
-            const masked = '*'.repeat(password.length - 4) + password.slice(-4);
-            mqttPassword.textContent = masked;
-            btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye"></i>';
-        }
+    // Função auxiliar para buscar a senha sob demanda
+    async function fetchMqttPassword() {
+        const response = await fetch(`${API_MQTT_CREDENTIALS}?reveal=true`, {
+            credentials: 'include',
+            headers: { 'X-Api-Key': DEVICE_API_KEY }
+        });
+        const data = await safeJson(response);
+        return data.mqtt_password ?? '';
     }
 
-    // Event Listener: Mostrar/Ocultar senha MQTT
+    // Event Listener: Mostrar/Ocultar a senha temporariamente
     if (btnToggleMqttPwd) {
-        btnToggleMqttPwd.addEventListener('click', () => {
-            const currentState = mqttPassword.dataset.visible === 'true';
-            mqttPassword.dataset.visible = currentState ? 'false' : 'true';
-            maskMQTTPassword();
+        btnToggleMqttPwd.addEventListener('click', async () => {
+            const isVisible = mqttPassword.dataset.visible === 'true';
+            
+            if (isVisible) {
+                mqttPassword.textContent = '••••••••••••••••';
+                mqttPassword.dataset.visible = 'false';
+                btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye"></i>';
+            } else {
+                btnToggleMqttPwd.disabled = true;
+                try {
+                    const password = await fetchMqttPassword();
+                    if (password) {
+                        mqttPassword.textContent = password;
+                        mqttPassword.dataset.visible = 'true';
+                        btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye-slash"></i>';
+                        
+                        setTimeout(() => {
+                            if (mqttPassword.dataset.visible === 'true') {
+                                mqttPassword.textContent = '••••••••••••••••';
+                                mqttPassword.dataset.visible = 'false';
+                                btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye"></i>';
+                            }
+                        }, 15000);
+                    }
+                } catch (e) {
+                    console.error('Erro ao recuperar credencial:', e);
+                } finally {
+                    btnToggleMqttPwd.disabled = false;
+                }
+            }
         });
     }
 
     // Event Listener: Copiar senha MQTT
     if (btnCopyMqttPwd) {
-        btnCopyMqttPwd.addEventListener('click', () => {
-            const password = mqttPassword.dataset.password;
-            if (!password) return;
-            
-            navigator.clipboard.writeText(password).then(() => {
+        btnCopyMqttPwd.addEventListener('click', async () => {
+            btnCopyMqttPwd.disabled = true;
+            try {
+                const password = await fetchMqttPassword();
+                if (!password) return;
+                
+                await navigator.clipboard.writeText(password);
                 const originalHTML = btnCopyMqttPwd.innerHTML;
                 btnCopyMqttPwd.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                 setTimeout(() => {
                     btnCopyMqttPwd.innerHTML = originalHTML;
+                    btnCopyMqttPwd.disabled = false;
                 }, 2000);
-            }).catch(err => {
+            } catch (err) {
                 alert('Erro ao copiar: ' + err);
-            });
+                btnCopyMqttPwd.disabled = false;
+            }
         });
     }
 
-    // Função 2: Carrega a lista de payloads recebidos (MODIFICADA)
+    // Função 2: Carrega a lista de payloads recebidos
     async function carregarPayloads() {
         if (!DEVICE_API_KEY) return; 
 
         statusMsgGet.innerHTML = 'Buscando payloads...';
         payloadsContainer.innerHTML = '';
         
-        // --- *** NOVO: Constrói a URL dinâmica *** ---
         const limit = filterLimit.value;
         const startDate = filterStart.value;
         const endDate = filterEnd.value;
 
-        // Começa com os parâmetros obrigatórios
         let url = `${API_BUSCAR}?device_id=${DEVICE_ID}&limit=${limit}`;
-        
-        // Adiciona parâmetros opcionais
-        if (startDate) {
-            url += `&startDate=${startDate}`;
-        }
-        if (endDate) {
-            url += `&endDate=${endDate}`;
-        }
-        // --- Fim da Construção ---
+        if (startDate) url += `&startDate=${startDate}`;
+        if (endDate) url += `&endDate=${endDate}`;
         
         try {
-            // Usa a nova URL com filtros
             const response = await fetch(url, {
               method: 'GET',
               headers: { 'X-Api-Key': DEVICE_API_KEY }
@@ -536,7 +506,6 @@ try {
             statusMsgPost.innerHTML = `<span style="color: green;">${resultado.message}</span>`;
             enviarButton.disabled = false;
             
-            // Recarrega a lista (com os filtros atuais)
             await carregarPayloads(); 
 
         } catch (error) {
@@ -545,13 +514,13 @@ try {
         }
     });
 
-    // --- *** NOVO: Event Listener para o formulário de filtros *** ---
+    // Event Listener para o formulário de filtros
     formFiltros.addEventListener('submit', async (e) => {
-        e.preventDefault(); // Impede o envio da página
-        await carregarPayloads(); // Apenas roda a função de carregar
+        e.preventDefault(); 
+        await carregarPayloads(); 
     });
 
-    // --- Inicializador ---
+    // Inicializador
     document.addEventListener('DOMContentLoaded', carregarDetalhesDispositivo);
 </script>
 </body>

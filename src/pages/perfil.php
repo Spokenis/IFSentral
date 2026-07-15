@@ -51,51 +51,7 @@ require '../auth/auth_check.php';
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item">
-            <a href="meus-projetos.php" class="nav-link">Meus Projetos</a>
-          </li>
-          <li class="nav-item">
-            <a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a>
-          </li>
-          <li class="nav-item">
-            <a href="documentacao.php" class="nav-link">Documentação da API</a>
-          </li>
-        </ul>
-      </div>
-
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link navbar-user-avatar" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span>
-                <?php 
-                echo htmlspecialchars($username_logado); 
-                ?>
-            </span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="perfil.php" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
 
   <div class="content-wrapper">
     <section class="content-header">
@@ -107,6 +63,7 @@ require '../auth/auth_check.php';
         </div>
       </div>
     </section>
+
 
     <section class="content">
       <div class="container">
@@ -134,8 +91,22 @@ require '../auth/auth_check.php';
               <div class="card-body">
                 <p><strong>Usuario:</strong> <?php echo htmlspecialchars($username_logado); ?></p>
                 <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+
+                <hr>
+
+                <?php if (($profile_logado ?? 'User') === 'User'): ?>
+                  <button id="btn-solicitar-moderador" type="button" class="btn btn-warning btn-block">
+                    <i class="fas fa-user-shield mr-2"></i>
+                    Solicitar permissão para criar projetos (Moderador)
+                  </button>
+                  <small class="text-muted d-block mt-2">
+                    Seu pedido será analisado pelo Admin.
+                  </small>
+                <?php endif; ?>
+
               </div>
             </div>
+
           </div>
 
           <div class="col-md-8">
@@ -154,9 +125,7 @@ require '../auth/auth_check.php';
     </section>
   </div>
 
-    <footer class="main-footer text-center">
-        <strong>Copyright &copy; 2024-2025 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-    </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </div>
 
 <script src="../assets/js/fetch-helpers.js"></script>
@@ -170,6 +139,8 @@ require '../auth/auth_check.php';
     const API_LISTAR_CONVITES = '../api/listar_convites.php';
     const API_ACEITAR_CONVITE = '../api/aceitar_convite.php';
     const API_RECUSAR_CONVITE = '../api/recusar_convite.php';
+    const API_SOLICITACOES_PERFIL = '../api/solicitacoes_perfil.php';
+
 
     const invitesStatus = document.getElementById('invites-status');
     const invitesContainer = document.getElementById('invites-container');
@@ -249,6 +220,44 @@ require '../auth/auth_check.php';
         buttonEl.textContent = originalText;
       }
     }
+
+    async function solicitarPermissaoCriador() {
+
+      const button = document.getElementById('btn-solicitar-moderador');
+      if (button) button.disabled = true;
+
+      const motivo = prompt('Por favor, descreva brevemente por que você precisa criar projetos:');
+      if (motivo === null) {
+        if (button) button.disabled = false;
+        return;
+      }
+
+      try {
+        const res = await fetch(API_SOLICITACOES_PERFIL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ message: motivo })
+        });
+
+        const data = await safeJson(res);
+        alert(data.success ? data.message : data.error);
+
+        if (button && data.success) {
+          button.textContent = 'Solicitação enviada. Aguarde...';
+          button.classList.remove('btn-warning');
+          button.classList.add('btn-success');
+        }
+      } catch (err) {
+        alert('Erro de conexão ao enviar solicitação.');
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+
+    document.getElementById('btn-solicitar-moderador')?.addEventListener('click', solicitarPermissaoCriador);
+
+
 
     invitesContainer.addEventListener('click', function (event) {
       const button = event.target.closest('button[data-action]');

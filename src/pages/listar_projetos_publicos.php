@@ -44,12 +44,7 @@ try {
                 LIMIT 1
             ) AS is_member,
             
-            (
-                SELECT GROUP_CONCAT(t.name) 
-                FROM project_tags pt
-                JOIN tags t ON pt.tag_id = t.id
-                WHERE pt.project_id = p.id
-            ) AS project_tags 
+            GROUP_CONCAT(t.name SEPARATOR ',') AS project_tags 
             
         FROM 
             projects p
@@ -57,10 +52,12 @@ try {
             users_projects up ON up.project_id = p.id AND up.role_id = 1
         JOIN 
             users u ON u.id = up.user_id
+        LEFT JOIN project_tags pt ON p.id = pt.project_id
+        LEFT JOIN tags t ON pt.tag_id = t.id
         WHERE 
             p.public = 1 AND p.deletedAt IS NULL
         GROUP BY
-            p.id, u.name
+            p.id, p.name, p.description, p.maxUsers, u.name
         ORDER BY 
             p.name ASC
     ";

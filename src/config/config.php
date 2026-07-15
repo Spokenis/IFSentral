@@ -83,17 +83,36 @@ define('SESSION_SAMESITE', env('SESSION_SAMESITE'));
  * Verifica se a origem solicitada está na lista de permitidas
  */
 function setupSecureCORS() {
-    // Permite qualquer origem acessar a API
-    header("Access-Control-Allow-Origin: *");
+    $requestUri = $_SERVER['REQUEST_URI'] ?? '';
     
-    // Define os métodos permitidos
+    // Define quais rotas são de acesso público/integração
+    $isPublicApi = strpos($requestUri, '/api/enviar_payload.php') !== false || 
+                   strpos($requestUri, '/api/buscar_payloads.php') !== false ||
+                   strpos($requestUri, '/api/ttn_webhook.php') !== false ||
+                   strpos($requestUri, '/get_mqtt_credentials.php') !== false;
+
+    if ($isPublicApi) {
+        // Aberto para qualquer front-end externo consumir (Segurança via X-Api-Key)
+        header("Access-Control-Allow-Origin: *");
+    } else {
+        // Rotas internas do painel IFSentral (Segurança via Sessão e CORS)
+        $allowedOrigins = explode(',', ALLOWED_ORIGINS);
+        $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+        
+        if (in_array($requestOrigin, $allowedOrigins)) {
+            header("Access-Control-Allow-Origin: " . $requestOrigin);
+        }
+    }
+    
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    
-    // Define os cabeçalhos permitidos (incluindo X-Api-Key, x-api-key e Accept)
-    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Api-Key, x-api-key, Accept");
-    
-    // Tempo de cache para a requisição de preflight (OPTIONS) - 24 horas
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Api-Key, x-api-key, Accept");
     header("Access-Control-Max-Age: 86400");
+
+    // Retorna 200 para requisições preflight do navegador
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
 }
 
 /**

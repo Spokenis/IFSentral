@@ -3,12 +3,11 @@
 /**
  * mqtt_subscriber.php - Worker que subscreve tópicos MQTT
  * Execute em background: php src/mqtt/mqtt_subscriber.php &
- * 
- * Este worker:
+ * * Este worker:
  * - Conecta ao broker MQTT
- * - Subscreve tópicos de projetos e dispositivos
- * - Processa payloads recebidos
- * - Salva no banco de dados
+ * - Subscreve tópicos usando Shared Subscriptions (Balanceamento de Carga)
+ * - Mantém e recupera conexões perdidas com o banco de dados (Ping/Reconnect)
+ * - Processa payloads recebidos e salva no banco de dados
  */
 
 // Define diretórios
@@ -48,6 +47,46 @@ function mqtt_log($message, $level = 'INFO')
     file_put_contents($log_file, $log_message, FILE_APPEND);
 }
 
+// ==========================================
+// FUNÇÃO DE PROTEÇÃO DO BANCO DE DADOS
+// ==========================================
+function ensureDbConnection(&$conn) {
+    try {
+        // Tenta executar uma query levíssima para testar a conexão
+        $conn->query('SELECT 1');
+        return true;
+    } catch (\PDOException $e) {
+        mqtt_log("Conexão com o banco perdida: " . $e->getMessage() . ". Tentando reconectar...", 'WARN');
+        
+        $max_retries = 3;
+        for ($i = 1; $i <= $max_retries; $i++) {
+            try {
+                // Reconstrói a conexão usando as constantes do seu config/db.php
+                $conn = new \PDO(
+                    "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", 
+                    DB_USER, 
+                    DB_PASS,
+                    [
+                        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+                        \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+                        \PDO::ATTR_EMULATE_PREPARES => false
+                    ]
+                );
+                mqtt_log("Banco de dados reconectado com sucesso na tentativa $i.", 'INFO');
+                return true;
+            } catch (\PDOException $err) {
+                mqtt_log("Falha ao reconectar (tentativa $i/$max_retries). Aguardando 2s...", 'ERROR');
+                sleep(2);
+            }
+        }
+        
+        // Se falhar completamente, encerra o processo limpo para que o Supervisor/Systemd reinicie
+        mqtt_log("Falha crítica ao recuperar o banco de dados. Encerrando worker.", 'FATAL');
+        exit(1);
+    }
+}
+// ==========================================
+
 mqtt_log('=== MQTT Subscriber iniciado ===', 'INFO');
 mqtt_log("Conectando a: " . MQTT_HOST . ":" . MQTT_PORT, 'INFO');
 
@@ -64,50 +103,63 @@ try {
         ->setUsername(MQTT_USERNAME)
         ->setPassword(MQTT_PASSWORD);
 
+    // CRÍTICO: Cria ID de cliente único para permitir múltiplas instâncias
+    $unique_client_id = MQTT_CLIENT_ID . '_' . getmypid() . '_' . uniqid();
+    
     // Cria cliente MQTT
-    $client = new MqttClient(MQTT_HOST, MQTT_PORT, MQTT_CLIENT_ID);
+    $client = new MqttClient(MQTT_HOST, MQTT_PORT, $unique_client_id);
 
     // Callback para mensagens recebidas
     $client->registerLoopEventHandler(function (MqttClient $client, $elapsed) {
-        // Permite que o cliente processe mensagens
-        // Este callback é chamado a cada iteração do loop
+        // Callback acionado a cada iteração do loop interno
     });
 
     // Conecta ao broker
     $client->connect($connectionSettings);
-    mqtt_log('Conectado ao broker MQTT com sucesso', 'INFO');
+    mqtt_log('Conectado ao broker MQTT com sucesso (ID: ' . $unique_client_id . ')', 'INFO');
+
+    // Nome do grupo de balanceamento (Shared Subscription)
+    $worker_group = 'cluster_db';
 
     // Subscreve tópicos
     foreach (MQTT_TOPICS as $topic) {
-        $client->subscribe($topic, function (
-            string $topic,
+        
+        // Adiciona o prefixo de assinatura compartilhada do Mosquitto
+        $shared_topic = '$share/' . $worker_group . '/' . $topic;
+        
+        // CRÍTICO: Passagem por referência (&$conn, &$rateLimiter)
+        $client->subscribe($shared_topic, function (
+            string $real_topic,
             string $message,
             bool $retained
-        ) use ($conn) {
-            mqtt_log("Mensagem recebida no tópico: $topic", 'DEBUG');
+        ) use (&$conn, &$rateLimiter) {
+            mqtt_log("Mensagem recebida no tópico: $real_topic", 'DEBUG');
             
-            // Parse do tópico: mqtt/projects/{project_id}/devices/{device_id}
-            $parts = explode('/', $topic);
+            $parts = explode('/', $real_topic);
             
             if (count($parts) >= 5 && $parts[0] === 'mqtt' && $parts[1] === 'projects' && $parts[3] === 'devices') {
                 $project_id = intval($parts[2]);
                 $device_id = intval($parts[4]);
                 
-                // Descriptografa a mensagem (se for necessário)
                 $payload_data = json_decode($message, true);
                 
                 if ($payload_data === null && json_last_error() !== JSON_ERROR_NONE) {
-                    mqtt_log("Erro ao fazer parse do JSON no tópico $topic: " . json_last_error_msg(), 'ERROR');
+                    mqtt_log("Erro ao fazer parse do JSON no tópico $real_topic: " . json_last_error_msg(), 'ERROR');
                     return;
                 }
                 
-                // Se não for JSON, trata como string simples
                 if ($payload_data === null) {
                     $payload_data = ['value' => $message];
                 }
                 
-                // Aqui precisamos da API Key do dispositivo
-                // Buscamos no banco
+                // --- PROTEÇÃO DO BANCO DE DADOS ---
+                // Verifica a vitalidade e reconecta se necessário antes de qualquer transação
+                ensureDbConnection($conn);
+                
+                // Se a conexão foi recriada, precisamos atualizar o limitador com a nova instância
+                $rateLimiter = new RateLimiter($conn);
+                // ----------------------------------
+                
                 $apiKeySql = "SELECT api_key FROM devices WHERE id = ? AND project_id = ?";
                 try {
                     $apiKeyStmt = $conn->prepare($apiKeySql);
@@ -117,20 +169,19 @@ try {
                         $device = $apiKeyStmt->fetch(\PDO::FETCH_ASSOC);
                         $api_key = $device['api_key'];
                         
-                        // Verifica rate limit ANTES de processar
                         $rateCheck = $rateLimiter->checkLimit($device_id, 'mqtt', 'mqtt_local');
                         
                         if (!$rateCheck['allowed']) {
                             mqtt_log("Rate limit excedido - Device: $device_id, Requests: {$rateCheck['requests']}, Limit: {$rateCheck['limit']}", 'WARN');
-                            return;  // Descarta a mensagem
+                            return; 
                         }
                         
-                        // Usa o PayloadHandler para salvar
+                        // Passamos a conexão garantida para o handler
                         $handler = new PayloadHandler($conn);
                         $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt');
                         
                         if ($result['success']) {
-                            mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id, Requests: {$rateCheck['requests']}/{$rateCheck['limit']}", 'INFO');
+                            mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id", 'INFO');
                         } else {
                             mqtt_log("Erro ao salvar payload: {$result['message']}", 'ERROR');
                         }
@@ -141,7 +192,7 @@ try {
                     mqtt_log("Exceção ao processar payload: " . $e->getMessage(), 'ERROR');
                 }
             } else {
-                mqtt_log("Formato de tópico inválido: $topic", 'WARN');
+                mqtt_log("Formato de tópico inválido: $real_topic", 'WARN');
             }
         }, 1);  // QoS 1
     }
@@ -153,7 +204,7 @@ try {
     $reconnect_attempts = 0;
     while (true) {
         try {
-            $client->loop(true);  // blocking = true
+            $client->loop(true);
         } catch (\Exception $e) {
             mqtt_log("Erro no loop: " . $e->getMessage(), 'ERROR');
             
@@ -163,15 +214,15 @@ try {
                 break;
             }
             
-            mqtt_log("Tentando reconectar em " . MQTT_RECONNECT_DELAY . "s (tentativa $reconnect_attempts)...", 'INFO');
+            mqtt_log("Tentando reconectar MQTT em " . MQTT_RECONNECT_DELAY . "s (tentativa $reconnect_attempts)...", 'INFO');
             sleep(MQTT_RECONNECT_DELAY);
             
             try {
                 $client->connect($connectionSettings);
-                mqtt_log("Reconectado com sucesso", 'INFO');
+                mqtt_log("Reconectado ao broker com sucesso", 'INFO');
                 $reconnect_attempts = 0;
             } catch (\Exception $e) {
-                mqtt_log("Falha na reconexão: " . $e->getMessage(), 'ERROR');
+                mqtt_log("Falha na reconexão MQTT: " . $e->getMessage(), 'ERROR');
             }
         }
     }

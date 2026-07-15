@@ -2,7 +2,7 @@
 /**
  * enviar_payload.php - API para enviar payloads de dispositivos
  * Refatorado para usar PayloadHandler (compartilhado com TTN e MQTT)
- * Agora com Rate Limiting configurável
+ * Agora com Rate Limiting configurável e Proteção DoS
  */
 
 require_once '../config/config.php';
@@ -39,8 +39,25 @@ if (!$deviceAuth) {
     exit;
 }
 
+// ===== PROTEÇÃO DoS: Leitura e validação de tamanho =====
+$rawData = file_get_contents("php://input");
+
+// Limite rígido de 2KB (2048 bytes) para o payload
+if (strlen($rawData) > 2048) {
+    http_response_code(413); // Payload Too Large
+    echo json_encode(['error' => 'O payload excede o tamanho máximo permitido (2KB).']);
+    exit;
+}
+
 // Parse do JSON recebido
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode($rawData);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON inválido ou malformado.']);
+    exit;
+}
+// =========================================================
 
 // Validação: Device ID e Payload obrigatórios
 if (!isset($data->device_id) || !is_numeric($data->device_id) || !isset($data->payload)) {

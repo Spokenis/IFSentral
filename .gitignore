@@ -50,3 +50,4 @@ uploads/private/
 # Testes locais
 test-*.php
 *-test.php
+mqtt_credentials_auto.txt

@@ -103,38 +103,7 @@ try {
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link active">Meus Projetos</a></li>
-          <li class="nav-item"><a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="documentacao.php" class="nav-link">Documentação da API</a></li>
-        </ul>
-      </div>
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($username_logado); ?></span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="#" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -184,9 +153,7 @@ try {
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2025 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-  </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 
