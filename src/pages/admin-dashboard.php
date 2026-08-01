@@ -135,7 +135,7 @@ try {
                     <tr>
                       <th>ID</th>
                       <th>Nome</th>
-                      <th>Email</th>
+                      <th>E-mail</th>
                       <th>Perfil</th>
                       <th>Cadastro</th>
                     </tr>

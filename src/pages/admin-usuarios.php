@@ -85,7 +85,7 @@ if ($profile_logado !== 'Admin') {
                   <tr>
                     <th>Data</th>
                     <th>Usuário</th>
-                    <th>Email</th>
+                    <th>E-mail</th>
                     <th>Motivo (Mensagem)</th>
                     <th>Ações</th>
                   </tr>
@@ -108,7 +108,7 @@ if ($profile_logado !== 'Admin') {
                   <tr>
                     <th>ID</th>
                     <th>Nome</th>
-                    <th>Email</th>
+                    <th>E-mail</th>
                     <th>Perfil</th>
                     <th>Cadastro</th>
                     <th>Ações</th>

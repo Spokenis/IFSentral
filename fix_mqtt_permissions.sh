@@ -3,13 +3,15 @@
 
 echo "Corrigindo permissões dos arquivos MQTT..."
 
-# Mudar owner para www-data (usuário do PHP-FPM)
-chown www-data:www-data /var/www/html/minha-api-php/mqtt_credentials_BACKUP_SEGURO.txt 2>/dev/null
-chown www-data:www-data /var/www/html/minha-api-php/mqtt_credentials_backup.txt 2>/dev/null
+# Ajusta permissões no volume do Mosquitto (se executado no container ou com volume montado)
+if [ -d "/mosquitto/config" ]; then
+    chown -R 1883:1883 /mosquitto/config 2>/dev/null
+    chmod 644 /mosquitto/config/passwords.txt /mosquitto/config/acl.acl 2>/dev/null
+fi
 
-# Garantir permissões de leitura
-chmod 640 /var/www/html/minha-api-php/mqtt_credentials_BACKUP_SEGURO.txt 2>/dev/null
-chmod 640 /var/www/html/minha-api-php/mqtt_credentials_backup.txt 2>/dev/null
+# Ajusta permissões dos arquivos de backup locais na raiz do projeto (se aplicável)
+chown www-data:www-data ./mqtt_credentials*.txt 2>/dev/null
+chmod 600 ./mqtt_credentials*.txt 2>/dev/null
 
-echo "Permissões ajustadas!"
-ls -lh /var/www/html/minha-api-php/mqtt_credentials*.txt
+echo "Permissões ajustadas com sucesso!"
+ls -la /mosquitto/config/ 2>/dev/null || ls -la ./mqtt_credentials*.txt 2>/dev/null

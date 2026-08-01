@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+
+  # 1. Web Server (PHP/Apache)
+  web:
+    build: .
+    container_name: ifsentral_web
+    ports:
+      - "8080:80"
+    environment:
+      - ROLE=web
+      - DB_HOST=${DB_HOST:-db}
+      - DB_NAME=${DB_NAME:-ifsentral_bd}
+      - DB_USER=${DB_USER:-ifsentral_user}
+      - DB_PASS=${DB_PASS:-secretpassword}
+      - MQTT_HOST=${MQTT_HOST:-mosquitto}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME:-admin}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
+    volumes:
+      - ./logs:/var/www/html/logs
+      - ./uploads:/var/www/html/uploads
+      - mqtt_config:/mosquitto/config
+    depends_on:
+      db:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    restart: unless-stopped
+
+  # 2. Background Worker (Executa o MQTT Subscriber)
+  worker:
+    build: .
+    container_name: ifsentral_worker
+    environment:
+      - ROLE=worker
+      - DB_HOST=${DB_HOST:-db}
+      - DB_NAME=${DB_NAME:-ifsentral_bd}
+      - DB_USER=${DB_USER:-ifsentral_user}
+      - DB_PASS=${DB_PASS:-secretpassword}
+      - MQTT_HOST=${MQTT_HOST:-mosquitto}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME:-admin}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
+    volumes:
+      - ./logs:/var/www/html/logs
+      - mqtt_config:/mosquitto/config
+    depends_on:
+      db:
+        condition: service_healthy
+      mosquitto:
+        condition: service_started
+    restart: unless-stopped
+    command: ["docker-entrypoint.sh"]
+
+  # 3. Database Server (MySQL)
+  db:
+    image: mysql:8.0
+    container_name: ifsentral_db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootpassword}
+      MYSQL_DATABASE: ${DB_NAME:-ifsentral_bd}
+      MYSQL_USER: ${DB_USER:-ifsentral_user}
+      MYSQL_PASSWORD: ${DB_PASS:-secretpassword}
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./src/db/ifsentral_bd.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-rootpassword}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # 4. MQTT Broker (Mosquitto)
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    container_name: ifsentral_mqtt
+    entrypoint: ["/usr/local/bin/mosquitto-entrypoint.sh"]
+    command: []
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+      - ./mosquitto-entrypoint.sh:/usr/local/bin/mosquitto-entrypoint.sh:ro
+      - mqtt_config:/mosquitto/config
+      - mqtt_data:/mosquitto/data
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 240s
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  mqtt_data:
+  mqtt_config:

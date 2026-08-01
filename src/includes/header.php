@@ -55,7 +55,7 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
             <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
             <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
             <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
+            <a href="../auth/logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
           </div>
         </li>
       </ul>

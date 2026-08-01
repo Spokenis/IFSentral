@@ -89,8 +89,8 @@ require '../auth/auth_check.php';
                 <h3 class="card-title"><i class="fas fa-id-card mr-2"></i>Minha Conta</h3>
               </div>
               <div class="card-body">
-                <p><strong>Usuario:</strong> <?php echo htmlspecialchars($username_logado); ?></p>
-                <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
+                <p><strong>Usuário:</strong> <?php echo htmlspecialchars($username_logado); ?></p>
+                <p><strong>E-mail:</strong> <?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
 
                 <hr>
 
@@ -162,7 +162,7 @@ require '../auth/auth_check.php';
           <div class="mb-2">
             <h5 class="mb-1">${convite.project_name} ${statusBadge}</h5>
             <div class="text-muted">Convite de ${convite.inviter_name} (${convite.inviter_email})</div>
-            <div class="text-muted">Permissao: ${convite.role_name}</div>
+            <div class="text-muted">Permissão: ${convite.role_name}</div>
             <div class="text-muted">Enviado em ${formatarData(convite.created_at)} | Expira em ${formatarData(convite.expires_at)}</div>
           </div>
           <div class="btn-group">

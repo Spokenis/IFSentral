@@ -1,0 +1,15 @@
+<parameter name="content" string="true">listener 1883 0.0.0.0
+allow_anonymous false
+password_file /mosquitto/config/passwd
+acl_file /mosquitto/config/acl.acl
+
+# Persistência
+persistence true
+persistence_location /var/lib/mosquitto/
+
+# Logs
+log_dest stdout
+log_type all
+connection_messages true
+log_timestamp true
+</parameter>

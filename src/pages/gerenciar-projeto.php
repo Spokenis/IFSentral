@@ -483,7 +483,7 @@ try {
                       </div>
                       <div class="card-body">
                         <div class="form-group">
-                          <label>Email do usuário:</label>
+                          <label>E-mail do usuário:</label>
                           <input type="email" id="invite-email" class="form-control" placeholder="usuario@example.com">
                         </div>
                         <div class="form-group">
@@ -1413,18 +1413,18 @@ try {
         inviteStatusEl.innerHTML = '';
 
         if (!email) {
-          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">Informe um email válido.</div>';
+          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">Informe um e-mail válido.</div>';
           return;
         }
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">Email inválido.</div>';
+          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">E-mail inválido.</div>';
           return;
         }
 
         if (!roleId || Number.isNaN(roleId)) {
-          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">Selecione uma permissao.</div>';
+          inviteStatusEl.innerHTML = '<div class="alert alert-warning mb-0">Selecione uma permissão.</div>';
           return;
         }
 

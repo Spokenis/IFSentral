@@ -113,7 +113,7 @@ try {
     $invitedUser = $findUserStmt->fetch(PDO::FETCH_ASSOC);
     $invited_user_id = $invitedUser ? $invitedUser['id'] : null;
     
-    // Criar convite
+// Criar convite
     $inviteSql = "
         INSERT INTO invitations (project_id, invited_by, invited_user_id, invited_email, role_id, expires_at)
         VALUES (?, ?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 7 DAY))
@@ -121,11 +121,29 @@ try {
     $inviteStmt = $conn->prepare($inviteSql);
     $inviteStmt->execute([$project_id, $user_id, $invited_user_id, $invited_email, $role_id]);
     
+    // Busca os dados humanizados para personalizar a mensagem
+    $projSql = "SELECT p.name AS project_name, u.name AS sender_name 
+                FROM projects p, users u 
+                WHERE p.id = ? AND u.id = ?";
+    $projStmt = $conn->prepare($projSql);
+    $projStmt->execute([$project_id, $user_id]);
+    $projData = $projStmt->fetch(PDO::FETCH_ASSOC);
+
+    $emailEnviado = false;
+
+    // Condiciona o envio à liberação no ambiente
+    if (defined('ENABLE_EMAIL_FEATURES') && ENABLE_EMAIL_FEATURES === true) {
+        require_once '../core/ServicoEmail.php';
+        $servicoEmail = new ServicoEmail();
+        $emailEnviado = $servicoEmail->enviarEmailConvite($invited_email, $projData['project_name'], $projData['sender_name']);
+    }
+    
     http_response_code(201);
     echo json_encode([
         'message' => 'Convite enviado com sucesso!',
         'invitation_id' => $conn->lastInsertId(),
-        'invited_email' => $invited_email
+        'invited_email' => $invited_email,
+        'email_dispatched' => $emailEnviado
     ]);
     
 } catch (PDOException $e) {

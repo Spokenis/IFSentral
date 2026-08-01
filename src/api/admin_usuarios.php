@@ -78,15 +78,45 @@ if ($method === 'DELETE') {
     try {
         $conn->beginTransaction();
         
-        $stmt = $conn->prepare("UPDATE users SET deletedAt = NOW() WHERE id = ?");
-        $stmt->execute([$target_id]);
+        // Primeiro, obtém os dados atuais do usuário para modificar email e username
+        $stmtUser = $conn->prepare("SELECT email, username FROM users WHERE id = ? AND deletedAt IS NULL");
+        $stmtUser->execute([$target_id]);
+        $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$userData) {
+            $conn->rollBack();
+            http_response_code(404);
+            echo json_encode(['error' => 'Usuário não encontrado.']);
+            exit;
+        }
+        
+        // Gera timestamp para liberar os UNIQUE KEYs
+        $now = date('YmdHis');
+        $dateCompact = date('Ymd');
+        
+        // Modifica email e username anexando sufixo '-deleted-'/' -del-' + timestamp
+        // para liberar os valores originais e permitir re-registro com os mesmos dados
+        // Usa LEFT() para truncar dentro dos limites VARCHAR(50) para email e VARCHAR(20) para username
+        // evitando erro de estouro de tamanho de coluna
+        $stmt = $conn->prepare("
+            UPDATE users SET 
+                deletedAt = NOW(),
+                email = LEFT(CONCAT(?, '-deleted-', ?), 50),
+                username = LEFT(CONCAT(?, '-del-', ?), 20)
+            WHERE id = ? AND deletedAt IS NULL
+        ");
+        $stmt->execute([
+            $userData['email'], $now,
+            $userData['username'], $dateCompact,
+            $target_id
+        ]);
         
         $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Usuário removido do sistema.']);
+        echo json_encode(['success' => true, 'message' => 'Usuário removido do sistema. Email e nome de usuário foram liberados para reutilização.']);
     } catch (PDOException $e) {
         $conn->rollBack();
         http_response_code(500);
-        echo json_encode(['error' => 'Erro ao remover usuário.']);
+        echo json_encode(['error' => 'Erro ao remover usuário: ' . $e->getMessage()]);
     }
     exit;
 }

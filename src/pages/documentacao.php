@@ -171,8 +171,8 @@ Password: x9y8z7w6v5u4t3s2r1q0p9o8
 💡 Protocolo: MQTT v3.1.1</code></pre>
 
                 <h5>Via API</h5>
-                <p>Você pode obter credenciais MQTT via API usando sua chave de API:</p>
-                <pre><code>GET /src/pages/get_mqtt_credentials.php
+                <p>Você pode obter credenciais MQTT via API usando sua chave de API. Por padrão, a senha não é retornada por questões de segurança. Para incluir a senha na resposta, é necessário passar o parâmetro <code>?reveal=true</code> na URL:</p>
+                <pre><code>GET /src/pages/get_mqtt_credentials.php?reveal=true
 
 Headers Requeridos:
 X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
@@ -184,31 +184,32 @@ X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
                   <p>A API Key é única e não-sequencial, prevenindo ataques de enumeração de recursos.</p>
                 </div>
                 
-                <p><strong>Resposta:</strong></p>
+                <p><strong>Resposta (com ?reveal=true):</strong></p>
                 <pre><code>{
   "mqtt_username": "mqdev_a1b2c3d4e5f6g7h8",
   "mqtt_password": "x9y8z7w6v5u4t3s2r1q0p9o8",
   "sync_status": "synchronized"
 }</code></pre>
+                <p><em>Nota: Se o parâmetro <code>?reveal=true</code> não for fornecido, a chave <code>mqtt_password</code> não será incluída no JSON retornado.</em></p>
                 
                 <p><strong>Exemplos de uso:</strong></p>
                 <pre><code><strong>cURL:</strong>
-curl -X GET https://ifsentral.online/src/pages/get_mqtt_credentials.php \
+curl -X GET "https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true" \
   -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
 
 <strong>JavaScript/Fetch:</strong>
-fetch('/src/pages/get_mqtt_credentials.php', {
+fetch('/src/pages/get_mqtt_credentials.php?reveal=true', {
   headers: {
     'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'
   }
 })
 .then(r => r.json())
-.then(data => console.log(data.mqtt_username));
+.then(data => console.log(data.mqtt_username, data.mqtt_password));
 
 <strong>Python:</strong>
 import requests
 response = requests.get(
-  'https://ifsentral.online/src/pages/get_mqtt_credentials.php',
+  'https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true',
   headers={'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'}
 )
 print(response.json())</code></pre>

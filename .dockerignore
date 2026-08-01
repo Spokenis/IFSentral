@@ -1,0 +1,7 @@
+.venv/
+.git/
+node_modules/
+vendor/
+logs/*.log
+!logs/.gitkeep
+

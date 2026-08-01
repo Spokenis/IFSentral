@@ -188,7 +188,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                         </div>
                                         
                                         <div class="form-group">
-                                            <label for="input-email">Email</label>
+                                            <label for="input-email">E-mail</label>
                                             <input type="email" class="form-control" id="input-email" placeholder="seu@email.com">
                                             <small class="form-text text-muted">Usado para login e notificações</small>
                                         </div>
