@@ -1,12 +1,13 @@
 <?php
 /**
  * API: Atualizar Perfil do Usuário
- * Permite atualizar nome, email e username
+ * Permite atualizar nome, e-mail e username
  */
 
 require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
@@ -48,13 +49,13 @@ try {
     
     if (empty($email)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Email é obrigatório']);
+        echo json_encode(['error' => 'E-mail é obrigatório']);
         exit;
     }
     
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Email inválido']);
+        echo json_encode(['error' => 'E-mail inválido']);
         exit;
     }
     
@@ -70,14 +71,14 @@ try {
         exit;
     }
     
-    // Verificar se email já existe (exceto o do próprio usuário)
+    // Verificar se e-mail já existe (exceto o do próprio usuário)
     $checkEmailSql = "SELECT id FROM users WHERE email = ? AND id != ? AND deletedAt IS NULL";
     $checkEmailStmt = $conn->prepare($checkEmailSql);
     $checkEmailStmt->execute([$email, $user_id]);
     
     if ($checkEmailStmt->fetch()) {
         http_response_code(409);
-        echo json_encode(['error' => 'Este email já está em uso por outro usuário']);
+        echo json_encode(['error' => 'Este e-mail já está em uso por outro usuário']);
         exit;
     }
     
@@ -100,7 +101,7 @@ try {
     $updateStmt = $conn->prepare($updateSql);
     $updateStmt->execute([$name, $email, $username, $user_id]);
     
-    // Atualizar sessão com novo email se necessário
+    // Atualizar sessão com novo e-mail se necessário
     $_SESSION['user_email'] = $email;
     
     http_response_code(200);
@@ -110,6 +111,5 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao atualizar perfil: ' . $e->getMessage()]);
+    api_error_response('Erro ao atualizar perfil', $e, 500);
 }

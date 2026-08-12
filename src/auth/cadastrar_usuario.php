@@ -4,6 +4,7 @@
 require_once '../config/config.php';
 require_once '../core/ServicoEmail.php'; // Incluindo a classe do carteiro
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -112,11 +113,11 @@ $emailFeaturesEnabled = defined('ENABLE_EMAIL_FEATURES') && ENABLE_EMAIL_FEATURE
         $conn->rollBack();
     }
 
-    http_response_code(500);
     if ($e->getCode() == '23000') {
-         echo json_encode(['error' => 'Erro: Email ou Nome de Usuário já existem.']);
+        http_response_code(409);
+        echo json_encode(['error' => 'Erro: E-mail ou Nome de Usuário já existem.']);
     } else {
-         echo json_encode(['error' => 'Erro ao salvar no banco: ' . $e->getMessage()]);
+        api_error_response('Erro ao salvar no banco', $e, 500);
     }
 }
 ?>

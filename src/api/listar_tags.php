@@ -3,6 +3,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 require '../config/db.php';
@@ -34,7 +35,6 @@ try {
     echo json_encode($tags_formatadas);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar tags: ' . $e->getMessage()]);
+    api_error_response('Erro ao buscar tags', $e, 500);
 }
 ?>

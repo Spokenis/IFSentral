@@ -1,0 +1,40 @@
+##########################################
+# IFSentral - Security headers and HTTPS
+##########################################
+# Ensure mod_rewrite and mod_headers are enabled in Apache for these rules to work.
+
+RewriteEngine On
+
+# Respect X-Forwarded-Proto (useful behind proxies/load-balancers)
+RewriteCond %{HTTPS} !=on
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+Options -Indexes
+
+<IfModule mod_headers.c>
+    # HSTS - only send after HTTPS is active; long max-age with preload
+    Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+
+    # Clickjacking protection
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Permissions/Feature policy (modern replacement for Feature-Policy)
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+    # Misc protections
+    Header always set X-Download-Options "noopen"
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+
+    # Content Security Policy - permissive for CDNs (Google Fonts, Cloudflare, JSDelivr)
+    Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; connect-src 'self' ws: wss:;"
+</IfModule>
+
+# If allowed, hide directory listings and disable execution in uploads by placing
+# a more restrictive .htaccess inside uploads/ (already added for uploads/profile)

@@ -10,6 +10,7 @@ require_once __DIR__ . '/../config/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -53,7 +54,6 @@ try {
         'user' => $user
     ]);
     
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao obter perfil: ' . $e->getMessage()]);
-}
+    } catch (PDOException $e) {
+        api_error_response('Erro ao obter perfil', $e, 500);
+    }

@@ -3,6 +3,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -128,8 +129,7 @@ try {
     echo json_encode(['message' => 'Convite aceito com sucesso!']);
     
 } catch (Exception $e) {
-    $conn->rollBack();
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao aceitar convite: ' . $e->getMessage()]);
+    if ($conn && $conn->inTransaction()) { $conn->rollBack(); }
+    api_error_response('Erro ao aceitar convite', $e, 500);
 }
 ?>

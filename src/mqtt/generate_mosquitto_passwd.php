@@ -64,7 +64,7 @@ try {
         echo "mosquitto_passwd /etc/mosquitto/passwd device_2\n";
         echo "(insira a senha para cada dispositivo)\n\n";
         
-        echo "❓ Alternativa: Usar hashes do banco directly:\n";
+        echo "❓ Alternativa: Usar hashes do banco diretamente:\n";
     }
     
     // Cria arquivo passwd com hashes do banco

@@ -27,6 +27,8 @@ RUN docker-php-ext-install pdo pdo_mysql
 
 # Habilita mod_rewrite
 RUN a2enmod rewrite
+# Habilita SSL e headers modules
+RUN a2enmod ssl headers
 
 WORKDIR /var/www/html
 
@@ -40,6 +42,11 @@ RUN chmod +x /usr/local/bin/wait-for-it.sh /usr/local/bin/docker-entrypoint.sh
 
 # Copia o restante do código
 COPY . /var/www/html/
+
+# Copy apache ssl vhost (if present in build context)
+COPY docker/apache/ifsentral-ssl.conf /etc/apache2/sites-available/ifsentral-ssl.conf
+RUN a2ensite ifsentral-ssl.conf || true
+RUN a2dissite 000-default.conf || true
 
 # Ajusta permissões
 RUN chown -R www-data:www-data /var/www/html

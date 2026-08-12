@@ -50,5 +50,4 @@ if (file_exists($log_file)) {
 
 header('Content-Type: application/json; charset=UTF-8');
 echo json_encode($response);
-?>
 

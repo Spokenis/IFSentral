@@ -1,0 +1,15 @@
+# Impede execução de arquivos PHP dentro de uploads/profile
+# Apache 2.4 syntax
+<IfModule mod_php7.c>
+    <FilesMatch "\.(php|phtml|php3|php4|php5|phar)$">
+        Require all denied
+    </FilesMatch>
+</IfModule>
+
+# Caso não esteja usando mod_php (CGI/FastCGI), igualmente desassocia handlers
+<IfModule mod_mime.c>
+    RemoveHandler .php .phtml .php3 .php4 .php5 .phar
+</IfModule>
+
+# Evita execução de CGI
+Options -ExecCGI

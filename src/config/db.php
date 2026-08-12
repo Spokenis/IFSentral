@@ -10,12 +10,12 @@ if (!defined('DB_HOST')) {
     }
 }
 
-// Prioriza variáveis de ambiente do Docker; usa as constantes como fallback
-$host = getenv('DB_HOST') ?: (defined('DB_HOST') ? DB_HOST : 'db');
-$dbname = getenv('DB_NAME') ?: (defined('DB_NAME') ? DB_NAME : 'ifsentral_bd');
-$user = getenv('DB_USER') ?: (defined('DB_USER') ? DB_USER : 'ifsentral_user');
-$pass = getenv('DB_PASS') !== false ? getenv('DB_PASS') : (defined('DB_PASS') ? DB_PASS : '');
-$env = getenv('APP_ENV') ?: (defined('APP_ENV') ? APP_ENV : 'development');
+// Prioriza variáveis do arquivo .env se ele existir, senão usa getenv (Docker)
+$host = (isset($_ENV['DB_HOST'])) ? $_ENV['DB_HOST'] : (getenv('DB_HOST') ?: (defined('DB_HOST') ? DB_HOST : 'db'));
+$dbname = (isset($_ENV['DB_NAME'])) ? $_ENV['DB_NAME'] : (getenv('DB_NAME') ?: (defined('DB_NAME') ? DB_NAME : 'ifsentral_bd'));
+$user = (isset($_ENV['DB_USER'])) ? $_ENV['DB_USER'] : (getenv('DB_USER') ?: (defined('DB_USER') ? DB_USER : 'ifsentral_user'));
+$pass = (isset($_ENV['DB_PASS'])) ? $_ENV['DB_PASS'] : (getenv('DB_PASS') !== false ? getenv('DB_PASS') : (defined('DB_PASS') ? DB_PASS : ''));
+$env = (isset($_ENV['APP_ENV'])) ? $_ENV['APP_ENV'] : (getenv('APP_ENV') ?: (defined('APP_ENV') ? APP_ENV : 'development'));
 
 try {
     $conn = new PDO(
@@ -28,8 +28,10 @@ try {
         ]
     );
 } catch(PDOException $e) {
-    http_response_code(500);
-    header('Content-Type: application/json; charset=UTF-8');
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json; charset=UTF-8');
+    }
     
     if ($env === 'production') {
         echo json_encode(['error' => 'Falha na conexão com o banco de dados.']);

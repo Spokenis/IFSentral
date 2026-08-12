@@ -4,6 +4,7 @@
 require_once '../config/config.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 use App\Core\AuthMiddleware;
 
@@ -76,8 +77,7 @@ try {
     echo json_encode(['message' => 'Projeto deletado com sucesso!']);
     
 } catch (Exception $e) {
-    $conn->rollBack();
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao deletar projeto: ' . $e->getMessage()]);
+    if ($conn && $conn->inTransaction()) { $conn->rollBack(); }
+    api_error_response('Erro ao deletar projeto', $e, 500);
 }
 ?>

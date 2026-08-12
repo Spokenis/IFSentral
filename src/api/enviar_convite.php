@@ -4,6 +4,7 @@
 require_once '../config/config.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 use App\Core\AuthMiddleware;
 
@@ -62,14 +63,14 @@ try {
         exit;
     }
     
-    // Verificar se o email é válido
+    // Verificar se o e-mail é válido
     if (!filter_var($invited_email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);
-        echo json_encode(['error' => 'Email inválido.']);
+        echo json_encode(['error' => 'E-mail inválido.']);
         exit;
     }
 
-    // Verificar se a permissao existe
+    // Verificar se a permissão existe
     $roleSql = "SELECT id FROM roles WHERE id = ?";
     $roleStmt = $conn->prepare($roleSql);
     $roleStmt->execute([$role_id]);
@@ -79,7 +80,7 @@ try {
         exit;
     }
     
-    // Verificar se o email já é membro do projeto
+    // Verificar se o e-mail já é membro do projeto
     $checkMemberSql = "
         SELECT 1 FROM users_projects up
         JOIN users u ON up.user_id = u.id
@@ -89,11 +90,11 @@ try {
     $checkMemberStmt->execute([$project_id, $invited_email]);
     if ($checkMemberStmt->rowCount() > 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'Este email já é membro do projeto.']);
+        echo json_encode(['error' => 'Este e-mail já é membro do projeto.']);
         exit;
     }
     
-    // Verificar se já existe convite pending para este email
+    // Verificar se já existe convite pendente para este e-mail
     $checkInviteSql = "
         SELECT id FROM invitations
         WHERE project_id = ? AND invited_email = ? AND status = 'pending'
@@ -102,11 +103,11 @@ try {
     $checkInviteStmt->execute([$project_id, $invited_email]);
     if ($checkInviteStmt->rowCount() > 0) {
         http_response_code(400);
-        echo json_encode(['error' => 'Já existe um convite pendente para este email.']);
+        echo json_encode(['error' => 'Já existe um convite pendente para este e-mail.']);
         exit;
     }
     
-    // Procurar o usuário por email
+    // Procurar o usuário por e-mail
     $findUserSql = "SELECT id FROM users WHERE email = ? AND deletedAt IS NULL";
     $findUserStmt = $conn->prepare($findUserSql);
     $findUserStmt->execute([$invited_email]);
@@ -147,7 +148,6 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao enviar convite: ' . $e->getMessage()]);
+    api_error_response('Erro ao enviar convite', $e, 500);
 }
 ?>

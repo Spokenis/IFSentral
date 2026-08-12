@@ -2,6 +2,7 @@
 // login_api.php
 
 require_once '../config/config.php';
+require_once '../core/ApiError.php';
 
 // Configura CORS seguro
 setupSecureCORS();
@@ -39,11 +40,11 @@ require '../config/db.php'; // Sua conexão com o banco
 // 2. Validação básica
 if (!isset($data->email) || !isset($data->password)) {
     http_response_code(400);
-    echo json_encode(['error' => 'Email e senha são obrigatórios.']);
+    echo json_encode(['error' => 'E-mail e senha são obrigatórios.']);
     exit;
 }
 
-// 3. Busca o usuário pelo email
+// 3. Busca o usuário pelo e-mail
 try {
     $sql = "SELECT id, username, email, password_hash 
             FROM users 
@@ -80,11 +81,10 @@ try {
     } else {
         // Falha no login (usuário não encontrado ou senha errada)
         http_response_code(401); // Unauthorized
-        echo json_encode(['error' => 'Email ou senha inválidos.']);
+        echo json_encode(['error' => 'E-mail ou senha inválidos.']);
     }
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro no servidor: ' . $e->getMessage()]);
+    api_error_response('Erro no servidor', $e, 500);
 }
 ?>

@@ -54,8 +54,9 @@ generate_mqtt_credentials() {
             cp /tmp/mqtt_creds.txt "$MQTT_PASSWD_FILE"
             rm -f /tmp/mqtt_creds.txt
         else
-            echo "[ENTRYPOINT] ERRO CRÍTICO: mosquitto_passwd não encontrado! Impossível gerar hash compatível."
-            exit 1
+            echo "[ENTRYPOINT] AVISO: mosquitto_passwd não encontrado. Pulando geração de hashes locais."
+            # Do not fail hard here to avoid container restart loops; operator should ensure
+            # mosquitto_passwd is available in the image or generate credentials externally.
         fi
 
         echo "[ENTRYPOINT] Credenciais MQTT criadas em $MQTT_PASSWD_FILE"
@@ -74,8 +75,9 @@ EOF
         echo "[ENTRYPOINT] ACL padrão criada em $MQTT_ACL_FILE"
     fi
 
-    chmod 644 "$MQTT_PASSWD_FILE" 2>/dev/null || true
-    chmod 644 "$MQTT_ACL_FILE" 2>/dev/null || true
+    # Match Mosquitto's strict requirements: avoid world-readable auth files
+    chmod 0700 "$MQTT_PASSWD_FILE" 2>/dev/null || true
+    chmod 0700 "$MQTT_ACL_FILE" 2>/dev/null || true
     chown 1883:1883 "$MQTT_PASSWD_FILE" 2>/dev/null || true
     chown 1883:1883 "$MQTT_ACL_FILE" 2>/dev/null || true
 

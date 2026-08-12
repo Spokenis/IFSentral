@@ -3,6 +3,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -107,8 +108,7 @@ try {
     echo json_encode(['message' => 'Convite recusado.']);
     
 } catch (Exception $e) {
-    $conn->rollBack();
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao recusar convite: ' . $e->getMessage()]);
+    if ($conn && $conn->inTransaction()) { $conn->rollBack(); }
+    api_error_response('Erro ao recusar convite', $e, 500);
 }
 ?>

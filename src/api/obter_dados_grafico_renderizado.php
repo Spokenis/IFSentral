@@ -6,6 +6,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -222,8 +223,7 @@ try {
     ]);
     exit;
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao obter gráfico: ' . $e->getMessage()]);
-}
+    } catch (PDOException $e) {
+        api_error_response('Erro ao obter gráfico', $e, 500);
+    }
 ?>

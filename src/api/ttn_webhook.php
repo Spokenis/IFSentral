@@ -7,6 +7,7 @@
 require_once '../config/config.php';
 require_once '../core/PayloadHandler.php';
 require_once '../core/RateLimiter.php';
+require_once '../core/ApiError.php';
 setupSecureCORS();
 
 use App\Core\PayloadHandler;
@@ -123,7 +124,6 @@ try {
     }
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao salvar payload: ' . $e->getMessage()]);
+    api_error_response('Erro ao salvar payload', $e, 500);
 }
 ?>

@@ -95,6 +95,7 @@ $rateLimiter = new RateLimiter($conn);
 
 try {
     // Configurações de conexão
+    mqtt_log('MQTT credentials: user=' . (MQTT_USERNAME ?: '(null)') . ' password_set=' . (MQTT_PASSWORD ? 'yes' : 'no'), 'DEBUG');
     $connectionSettings = new ConnectionSettings();
     $connectionSettings
         ->setKeepAliveInterval(MQTT_KEEP_ALIVE)

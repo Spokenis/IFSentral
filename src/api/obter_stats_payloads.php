@@ -3,6 +3,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 require '../config/db.php';
@@ -79,7 +80,6 @@ try {
     echo json_encode($result); 
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro no banco: ' . $e->getMessage()]);
+    api_error_response('Erro no banco', $e, 500);
 }
 ?>

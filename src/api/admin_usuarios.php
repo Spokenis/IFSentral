@@ -2,6 +2,7 @@
 // api/admin_usuarios.php
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 header("Content-Type: application/json; charset=UTF-8");
 require '../config/db.php';
 require '../auth/auth_check.php';
@@ -29,8 +30,7 @@ if ($method === 'GET') {
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
         echo json_encode($users);
     } catch (PDOException $e) {
-        http_response_code(500);
-        echo json_encode(['error' => 'Erro ao listar usuários: ' . $e->getMessage()]);
+        api_error_response('Erro ao listar usuários', $e, 500);
     }
     exit;
 }
@@ -78,7 +78,7 @@ if ($method === 'DELETE') {
     try {
         $conn->beginTransaction();
         
-        // Primeiro, obtém os dados atuais do usuário para modificar email e username
+        // Primeiro, obtém os dados atuais do usuário para modificar e-mail e username
         $stmtUser = $conn->prepare("SELECT email, username FROM users WHERE id = ? AND deletedAt IS NULL");
         $stmtUser->execute([$target_id]);
         $userData = $stmtUser->fetch(PDO::FETCH_ASSOC);
@@ -94,9 +94,9 @@ if ($method === 'DELETE') {
         $now = date('YmdHis');
         $dateCompact = date('Ymd');
         
-        // Modifica email e username anexando sufixo '-deleted-'/' -del-' + timestamp
+        // Modifica e-mail e username anexando sufixo '-deleted-'/' -del-' + timestamp
         // para liberar os valores originais e permitir re-registro com os mesmos dados
-        // Usa LEFT() para truncar dentro dos limites VARCHAR(50) para email e VARCHAR(20) para username
+        // Usa LEFT() para truncar dentro dos limites VARCHAR(50) para e-mail e VARCHAR(20) para username
         // evitando erro de estouro de tamanho de coluna
         $stmt = $conn->prepare("
             UPDATE users SET 
@@ -112,11 +112,10 @@ if ($method === 'DELETE') {
         ]);
         
         $conn->commit();
-        echo json_encode(['success' => true, 'message' => 'Usuário removido do sistema. Email e nome de usuário foram liberados para reutilização.']);
+        echo json_encode(['success' => true, 'message' => 'Usuário removido do sistema. E-mail e nome de usuário foram liberados para reutilização.']);
     } catch (PDOException $e) {
-        $conn->rollBack();
-        http_response_code(500);
-        echo json_encode(['error' => 'Erro ao remover usuário: ' . $e->getMessage()]);
+        if ($conn->inTransaction()) { $conn->rollBack(); }
+        api_error_response('Erro ao remover usuário', $e, 500);
     }
     exit;
 }

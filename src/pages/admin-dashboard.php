@@ -6,8 +6,12 @@ require '../config/db.php';
 $identifier = $_SESSION['user_id'] ?? $_SESSION['email'] ?? null;
 $column = isset($_SESSION['user_id']) ? 'id' : 'email';
 
-// Busca o perfil direto no banco de forma limpa
-$stmt = $conn->prepare("SELECT profile FROM users WHERE $column = ? AND deletedAt IS NULL");
+// Busca o perfil direto no banco de forma segura
+$allowed_columns = ['id', 'email'];
+$target_column = in_array($column, $allowed_columns) ? $column : 'id';
+
+$sql = "SELECT profile FROM users WHERE $target_column = ? AND deletedAt IS NULL";
+$stmt = $conn->prepare($sql);
 $stmt->execute([$identifier]);
 $profile_logado = $stmt->fetchColumn();
 

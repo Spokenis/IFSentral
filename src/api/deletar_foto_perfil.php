@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
@@ -62,9 +63,7 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao deletar foto de perfil: ' . $e->getMessage()]);
+    api_error_response('Erro ao deletar foto de perfil', $e, 500);
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro inesperado: ' . $e->getMessage()]);
+    api_error_response('Erro inesperado ao deletar foto de perfil', $e, 500);
 }
