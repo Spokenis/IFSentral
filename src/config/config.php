@@ -27,8 +27,15 @@ $default_config = [
     'MAIL_FROM_NAME' => 'IFSentral Smart Campus'
 ];
 
-// Carrega arquivo .env se existir (para ambientes fora do Docker ou overrides locais)
+// Carrega arquivo .env se existir (prioriza src/config/.env, senão tenta o .env da raiz)
 $env_file = __DIR__ . '/.env';
+if (!file_exists($env_file)) {
+    $root_env = dirname(__DIR__, 2) . '/.env';
+    if (file_exists($root_env)) {
+        $env_file = $root_env;
+    }
+}
+
 if (file_exists($env_file)) {
     $lines = file($env_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
     foreach ($lines as $line) {
@@ -129,6 +136,7 @@ function setupSecureCORS() {
         
         if (in_array($requestOrigin, $allowedOrigins)) {
             header("Access-Control-Allow-Origin: " . $requestOrigin);
+            header("Vary: Origin");
         }
     }
     

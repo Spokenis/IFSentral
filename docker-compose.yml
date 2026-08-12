@@ -6,8 +6,11 @@ services:
   web:
     build: .
     container_name: ifsentral_web
+    # In production on the intranet bind to 80/443. For local testing you can
+    # change to a different host port (e.g. 8080:80).
     ports:
-      - "8080:80"
+      - "${HOST_HTTP_PORT:-8080}:80"
+      - "${HOST_HTTPS_PORT:-8443}:443"
     environment:
       - ROLE=web
       - DB_HOST=${DB_HOST:-db}
@@ -21,6 +24,11 @@ services:
     volumes:
       - ./logs:/var/www/html/logs
       - ./uploads:/var/www/html/uploads
+      # Mount host-managed config and certs (read-only) so TLS and secrets
+      # live outside the image. Ensure /etc/ifsentral and cert paths exist on host (run ./setup-ssl.sh).
+      - /etc/ifsentral:/etc/ifsentral:ro
+      - /etc/ssl/certs/ifsentral-chain.crt:/etc/ssl/certs/ifsentral-chain.crt:ro
+      - /etc/ssl/private/ifsentral.key:/etc/ssl/private/ifsentral.key:ro
       - mqtt_config:/mosquitto/config
     depends_on:
       db:
@@ -46,6 +54,7 @@ services:
     volumes:
       - ./logs:/var/www/html/logs
       - mqtt_config:/mosquitto/config
+      - /etc/ifsentral:/etc/ifsentral:ro
     depends_on:
       db:
         condition: service_healthy
@@ -91,11 +100,11 @@ services:
       - mqtt_config:/mosquitto/config
       - mqtt_data:/mosquitto/data
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 240s
+      start_period: 10s
     restart: unless-stopped
 
 volumes:
