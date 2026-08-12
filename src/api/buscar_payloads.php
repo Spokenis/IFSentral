@@ -2,6 +2,7 @@
 // buscar_payloads.php (Corrigido com PDO::PARAM_INT)
 
 require_once '../config/config.php';
+require_once '../core/ApiError.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
 
@@ -103,7 +104,6 @@ try {
     echo json_encode($payloads_formatados);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar payloads: ' . $e->getMessage()]);
+    api_error_response('Erro ao buscar payloads', $e, 500);
 }
 ?>

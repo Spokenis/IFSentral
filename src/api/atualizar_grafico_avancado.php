@@ -4,6 +4,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -157,12 +158,7 @@ try {
     echo json_encode(['message' => 'Gráfico atualizado com sucesso!']);
 
 } catch (PDOException $e) {
-    $conn->rollBack();
-    http_response_code(500);
-    if (APP_ENV === 'production') {
-        echo json_encode(['error' => 'Erro ao atualizar gráfico.']);
-    } else {
-        echo json_encode(['error' => 'Erro: ' . $e->getMessage()]);
-    }
+    if ($conn && $conn->inTransaction()) { $conn->rollBack(); }
+    api_error_response('Erro ao atualizar gráfico', $e, 500);
 }
 ?>

@@ -7,6 +7,7 @@
 require_once '../config/config.php';
 require_once '../core/PayloadHandler.php';
 require_once '../core/RateLimiter.php';
+require_once '../core/ApiError.php';
 setupSecureCORS();
 
 use App\Core\PayloadHandler;
@@ -48,8 +49,25 @@ if ($api_key === null) {
     exit;
 }
 
+// ===== PROTEÇÃO DoS: Leitura e validação de tamanho =====
+$rawData = file_get_contents("php://input");
+
+// Limite de 8KB para o TTN devido ao volume de metadados da rede LoRaWAN
+if (strlen($rawData) > 8192) {
+    http_response_code(413); // Payload Too Large
+    echo json_encode(['error' => 'O payload excede o tamanho máximo permitido (8KB).']);
+    exit;
+}
+
 // Parse do JSON enviado pelo TTN
-$data = json_decode(file_get_contents("php://input"));
+$data = json_decode($rawData);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    http_response_code(400);
+    echo json_encode(['error' => 'JSON inválido ou malformado.']);
+    exit;
+}
+// =========================================================
 
 if (!isset($data->uplink_message) || !isset($data->uplink_message->decoded_payload)) {
     http_response_code(400);
@@ -106,7 +124,6 @@ try {
     }
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao salvar payload: ' . $e->getMessage()]);
+    api_error_response('Erro ao salvar payload', $e, 500);
 }
 ?>

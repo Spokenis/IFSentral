@@ -17,13 +17,11 @@ class PayloadHandler
 
     /**
      * Salva um payload de dispositivo no banco
-     * 
-     * @param int $device_id ID do dispositivo
+     * * @param int $device_id ID do dispositivo
      * @param string $api_key Chave de API do dispositivo
      * @param array|object $payload_data Dados do payload
      * @param string $source Fonte do payload ('http', 'mqtt', 'ttn')
-     * 
-     * @return array ['success' => bool, 'message' => string, 'id' => int|null]
+     * * @return array ['success' => bool, 'message' => string, 'id' => int|null]
      */
     public function savePayload($device_id, $api_key, $payload_data, $source = 'http')
     {
@@ -100,30 +98,74 @@ class PayloadHandler
 
     /**
      * Valida um payload antes de salvar
-     * Pode ser estendido com regras customizadas por tipo de dispositivo
-     * 
-     * @param array $payload_data
-     * @param int $device_id
-     * 
+     * Permite aninhamentos, mas impõe limites de profundidade e quantidade total de chaves
+     * * @param array|object $payload_data
+     * @param int|null $device_id
      * @return array ['valid' => bool, 'errors' => array]
      */
     public function validatePayload($payload_data, $device_id = null)
     {
         $errors = [];
 
-        // Validações básicas
         if (!is_array($payload_data) && !is_object($payload_data)) {
-            $errors[] = 'Payload deve ser um array ou objeto';
+            $errors[] = 'Payload deve ser um array ou objeto JSON válido.';
+            return ['valid' => false, 'errors' => $errors];
         }
 
-        if (empty($payload_data)) {
-            $errors[] = 'Payload não pode estar vazio';
+        $payload_array = (array) $payload_data;
+
+        if (empty($payload_array)) {
+            $errors[] = 'Payload não pode estar vazio.';
+            return ['valid' => false, 'errors' => $errors];
+        }
+
+        // Contador de chaves por referência para a validação recursiva
+        $keyCount = 0;
+        $structureError = $this->checkStructure($payload_array, $keyCount);
+
+        if ($structureError) {
+            $errors[] = $structureError;
         }
 
         return [
             'valid' => empty($errors),
             'errors' => $errors
         ];
+    }
+
+    /**
+     * Validação recursiva da estrutura do JSON
+     */
+    private function checkStructure($data, &$keyCount, $depth = 0) 
+    {
+        // Limite de 5 níveis de aninhamento (evita complexidade excessiva no parsing futuro)
+        if ($depth > 5) {
+            return "O payload excede a profundidade máxima de aninhamento permitida (5 níveis).";
+        }
+
+        // Limite de 50 chaves/nós no total do JSON
+        if ($keyCount > 50) {
+            return "O payload contém um número excessivo de chaves (máximo 50 no total).";
+        }
+
+        foreach ($data as $key => $value) {
+            $keyCount++;
+            
+            if (is_string($key) && strlen($key) > 40) {
+                return "A chave '$key' excede o limite de 40 caracteres.";
+            }
+            
+            if (is_string($value) && strlen($value) > 255) {
+                return "O valor associado à chave '$key' é muito longo (máximo de 255 caracteres).";
+            }
+            
+            if (is_array($value) || is_object($value)) {
+                $error = $this->checkStructure((array)$value, $keyCount, $depth + 1);
+                if ($error) return $error;
+            }
+        }
+        
+        return null;
     }
 }
 ?>

@@ -12,6 +12,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../core/AuthMiddleware.php';
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 use App\Core\AuthMiddleware;
 
@@ -93,8 +94,7 @@ try {
         'message' => 'Participante promovido a gerente com sucesso.'
     ]);
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao promover participante: ' . $e->getMessage()]);
-}
+    } catch (PDOException $e) {
+        api_error_response('Erro ao promover participante', $e, 500);
+    }
 ?>

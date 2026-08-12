@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bem-vindo ao IFSentral</title>
+  <title>Bem-vindo ao IFSentral - Hub IoT para Smart Campus</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -31,7 +31,7 @@
     .badge-warning { color: #212529 !important; }
     #status-msg { margin-top: 15px; }
     
-    /* IFSC Theme Colors */
+    /* Theme Colors */
     .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
       background-color: var(--ifsc-primary) !important;
       border-color: var(--ifsc-primary) !important;
@@ -91,10 +91,10 @@
     
     <div class="hero-section">
       <div class="container">
-        <h1 class="display-4">A Plataforma Colaborativa de Sensores do IFSC</h1>
-        <p class="lead">Centralize, analise e compartilhe dados de sensores de forma simples e eficiente.</p>
-        <a href="../auth/register.html" class="btn btn-primary btn-lg mt-3">Comece a Usar Agora</a>
-        <a href="../auth/login.html" class="btn btn-outline-secondary btn-lg mt-3">Já Tenho uma Conta</a>
+        <h1 class="display-4">O Hub de Dados do seu Smart Campus</h1>
+        <p class="lead">Centralize a coleta, o armazenamento e a distribuição de informações de qualquer sensor IoT em uma infraestrutura única e confiável.</p>
+        <a href="../auth/register.html" class="btn btn-primary btn-lg mt-3">Comece a Integrar</a>
+        <a href="../auth/login.html" class="btn btn-outline-secondary btn-lg mt-3">Acessar a Plataforma</a>
       </div>
     </div>
     
@@ -104,30 +104,30 @@
         <div class="row text-center py-5">
           <div class="col-lg-12">
             <h2>O Que é o IFSentral?</h2>
-            <p class="lead">Uma iniciativa para fomentar a pesquisa e a colaboração no IFSC - Campus Itajaí.</p>
+            <p class="lead">Uma plataforma de infraestrutura projetada para unificar as medições de dispositivos conectados e sustentar o desenvolvimento de um campus inteligente.</p>
           </div>
           <div class="col-lg-4">
             <i class="fas fa-microchip feature-icon mb-3"></i>
-            <h3>Colete Dados</h3>
-            <p>Envie dados dos seus sensores para a nossa nuvem de forma segura através de uma API simples de usar.</p>
+            <h3>Compatibilidade Universal</h3>
+            <p>Conecte qualquer tipo de sensor. Seja para monitorar fluxo de pessoas, temperatura ou consumo energético, nossa arquitetura está pronta para receber dados de diversas fontes.</p>
           </div>
           <div class="col-lg-4">
-            <i class="fas fa-users feature-icon mb-3"></i>
-            <h3>Colabore em Projetos</h3>
-            <p>Crie projetos, convide colegas e gerencie participantes. Trabalhe em equipe para alcançar seus objetivos.</p>
+            <i class="fas fa-server feature-icon mb-3"></i>
+            <h3>Núcleo Centralizado</h3>
+            <p>Elimine silos de informação. A plataforma funciona como o coração tecnológico do campus, garantindo um histórico seguro e disponibilizando os dados facilmente via API.</p>
           </div>
           <div class="col-lg-4">
-            <i class="fas fa-chart-line feature-icon mb-3"></i>
-            <h3>Analise e Compartilhe</h3>
-            <p>Visualize seus dados em gráficos, analise informações e compartilhe suas descobertas com a comunidade.</p>
+            <i class="fas fa-layer-group feature-icon mb-3"></i>
+            <h3>Gestão Estruturada</h3>
+            <p>Organize seus fluxos de informação agrupando os dispositivos por escopo de pesquisa ou setor, facilitando a governança e o acesso das equipes aos dados necessários.</p>
           </div>
         </div>
         <hr>
 
         <div class="row py-5">
           <div class="col-lg-12 text-center">
-            <h2>Projetos em Destaque</h2>
-            <p class="lead">Conheça algumas das pesquisas em andamento na nossa plataforma.</p>
+            <h2>Iniciativas Integradas</h2>
+            <p class="lead">Explore os agrupamentos de sensores e projetos que já utilizam nosso hub para o monitoramento do campus.</p>
           </div>
 
           <div class="row" id="project-list-container">
@@ -142,7 +142,7 @@
   </div>
 
   <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2025 <a href="#">IFSentral</a>.</strong> Todos os direitos reservados.
+    <strong>Copyright &copy; 2024-2026 <a href="#">IFSentral</a>.</strong> Todos os direitos reservados.
   </footer>
 
 </div>
@@ -157,12 +157,10 @@
     const container = document.getElementById('project-list-container');
     const statusMsg = document.getElementById('status-msg');
 
-    // Função para criar o card (igual à de 'explorar-projetos.php')
     function criarCardProjeto(proj) {
         
         const gerente = proj.manager_name;
         
-        // Lógica das Tags
         let tagsHtml = '';
         if (proj.project_tags) { 
             const tagsArray = proj.project_tags.split(',');
@@ -175,8 +173,7 @@
             tagsHtml = '<span class="badge badge-secondary">Sem tags</span>';
         }
         
-        // Botão "Saiba Mais" que leva ao registro
-        const botao = '<a href="../auth/register.html" class="btn btn-primary btn-block">Saiba Mais</a>';
+        const botao = '<a href="../auth/register.html" class="btn btn-primary btn-block">Acessar Dados</a>';
 
         return `
         <div class="col-md-6 col-lg-4 mb-4">
@@ -199,20 +196,18 @@
         `;
     }
 
-    // Função para carregar os projetos
     async function carregarProjetos() {
         container.innerHTML = '';
         statusMsg.innerHTML = 'Carregando projetos...';
         statusMsg.style.display = 'block';
 
         try {
-            // Não precisa de 'credentials: include' pois é uma API pública
             const response = await fetch(API_URL_LISTAR); 
             const projetosPublicos = await safeJson(response);
             if (projetosPublicos.error) throw new Error(projetosPublicos.error);
             
             if (projetosPublicos.length === 0) {
-                statusMsg.innerHTML = 'Nenhum projeto público encontrado no momento.';
+                statusMsg.innerHTML = 'Nenhuma iniciativa pública encontrada no momento.';
                 return;
             }
 

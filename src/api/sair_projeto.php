@@ -11,6 +11,7 @@
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../core/AuthMiddleware.php';
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 use App\Core\AuthMiddleware;
 
@@ -89,7 +90,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao sair do projeto: ' . $e->getMessage()]);
+    api_error_response('Erro ao sair do projeto', $e, 500);
 }
 ?>

@@ -4,6 +4,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once __DIR__ . '/../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -95,22 +96,34 @@ try {
         'datasets' => []
     ];
     
-    foreach ($datasets as $dataset) {
-        // Construir query com filtro de data
+foreach ($datasets as $dataset) {
+        $var_name = $dataset['variable_name'];
+        
+        // 1. Validação de segurança (evita injeção no path do JSON)
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $var_name)) {
+            continue; // Ignora variáveis com caracteres suspeitos
+        }
+
+        // 2. Construção da query com delegação do JSON_EXTRACT para o banco
         $data_sql = "
             SELECT 
-                dp.created_at,
-                dp.payload
+                dp.created_at AS x,
+                JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) AS y
             FROM 
                 device_payloads dp
             WHERE 
                 dp.device_id = ?
+                AND JSON_EXTRACT(dp.payload, CONCAT('$.', ?)) IS NOT NULL
         ";
         
-        $conditions = [];
-        $params = [$dataset['device_id']];
+        // Os parâmetros precisam bater na ordem dos placeholders (?)
+        $params = [
+            $var_name,              // Para a coluna 'y'
+            $dataset['device_id'],  // Para o filtro de dispositivo
+            $var_name               // Para checar se a chave existe no payload
+        ];
         
-        // Filtro de data
+        // 3. Filtros de data
         if ($date_start) {
             $data_sql .= " AND dp.created_at >= ?";
             $params[] = $date_start;
@@ -124,20 +137,15 @@ try {
         
         $data_stmt = $conn->prepare($data_sql);
         $data_stmt->execute($params);
-        $payloads = $data_stmt->fetchAll(PDO::FETCH_ASSOC);
         
-        // Processar dados para extrair variável específica
-        $data_points = [];
-        foreach ($payloads as $payload) {
-            $payload_obj = json_decode($payload['payload'], true);
-            
-            if (isset($payload_obj[$dataset['variable_name']])) {
-                $data_points[] = [
-                    'x' => $payload['created_at'],
-                    'y' => $payload_obj[$dataset['variable_name']]
-                ];
-            }
+        // O fetchAll já retorna os arrays estruturados ['x' => ..., 'y' => ...]
+        $data_points = $data_stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // 4. Casting rápido para numérico no PHP, garantindo a tipagem correta para o frontend
+        foreach ($data_points as &$point) {
+            $point['y'] = is_numeric($point['y']) ? (float)$point['y'] : $point['y'];
         }
+        unset($point); // Quebra a referência
         
         $result['datasets'][] = [
             'id' => $dataset['id'],
@@ -155,11 +163,6 @@ try {
     echo json_encode($result);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    if (APP_ENV === 'production') {
-        echo json_encode(['error' => 'Erro ao buscar dados.']);
-    } else {
-        echo json_encode(['error' => 'Erro: ' . $e->getMessage()]);
-    }
+    api_error_response('Erro ao buscar dados do gráfico', $e, 500);
 }
 ?>

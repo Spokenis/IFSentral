@@ -2,20 +2,16 @@
 /**
  * get_mqtt_credentials.php
  * Retorna credenciais MQTT do dispositivo
- * 
- * SEGURO: Usa API Key como identificador (não sequencial)
- * 
- * Headers Requeridos:
+ * * SEGURO: Usa API Key como identificador (não sequencial)
+ * * Headers Requeridos:
  * X-Api-Key: sua_api_key_aqui
- * 
- * Retorna:
+ * * Retorna:
  * {
- *   "mqtt_username": "mqdev_abc123...",
- *   "mqtt_password": "random24chars",
- *   "sync_status": "synchronized"
+ * "mqtt_username": "mqdev_abc123...",
+ * "sync_status": "synchronized"
+ * // "mqtt_password": "..." (Apenas se ?reveal=true for passado)
  * }
- * 
- * ⚠️ A senha é armazenada em plain text APENAS no arquivo de backup (chmod 600)
+ * * ⚠️ A senha é armazenada em plain text APENAS no arquivo de backup (chmod 600)
  * ⚠️ Segurança: Usa API Key (não sequencial) para evitar enumeração de recursos
  */
 
@@ -111,10 +107,14 @@ try {
             if (file_exists($backup_file) && is_readable($backup_file)) {
                 $backup_contents = file_get_contents($backup_file);
                 
-                // Procura pelo padrão: MQTT Username: {username}\nMQTT Password: {password}
-                $pattern = '/MQTT Username:\s*' . preg_quote($mqtt_creds['mqtt_username'], '/') . '\s*\nMQTT Password:\s*(\S+)/m';
+                // Regex mais tolerante:
+                // 1. (?i) faz case-insensitive
+                // 2. \s* captura qualquer espaço ou tabulação
+                // 3. [\r\n]+ garante que pegamos a quebra de linha independente do SO
+                $pattern = '/Username:\s*' . preg_quote($mqtt_creds['mqtt_username'], '/') . '\s*[\r\n]+Password:\s*(\S+)/i';
+                
                 if (preg_match($pattern, $backup_contents, $matches)) {
-                    $mqtt_password = $matches[1];
+                    $mqtt_password = trim($matches[1]);
                     
                     // Atualiza o BD para não precisar ler arquivo novamente
                     try {
@@ -122,7 +122,7 @@ try {
                         $update_stmt = $conn->prepare($update_sql);
                         $update_stmt->execute([$mqtt_password, $device_id]);
                     } catch (Exception $e) {
-                        // Ignora erro de atualização
+                        // Logar erro se necessário
                     }
                     
                     break;
@@ -145,11 +145,19 @@ try {
     }
     
     // ===== RESPOSTA COM SUCESSO =====
-    echo json_encode([
+    $revealPassword = isset($_GET['reveal']) && $_GET['reveal'] === 'true';
+
+    $responsePayload = [
         'mqtt_username' => $mqtt_creds['mqtt_username'],
-        'mqtt_password' => $mqtt_creds['mqtt_password'],
         'sync_status' => 'synchronized'
-    ]);
+    ];
+
+    // A senha só é incluída se explicitamente solicitado
+    if ($revealPassword) {
+        $responsePayload['mqtt_password'] = $mqtt_creds['mqtt_password'];
+    }
+
+    echo json_encode($responsePayload);
 
 } catch (PDOException $e) {
     http_response_code(500);

@@ -4,6 +4,7 @@
 require_once '../config/config.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 use App\Core\AuthMiddleware;
 
@@ -66,8 +67,7 @@ try {
     
     echo json_encode($results);
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar participantes: ' . $e->getMessage()]);
-}
+    } catch (PDOException $e) {
+        api_error_response('Erro ao buscar participantes', $e, 500);
+    }
 ?>

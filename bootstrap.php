@@ -65,4 +65,12 @@ function autoload_class($class) {
 }
 
 spl_autoload_register('autoload_class');
+// Security headers fallback (PHP-level) - requires src/core/SecurityHeaders.php
+if (file_exists(SRC_DIR . '/core/SecurityHeaders.php')) {
+    require_once SRC_DIR . '/core/SecurityHeaders.php';
+    // Try to send headers and enforce HTTPS when appropriate
+    if (function_exists('send_security_headers')) {
+        send_security_headers(true);
+    }
+}
 ?>

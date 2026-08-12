@@ -10,7 +10,19 @@ $project_id_from_url = intval($_GET['id']);
 
 // Verificar se o projeto é público
 try {
-    $sql = "SELECT id, name, description, `public` FROM projects WHERE id = ? AND deletedAt IS NULL";
+    $sql = "
+        SELECT 
+            p.id, 
+            p.name, 
+            p.description, 
+            p.`public`,
+            GROUP_CONCAT(t.name SEPARATOR ',') AS project_tags
+        FROM projects p
+        LEFT JOIN project_tags pt ON p.id = pt.project_id
+        LEFT JOIN tags t ON pt.tag_id = t.id
+        WHERE p.id = ? AND p.deletedAt IS NULL
+        GROUP BY p.id, p.name, p.description, p.`public`
+    ";
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url]);
     $project = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -28,6 +40,20 @@ try {
 } catch (Exception $e) {
     header('Location: explorar_projetos.php');
     exit;
+}
+
+// --- Lógica para montar o HTML das Tags ---
+$tagsHtml = '';
+if (!empty($project['project_tags'])) {
+    $tagsArray = array_filter(array_map('trim', explode(',', $project['project_tags'])));
+    $cores = ['primary', 'info', 'success', 'warning', 'danger'];
+
+    foreach (array_values($tagsArray) as $index => $tag) {
+        $cor = $cores[$index % count($cores)];
+        $tagsHtml .= '<span class="badge badge-' . $cor . ' mr-1">' . htmlspecialchars($tag) . '</span> ';
+    }
+} else {
+    $tagsHtml = '<span class="text-muted">(Sem tags)</span>';
 }
 ?>
 <!DOCTYPE html>
@@ -96,38 +122,7 @@ try {
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link">Meus Projetos</a></li>
-          <li class="nav-item"><a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="documentacao.php" class="nav-link">Documentação da API</a></li>
-        </ul>
-      </div>
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link navbar-user-avatar" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($username_logado); ?></span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="perfil.php" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -135,8 +130,9 @@ try {
         <div class="row mb-2">
           <div class="col-sm-12">
             <h1><?php echo htmlspecialchars($project['name']); ?></h1>
-            <span id="project-tags-container"></span>
+            <span id="project-tags-container"><?php echo $tagsHtml; ?></span>
             <p class="text-muted mt-2">
+
               <i class="fas fa-globe mr-1"></i>Projeto Público | 
               <a href="explorar_projetos.php">Voltar para Explorar Projetos</a>
             </p>
@@ -163,8 +159,9 @@ try {
                   </div>
                   <div class="col-md-4">
                     <p><strong>Tags:</strong></p>
-                    <div id="tags-container" style="margin-top: 10px;">Carregando...</div>
+                    <div id="tags-container" style="margin-top: 10px;"><?php echo $tagsHtml; ?></div>
                     <p class="mt-3"><strong>Gerente:</strong> <span id="gerente-nome">Carregando...</span></p>
+
                   </div>
                 </div>
               </div>
@@ -214,9 +211,7 @@ try {
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2026 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-  </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 
@@ -236,8 +231,8 @@ try {
 <script>
 $(function() {
     // APIs
-    const API_LISTAR_TAGS = `../api/listar_tags.php?project_id=${PROJECT_ID}`;
     const API_LISTAR_GRAFICOS = `listar_graficos.php?project_id=${PROJECT_ID}`;
+
     const API_OBTER_DADOS_GRAFICO = '../api/obter_dados_grafico_renderizado.php';
     const API_LISTAR_PARTICIPANTES = `../api/listar_participantes.php?project_id=${PROJECT_ID}`;
     const API_ENVIAR_SOLICITACAO = '../api/enviar_solicitacao_participacao.php';
@@ -246,35 +241,8 @@ $(function() {
     let isUserParticipant = false;
     let projectInfo = {};
     
-    // Carregar tags do projeto
-    async function carregarTags() {
-        try {
-            const response = await fetch(API_LISTAR_TAGS, { credentials: 'include' });
-            const tags = await safeJson(response);
-            
-            const tagsContainer = document.getElementById('tags-container');
-            const projectTagsContainer = document.getElementById('project-tags-container');
-            
-            if (tags && tags.length > 0) {
-                const colors = ['primary', 'info', 'success', 'warning', 'danger'];
-                let htmlTags = '';
-                tags.forEach((tag, index) => {
-                    const color = colors[index % colors.length];
-                    htmlTags += `<span class="badge badge-${color} mr-1">${tag.name}</span> `;
-                });
-                tagsContainer.innerHTML = htmlTags;
-                projectTagsContainer.innerHTML = htmlTags;
-            } else {
-                tagsContainer.innerHTML = '<span class="badge badge-secondary">Sem tags</span>';
-                projectTagsContainer.innerHTML = '';
-            }
-        } catch (error) {
-            console.error('Erro ao carregar tags:', error);
-            document.getElementById('tags-container').innerHTML = '<span class="text-danger">Erro ao carregar tags</span>';
-        }
-    }
-    
     // Carregar gerente do projeto
+
     async function carregarGerente() {
         try {
             const response = await fetch(API_LISTAR_PARTICIPANTES, { credentials: 'include' });
@@ -576,8 +544,8 @@ $(function() {
     }
     
     // Inicialização
-    carregarTags();
     carregarGerente();
+
     carregarInfoParticipacao();
     carregarGraficosPublicos();
 });

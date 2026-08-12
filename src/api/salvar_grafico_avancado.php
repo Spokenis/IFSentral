@@ -4,6 +4,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -169,12 +170,7 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    $conn->rollBack();
-    http_response_code(500);
-    if (APP_ENV === 'production') {
-        echo json_encode(['error' => 'Erro ao salvar gráfico.']);
-    } else {
-        echo json_encode(['error' => 'Erro ao salvar: ' . $e->getMessage()]);
-    }
+    if ($conn && $conn->inTransaction()) { $conn->rollBack(); }
+    api_error_response('Erro ao salvar gráfico', $e, 500);
 }
 ?>

@@ -7,6 +7,7 @@
 require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
@@ -57,16 +58,32 @@ try {
         exit;
     }
     
-    // Validar tipo de arquivo
-    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
-    $fileType = mime_content_type($file['tmp_name']);
-    
-    if (!in_array($fileType, $allowedTypes)) {
+    // Validar tipo de arquivo (finfo + getimagesize para maior robustez)
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $fileType = $finfo ? finfo_file($finfo, $file['tmp_name']) : mime_content_type($file['tmp_name']);
+    if ($finfo) { finfo_close($finfo); }
+
+    $allowedTypes = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/gif' => 'gif',
+        'image/webp' => 'webp'
+    ];
+
+    if (!isset($allowedTypes[$fileType])) {
         http_response_code(400);
         echo json_encode(['error' => 'Tipo de arquivo não permitido. Use JPG, PNG, GIF ou WEBP']);
         exit;
     }
-    
+
+    // Verifica se arquivo é realmente uma imagem
+    $imageInfo = @getimagesize($file['tmp_name']);
+    if ($imageInfo === false) {
+        http_response_code(400);
+        echo json_encode(['error' => 'O arquivo enviado não é uma imagem válida.']);
+        exit;
+    }
+
     // Validar tamanho do arquivo (máximo 5MB)
     $maxFileSize = 5 * 1024 * 1024; // 5MB em bytes
     if ($file['size'] > $maxFileSize) {
@@ -81,8 +98,8 @@ try {
         mkdir($uploadDir, 0755, true);
     }
     
-    // Gerar nome único para o arquivo
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    // Gerar nome único para o arquivo usando extensão derivada do mime type
+    $extension = $allowedTypes[$fileType];
     $fileName = 'user_' . $user_id . '_' . time() . '.' . $extension;
     $filePath = $uploadDir . $fileName;
     
@@ -92,12 +109,15 @@ try {
     $stmtOldPhoto->execute([$user_id]);
     $oldPhoto = $stmtOldPhoto->fetchColumn();
     
-    // Mover arquivo para o diretório de destino
-    if (!move_uploaded_file($file['tmp_name'], $filePath)) {
+    // Garante que o arquivo foi enviado via POST e move para o diretório de destino
+    if (!is_uploaded_file($file['tmp_name']) || !move_uploaded_file($file['tmp_name'], $filePath)) {
         http_response_code(500);
         echo json_encode(['error' => 'Erro ao salvar o arquivo']);
         exit;
     }
+
+    // Ajusta permissões para evitar execução
+    @chmod($filePath, 0644);
     
     // Caminho relativo para salvar no banco
     $relativePath = 'uploads/profile/' . $fileName;
@@ -129,9 +149,7 @@ try {
     ]);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao atualizar foto de perfil: ' . $e->getMessage()]);
+    api_error_response('Erro ao atualizar foto de perfil', $e, 500);
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro inesperado: ' . $e->getMessage()]);
+    api_error_response('Erro inesperado ao atualizar foto de perfil', $e, 500);
 }

@@ -73,38 +73,7 @@ require '../auth/auth_check.php';
 <body class="hold-transition layout-top-nav">
 <div class="wrapper">
 
-  <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
-    <div class="container">
-      <a href="index.html" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSentral</span>
-      </a>
-      <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse order-3" id="navbarCollapse">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a href="meus-projetos.php" class="nav-link">Meus Projetos</a></li>
-          <li class="nav-item"><a href="explorar_projetos.php" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="documentacao.php" class="nav-link active">Documentação da API</a></li>
-        </ul>
-      </div>
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
-        <li class="nav-item dropdown">
-          <a class="nav-link navbar-user-avatar" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle"></i>
-            <span><?php echo htmlspecialchars($username_logado); ?></span>
-          </a>
-          <div class="dropdown-menu dropdown-menu-right">
-            <a href="#" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="meus-dispositivos.php" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="configuracoes.php" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
-            <div class="dropdown-divider"></div>
-            <a href="logout_api.php" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </nav>
+  <?php require_once __DIR__ . '/../includes/header.php'; ?>
   
   <div class="content-wrapper">
     <section class="content-header">
@@ -202,8 +171,8 @@ Password: x9y8z7w6v5u4t3s2r1q0p9o8
 💡 Protocolo: MQTT v3.1.1</code></pre>
 
                 <h5>Via API</h5>
-                <p>Você pode obter credenciais MQTT via API usando sua chave de API:</p>
-                <pre><code>GET /src/pages/get_mqtt_credentials.php
+                <p>Você pode obter credenciais MQTT via API usando sua chave de API. Por padrão, a senha não é retornada por questões de segurança. Para incluir a senha na resposta, é necessário passar o parâmetro <code>?reveal=true</code> na URL:</p>
+                <pre><code>GET /src/pages/get_mqtt_credentials.php?reveal=true
 
 Headers Requeridos:
 X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
@@ -215,31 +184,32 @@ X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
                   <p>A API Key é única e não-sequencial, prevenindo ataques de enumeração de recursos.</p>
                 </div>
                 
-                <p><strong>Resposta:</strong></p>
+                <p><strong>Resposta (com ?reveal=true):</strong></p>
                 <pre><code>{
   "mqtt_username": "mqdev_a1b2c3d4e5f6g7h8",
   "mqtt_password": "x9y8z7w6v5u4t3s2r1q0p9o8",
   "sync_status": "synchronized"
 }</code></pre>
+                <p><em>Nota: Se o parâmetro <code>?reveal=true</code> não for fornecido, a chave <code>mqtt_password</code> não será incluída no JSON retornado.</em></p>
                 
                 <p><strong>Exemplos de uso:</strong></p>
                 <pre><code><strong>cURL:</strong>
-curl -X GET https://ifsentral.online/src/pages/get_mqtt_credentials.php \
+curl -X GET "https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true" \
   -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
 
 <strong>JavaScript/Fetch:</strong>
-fetch('/src/pages/get_mqtt_credentials.php', {
+fetch('/src/pages/get_mqtt_credentials.php?reveal=true', {
   headers: {
     'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'
   }
 })
 .then(r => r.json())
-.then(data => console.log(data.mqtt_username));
+.then(data => console.log(data.mqtt_username, data.mqtt_password));
 
 <strong>Python:</strong>
 import requests
 response = requests.get(
-  'https://ifsentral.online/src/pages/get_mqtt_credentials.php',
+  'https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true',
   headers={'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'}
 )
 print(response.json())</code></pre>
@@ -948,9 +918,7 @@ X-Rate-Limit-Reset: 1677000000
     </section>
   </div>
 
-  <footer class="main-footer text-center">
-    <strong>Copyright &copy; 2024-2025 <a href="index.html">IFSentral</a>.</strong> Todos os direitos reservados.
-  </footer>
+  <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 
 </div>
 

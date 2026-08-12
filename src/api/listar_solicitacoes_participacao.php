@@ -7,6 +7,7 @@
 
 require_once __DIR__ . '/../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -95,8 +96,7 @@ try {
         'filter' => $status
     ]);
 
-} catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao listar solicitações: ' . $e->getMessage()]);
-}
+    } catch (PDOException $e) {
+        api_error_response('Erro ao listar solicitações', $e, 500);
+    }
 ?>

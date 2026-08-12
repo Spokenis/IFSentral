@@ -3,6 +3,7 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/ApiError.php';
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -82,7 +83,6 @@ try {
     echo json_encode($invitations);
     
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao listar convites: ' . $e->getMessage()]);
+    api_error_response('Erro ao listar convites', $e, 500);
 }
 ?>

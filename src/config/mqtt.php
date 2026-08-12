@@ -5,10 +5,10 @@
  */
 
 // Configurações do broker MQTT
-define('MQTT_HOST', $_ENV['MQTT_HOST'] ?? 'localhost');
-define('MQTT_PORT', $_ENV['MQTT_PORT'] ?? 1883);
-define('MQTT_USERNAME', $_ENV['MQTT_USERNAME'] ?? null);
-define('MQTT_PASSWORD', $_ENV['MQTT_PASSWORD'] ?? null);
+define('MQTT_HOST', getenv('MQTT_HOST') ?: ($_ENV['MQTT_HOST'] ?? 'localhost'));
+define('MQTT_PORT', getenv('MQTT_PORT') ?: ($_ENV['MQTT_PORT'] ?? 1883));
+define('MQTT_USERNAME', getenv('MQTT_USERNAME') ?: ($_ENV['MQTT_USERNAME'] ?? null));
+define('MQTT_PASSWORD', getenv('MQTT_PASSWORD') ?: ($_ENV['MQTT_PASSWORD'] ?? null));
 define('MQTT_CLIENT_ID', 'minha-api-php-subscriber-' . getmypid());
 
 // Tópicos MQTT (padrão)
