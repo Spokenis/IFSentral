@@ -8,7 +8,7 @@ WORKDIR /var/www/html
 
 COPY composer.json composer.lock* /var/www/html/
 
-RUN composer install --no-interaction --prefer-dist --optimize-autoloader
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
 FROM php:8.2-apache
 
@@ -23,7 +23,9 @@ RUN apt-get update && apt-get install -y \
     && pip3 install mysql-connector-python --break-system-packages
 
 # Instala extensões PHP
-RUN docker-php-ext-install pdo pdo_mysql
+# posix é usado por src/mqtt/mqtt_health_check.php (posix_getpgid) para
+# verificar se o processo do worker MQTT ainda está vivo
+RUN docker-php-ext-install pdo pdo_mysql posix
 
 # Habilita mod_rewrite
 RUN a2enmod rewrite

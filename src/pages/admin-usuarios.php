@@ -18,7 +18,7 @@ if ($identifier) {
 }
 
 if ($profile_logado !== 'Admin') {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 ?>
@@ -101,6 +101,9 @@ if ($profile_logado !== 'Admin') {
         <!-- GERENCIAMENTO DE USUÁRIOS -->
         <h4 class="mt-4 mb-3"><i class="fas fa-user-edit mr-2"></i> Gerenciamento de Usuários</h4>
         <div class="card card-primary card-outline mb-5">
+          <div class="card-header">
+            <input type="search" id="users-search" class="form-control" placeholder="Buscar por nome, e-mail ou username...">
+          </div>
           <div class="card-body p-0">
             <div class="table-responsive">
               <table class="table table-hover align-middle m-0">
@@ -120,6 +123,11 @@ if ($profile_logado !== 'Admin') {
               </table>
             </div>
           </div>
+          <div class="card-footer d-flex justify-content-center align-items-center" id="users-pagination" style="display:none; gap: 12px;">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-users-pagina-anterior"><i class="fas fa-chevron-left mr-1"></i>Anterior</button>
+            <span id="users-pagination-info" class="text-muted"></span>
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-users-proxima-pagina">Próxima<i class="fas fa-chevron-right ml-1"></i></button>
+          </div>
         </div>
 
       </div>
@@ -132,11 +140,11 @@ if ($profile_logado !== 'Admin') {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
-  const API_SOLICITACOES_PERFIL = '../api/solicitacoes_perfil.php';
-  const API_ADMIN_USUARIOS = '../api/admin_usuarios.php';
+  const API_SOLICITACOES_PERFIL = '/api/solicitacoes-perfil';
+  const API_ADMIN_USUARIOS = '/api/admin-usuarios';
   const CURRENT_ADMIN_ID = <?php echo $admin_id; ?>;
 
   function escapeHtml(str) {
@@ -231,14 +239,40 @@ if ($profile_logado !== 'Admin') {
     }
   }
 
+  let usersPaginaAtual = 1;
+  let usersDebounceTimer = null;
+
+  function renderUsersPagination(pag) {
+    const container = document.getElementById('users-pagination');
+    const info = document.getElementById('users-pagination-info');
+    const btnAnterior = document.getElementById('btn-users-pagina-anterior');
+    const btnProxima = document.getElementById('btn-users-proxima-pagina');
+
+    if (!pag || pag.total_pages <= 1) {
+      container.style.display = 'none';
+      return;
+    }
+
+    container.style.display = 'flex';
+    info.textContent = `Página ${pag.page} de ${pag.total_pages} (${pag.total} usuários)`;
+    btnAnterior.disabled = pag.page <= 1;
+    btnProxima.disabled = pag.page >= pag.total_pages;
+  }
+
   async function loadUsers() {
     const tbody = document.getElementById('users-tbody');
     try {
-      // Usa a API administrativa centralizada
-      const res = await fetch(API_ADMIN_USUARIOS, { credentials: 'include' });
-      const users = await safeJson(res);
+      const search = document.getElementById('users-search').value.trim();
+      const params = new URLSearchParams({ page: usersPaginaAtual, per_page: 20, search });
 
-      if (!Array.isArray(users) || users.length === 0) {
+      // Usa a API administrativa centralizada
+      const res = await fetch(`${API_ADMIN_USUARIOS}?${params.toString()}`, { credentials: 'include' });
+      const resultado = await safeJson(res);
+      const users = resultado.data || [];
+
+      renderUsersPagination(resultado.pagination);
+
+      if (users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum usuário encontrado.</td></tr>';
         return;
       }
@@ -327,6 +361,26 @@ if ($profile_logado !== 'Admin') {
       showAlert('Erro de conexão ao remover usuário.', 'danger');
     }
   }
+
+  document.getElementById('users-search').addEventListener('input', () => {
+    clearTimeout(usersDebounceTimer);
+    usersDebounceTimer = setTimeout(() => {
+      usersPaginaAtual = 1;
+      loadUsers();
+    }, 300);
+  });
+
+  document.getElementById('btn-users-pagina-anterior').addEventListener('click', () => {
+    if (usersPaginaAtual > 1) {
+      usersPaginaAtual--;
+      loadUsers();
+    }
+  });
+
+  document.getElementById('btn-users-proxima-pagina').addEventListener('click', () => {
+    usersPaginaAtual++;
+    loadUsers();
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     loadRequests();

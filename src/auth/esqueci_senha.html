@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Esqueci minha senha | IFSentral</title>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <style>
+    :root {
+      --ifsc-primary: #1B7D3D;
+      --ifsc-secondary: #0D4620;
+    }
+    #status-msg {
+      margin-top: 15px;
+      font-size: 0.9em;
+    }
+    .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+      background-color: var(--ifsc-primary) !important;
+      border-color: var(--ifsc-primary) !important;
+    }
+    .card-primary .card-header {
+      background-color: var(--ifsc-primary) !important;
+    }
+    .card-primary {
+      border-top-color: var(--ifsc-primary) !important;
+    }
+  </style>
+</head>
+<body class="hold-transition login-page">
+<div class="login-box">
+  <div class="login-logo">
+    <a href="/"><b>IF</b>Sentral</a>
+  </div>
+  <div class="card card-outline card-primary">
+    <div class="card-body login-card-body">
+      <p class="login-box-msg">Informe seu e-mail para receber o link de redefinição de senha</p>
+
+      <form id="esqueci-form">
+        <div class="input-group mb-3">
+          <input type="email" class="form-control" placeholder="E-mail" id="email" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-envelope"></span>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="esqueci-button">Enviar link de redefinição</button>
+        <div id="status-msg"></div>
+      </form>
+
+      <p class="mb-0 mt-3">
+        <a href="/login" class="text-center">Voltar ao login</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+
+<script>
+    const esqueciForm = document.getElementById('esqueci-form');
+    const statusMsg = document.getElementById('status-msg');
+    const esqueciButton = document.getElementById('esqueci-button');
+    const API_URL = '/api/esqueci-senha';
+
+    esqueciForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        statusMsg.innerHTML = 'Enviando...';
+        statusMsg.style.color = 'black';
+        esqueciButton.disabled = true;
+
+        const data = {
+            email: document.getElementById('email').value
+        };
+
+        try {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const resultado = await response.json();
+
+            if (!response.ok) {
+                throw new Error(resultado.error || 'Erro desconhecido');
+            }
+
+            statusMsg.innerHTML = `<span style="color: green;">${resultado.message}</span>`;
+            esqueciForm.reset();
+
+        } catch (error) {
+            statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
+        } finally {
+            esqueciButton.disabled = false;
+        }
+    });
+</script>
+</body>
+</html>

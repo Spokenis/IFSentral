@@ -17,7 +17,7 @@ $profile_logado = $stmt->fetchColumn();
 
 // Trava de segurança absoluta
 if ($profile_logado !== 'Admin') {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
@@ -205,7 +205,7 @@ try {
               <div class="card-body p-0">
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item">
-                    <a href="admin-rate-limiting.php" class="d-flex justify-content-between align-items-center text-dark">
+                    <a href="/admin/rate-limiting" class="d-flex justify-content-between align-items-center text-dark">
                       <span><i class="fas fa-shield-alt text-danger mr-2"></i> Proteção Rate Limit</span>
                       <?php if($stats['violations_today'] > 0): ?>
                         <span class="badge badge-danger badge-pill" title="Violações Hoje"><?php echo $stats['violations_today']; ?> alertas</span>
@@ -215,7 +215,7 @@ try {
                     </a>
                   </li>
                   <li class="list-group-item">
-                    <a href="admin-usuarios.php" class="d-flex justify-content-between align-items-center text-dark">
+                    <a href="/admin/usuarios" class="d-flex justify-content-between align-items-center text-dark">
                       <span><i class="fas fa-users-cog mr-2"></i> Gerenciar Usuários</span>
                       <i class="fas fa-chevron-right text-muted"></i>
                     </a>
@@ -295,7 +295,7 @@ $(document).ready(function() {
     logStatus.text('Atualizando...');
 
     $.ajax({
-      url: '../api/obter_logs_mqtt.php?limit=' + limit,
+      url: '/api/obter-logs-mqtt?limit=' + limit,
       type: 'GET',
       dataType: 'json',
       success: function(response) {

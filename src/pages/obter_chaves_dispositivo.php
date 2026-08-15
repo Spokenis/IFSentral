@@ -15,7 +15,7 @@ if (!isset($_GET['device_id']) || !is_numeric($_GET['device_id'])) {
 }
 $device_id = intval($_GET['device_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {

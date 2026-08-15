@@ -30,12 +30,18 @@ function generateRandomPassword($length = 16) {
 }
 
 // Função para fazer hash da senha (compatível com Mosquitto)
-function hashMosquittoPassword($password) {
-    // Mosquitto usa PBKDF2 com SHA256
-    // Formato: $7$base64(salt)$base64(hash)
-    // Para simplicidade, usamos password_hash do PHP e depois convertemos
-    // Nota: Este é um método simplificado. Para produção, usar mosquitto_passwd CLI
-    return password_hash($password, PASSWORD_BCRYPT);
+// Formato Mosquitto 2.x: $7$iterations$salt_base64$hash_base64 (PBKDF2-SHA512)
+// Precisa gerar exatamente o mesmo formato que generate_mqtt_passwd_file.php e
+// MosquittoSync::generatePasswdFile() escrevem verbatim no arquivo passwd —
+// um hash bcrypt aqui deixaria o dispositivo incapaz de autenticar no broker.
+function hashMosquittoPassword($password, $iterations = 101, $keylen = 64) {
+    $salt = random_bytes(12);
+    $hash = hash_pbkdf2('sha512', $password, $salt, $iterations, $keylen, true);
+
+    $salt_b64 = base64_encode($salt);
+    $hash_b64 = base64_encode($hash);
+
+    return sprintf('$7$%d$%s$%s', $iterations, $salt_b64, $hash_b64);
 }
 
 try {

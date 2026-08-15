@@ -22,7 +22,12 @@ else
 fi
 
 # Garantir permissões seguras
-sudo chmod 600 /etc/ssl/private/ifsentral.key
+# A chave privada precisa ser legível também pelo container mosquitto (roda
+# como uid/gid 1883, não root, diferente do container web/worker que inicia
+# como root). group-owner 1883 + 640 dá acesso a ambos sem tornar a chave
+# legível por qualquer usuário do host.
+sudo chown root:1883 /etc/ssl/private/ifsentral.key
+sudo chmod 640 /etc/ssl/private/ifsentral.key
 sudo chmod 644 /etc/ssl/certs/ifsentral-chain.crt
 
 echo "🎉 Configuração de SSL concluída com sucesso!"

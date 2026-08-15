@@ -122,11 +122,23 @@ define('SESSION_SAMESITE', env('SESSION_SAMESITE'));
  */
 function setupSecureCORS() {
     $requestUri = $_SERVER['REQUEST_URI'] ?? '';
-    
-    $isPublicApi = strpos($requestUri, '/api/enviar_payload.php') !== false || 
-                   strpos($requestUri, '/api/buscar_payloads.php') !== false ||
-                   strpos($requestUri, '/api/ttn_webhook.php') !== false ||
-                   strpos($requestUri, '/get_mqtt_credentials.php') !== false;
+
+    // Reconhece tanto a URL limpa atual quanto o caminho físico antigo
+    // (com extensão .php), que o .htaccess mantém ativo por compatibilidade.
+    $publicApiPatterns = [
+        '/api/enviar-payload', '/src/api/enviar_payload.php',
+        '/api/buscar-payloads', '/src/api/buscar_payloads.php',
+        '/api/ttn-webhook', '/src/api/ttn_webhook.php',
+        '/api/get-mqtt-credentials', '/src/pages/get_mqtt_credentials.php',
+    ];
+
+    $isPublicApi = false;
+    foreach ($publicApiPatterns as $pattern) {
+        if (strpos($requestUri, $pattern) !== false) {
+            $isPublicApi = true;
+            break;
+        }
+    }
 
     if ($isPublicApi) {
         header("Access-Control-Allow-Origin: *");
@@ -141,7 +153,7 @@ function setupSecureCORS() {
     }
     
     header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Api-Key, x-api-key, Accept");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With, X-Api-Key, x-api-key, Accept, X-CSRF-Token");
     header("Access-Control-Max-Age: 86400");
 
     if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

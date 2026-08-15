@@ -64,7 +64,7 @@ require '../auth/auth_check.php';
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1>Criar Novo Projeto</h1>
-            <p class="text-muted">Retornando de <a href="meus-projetos.php">Meus Projetos</a></p>
+            <p class="text-muted">Retornando de <a href="/meus-projetos">Meus Projetos</a></p>
           </div>
         </div>
       </div>
@@ -131,15 +131,15 @@ require '../auth/auth_check.php';
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
     // --- Declarações Globais (feitas apenas UMA VEZ) ---
     const formCriar = document.getElementById('form-criar');
     const statusMsg = document.getElementById('status-msg');
     const criarButton = document.getElementById('criar-button');
-    const API_URL = 'criar_projeto.php'; 
-    const API_TAGS_URL = '../api/listar_tags.php';
+    const API_URL = '/api/criar-projeto'; 
+    const API_TAGS_URL = '/api/listar-tags';
     // Não precisamos de uma variável global para o seletor com jQuery
     
     // --- Função para carregar o Select2 ---
@@ -199,7 +199,7 @@ require '../auth/auth_check.php';
             $('#proj-tags').val(null).trigger('change'); // Limpa o Select2
             
             setTimeout(() => {
-                window.location.href = `gerenciar-projeto.php?id=${resultado.insertedId}`;
+                window.location.href = `/projeto?id=${resultado.insertedId}`;
             }, 2000);
 
         } catch (error) {

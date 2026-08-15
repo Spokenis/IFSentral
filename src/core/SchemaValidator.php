@@ -41,6 +41,9 @@ class SchemaValidator
             'device_rate_limits',
             'rate_limit_violations',
             'mqtt_credentials',
+            'login_attempts',
+            'user_2fa',
+            'user_2fa_backup_codes',
         ];
 
         // Verificar tabelas essenciais

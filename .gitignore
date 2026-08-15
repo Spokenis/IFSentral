@@ -19,6 +19,11 @@ Thumbs.db
 *.log
 logs/
 
+# Estado de runtime do worker MQTT (gerado localmente, não é código-fonte)
+.mqtt_worker.pid
+.mqtt_worker_running
+.mqtt_worker_status.json
+
 # Cache
 cache/
 tmp/
@@ -27,6 +32,9 @@ temp/
 # Composer
 vendor/
 composer.lock
+
+# PHPUnit
+.phpunit.cache/
 
 # Node (se usar transpiladores)
 node_modules/
@@ -46,6 +54,13 @@ secrets/
 # Dados sensíveis
 data/sensitive/
 uploads/private/
+
+# Fotos de perfil enviadas por usuários (dado pessoal, não é código-fonte)
+uploads/profile/*
+!uploads/profile/.htaccess
+
+# Dados locais do Mosquitto (pode conter credenciais reais geradas em dev)
+mosquitto_data/
 
 # Testes locais
 test-*.php

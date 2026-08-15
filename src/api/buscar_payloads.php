@@ -64,10 +64,12 @@ try {
 
     // *** INÍCIO DA CORREÇÃO ***
     
-    // 1. Define o limite (padrão 10)
+    // 1. Define o limite (padrão 10, teto 1000 — sem teto, um cliente podia
+    // pedir um limit arbitrariamente grande e forçar a leitura de todo o
+    // histórico do dispositivo numa única resposta)
     $limit = 10;
     if (isset($_GET['limit']) && is_numeric($_GET['limit'])) {
-        $limit = intval($_GET['limit']);
+        $limit = max(1, min(1000, intval($_GET['limit'])));
     }
     
     // 2. Adiciona o placeholder para o LIMIT

@@ -147,6 +147,59 @@ class RateLimiter
     }
 
     /**
+     * Verifica se um identificador (e-mail) e/ou IP excederam o limite de
+     * tentativas de login mal-sucedidas na janela configurada.
+     * Retorna: ['allowed' => bool, 'attempts' => int, 'max_attempts' => int]
+     */
+    public function checkLoginAttempts($identifier, $ip_address)
+    {
+        if (($this->settings['LOGIN_RATE_LIMIT_ENABLED'] ?? '1') != 1) {
+            return ['allowed' => true, 'attempts' => 0, 'max_attempts' => 0];
+        }
+
+        $maxAttempts = intval($this->settings['LOGIN_RATE_LIMIT_MAX_ATTEMPTS'] ?? 5);
+        $windowMinutes = intval($this->settings['LOGIN_RATE_LIMIT_WINDOW_MINUTES'] ?? 15);
+
+        try {
+            $sql = "SELECT COUNT(*) as count FROM login_attempts
+                    WHERE success = 0
+                      AND created_at > DATE_SUB(NOW(), INTERVAL ? MINUTE)
+                      AND (identifier = ? OR ip_address = ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$windowMinutes, $identifier, $ip_address]);
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            $attempts = intval($row['count']);
+
+            return [
+                'allowed' => $attempts < $maxAttempts,
+                'attempts' => $attempts,
+                'max_attempts' => $maxAttempts,
+            ];
+        } catch (\Exception $e) {
+            // Falha ABERTA aqui de propósito: diferente do checkLimit() de dispositivos,
+            // isto protege o login de usuários humanos. Se a tabela login_attempts ainda
+            // não existir (setup-security-tables.php não executado), bloquear todo login
+            // por erro de infraestrutura seria pior que a ausência temporária da proteção.
+            \error_log('RateLimiter::checkLoginAttempts error: ' . $e->getMessage());
+            return ['allowed' => true, 'attempts' => 0, 'max_attempts' => 0];
+        }
+    }
+
+    /**
+     * Registra uma tentativa de login (sucesso ou falha) para fins de rate limiting
+     */
+    public function recordLoginAttempt($identifier, $ip_address, $success)
+    {
+        try {
+            $sql = "INSERT INTO login_attempts (identifier, ip_address, success) VALUES (?, ?, ?)";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$identifier, $ip_address, $success ? 1 : 0]);
+        } catch (\Exception $e) {
+            // Não quebra o fluxo de login se o registro falhar
+        }
+    }
+
+    /**
      * Registra violação de rate limit
      */
     private function logViolation($device_id, $requests, $limit, $source, $ip_address)

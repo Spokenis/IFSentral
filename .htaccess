@@ -12,6 +12,112 @@ RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 Options -Indexes
 
+##########################################
+# URLs limpas — mapeia caminho público (sem pasta/extensão) para o arquivo
+# real. Os arquivos continuam nos mesmos lugares (nada de código interno
+# muda); só a URL visível ao navegador/dispositivo é que fica limpa. As
+# rotas antigas (com /src/... e extensão) continuam servindo os arquivos
+# diretamente — não são bloqueadas — mas nada no site as gera mais.
+##########################################
+
+# Assets estáticos (JS/CSS/imagens) — /assets/... em vez de expor /src/assets/...
+RewriteRule ^assets/(.*)$ src/assets/$1 [L]
+
+# --- Autenticação (pública) ---
+RewriteRule ^login$ src/auth/login.html [L]
+RewriteRule ^registrar$ src/auth/register.html [L]
+RewriteRule ^esqueci-senha$ src/auth/esqueci_senha.html [L]
+RewriteRule ^redefinir-senha$ src/auth/redefinir_senha.php [L,QSA]
+RewriteRule ^verificar-email$ src/auth/verificar_email.php [L,QSA]
+RewriteRule ^api/login$ src/auth/login_api.php [L,QSA]
+RewriteRule ^api/logout$ src/auth/logout_api.php [L,QSA]
+RewriteRule ^api/cadastrar-usuario$ src/auth/cadastrar_usuario.php [L,QSA]
+RewriteRule ^api/esqueci-senha$ src/auth/esqueci_senha.php [L,QSA]
+RewriteRule ^api/redefinir-senha$ src/auth/redefinir_senha_api.php [L,QSA]
+RewriteRule ^api/verificar-2fa$ src/auth/verificar_2fa_api.php [L,QSA]
+
+# --- Páginas ---
+RewriteRule ^$ src/pages/index.html [L]
+RewriteRule ^meus-projetos$ src/pages/meus-projetos.php [L,QSA]
+RewriteRule ^explorar-projetos$ src/pages/explorar_projetos.php [L,QSA]
+RewriteRule ^meus-dispositivos$ src/pages/meus-dispositivos.php [L,QSA]
+RewriteRule ^perfil$ src/pages/perfil.php [L,QSA]
+RewriteRule ^configuracoes$ src/pages/configuracoes.php [L,QSA]
+RewriteRule ^documentacao$ src/pages/documentacao.php [L,QSA]
+RewriteRule ^termos$ src/pages/termos.php [L,QSA]
+RewriteRule ^novo-projeto$ src/pages/novo-projeto.php [L,QSA]
+RewriteRule ^projeto$ src/pages/gerenciar-projeto.php [L,QSA]
+RewriteRule ^dispositivo$ src/pages/gerenciar-dispositivo.php [L,QSA]
+RewriteRule ^novo-dispositivo$ src/pages/novo-dispositivo.php [L,QSA]
+RewriteRule ^ver-projeto$ src/pages/visualizar_projeto.php [L,QSA]
+RewriteRule ^novo-grafico$ src/pages/criar_grafico_avancado.php [L,QSA]
+RewriteRule ^admin/usuarios$ src/pages/admin-usuarios.php [L,QSA]
+RewriteRule ^admin/rate-limiting$ src/pages/admin-rate-limiting.php [L,QSA]
+RewriteRule ^admin$ src/pages/admin-dashboard.php [L,QSA]
+
+# --- API (inclui endpoints que fisicamente moram em src/pages/) ---
+RewriteRule ^api/listar-devices$ src/pages/listar_devices.php [L,QSA]
+RewriteRule ^api/listar-graficos$ src/pages/listar_graficos.php [L,QSA]
+RewriteRule ^api/listar-projetos-publicos$ src/pages/listar_projetos_publicos.php [L,QSA]
+RewriteRule ^api/listar-projetos$ src/pages/listar_projetos.php [L,QSA]
+RewriteRule ^api/obter-projeto$ src/pages/obter_projeto.php [L,QSA]
+RewriteRule ^api/obter-chaves-dispositivo$ src/pages/obter_chaves_dispositivo.php [L,QSA]
+RewriteRule ^api/obter-dados-grafico$ src/pages/obter_dados_grafico.php [L,QSA]
+RewriteRule ^api/obter-info-dispositivo$ src/pages/obter_info_dispositivo.php [L,QSA]
+RewriteRule ^api/get-mqtt-credentials$ src/pages/get_mqtt_credentials.php [L,QSA]
+RewriteRule ^api/regenerate-mqtt-password$ src/pages/regenerate_mqtt_password.php [L,QSA]
+RewriteRule ^api/cadastrar-device$ src/pages/cadastrar_device.php [L,QSA]
+RewriteRule ^api/deletar-dispositivo$ src/pages/deletar_dispositivo.php [L,QSA]
+RewriteRule ^api/gerenciar-tags-dispositivo$ src/pages/gerenciar_tags_dispositivo.php [L,QSA]
+RewriteRule ^api/gerenciar-mapeamentos-dispositivo$ src/pages/gerenciar_mapeamentos_dispositivo.php [L,QSA]
+RewriteRule ^api/atualizar-grafico$ src/pages/atualizar_grafico.php [L,QSA]
+RewriteRule ^api/salvar-grafico$ src/pages/salvar_grafico.php [L,QSA]
+RewriteRule ^api/deletar-grafico$ src/pages/deletar_grafico.php [L,QSA]
+RewriteRule ^api/criar-projeto$ src/pages/criar_projeto.php [L,QSA]
+
+# --- API (src/api/) ---
+RewriteRule ^api/2fa-confirmar-configuracao$ src/api/2fa_confirmar_configuracao.php [L,QSA]
+RewriteRule ^api/2fa-desativar$ src/api/2fa_desativar.php [L,QSA]
+RewriteRule ^api/2fa-iniciar-configuracao$ src/api/2fa_iniciar_configuracao.php [L,QSA]
+RewriteRule ^api/2fa-status$ src/api/2fa_status.php [L,QSA]
+RewriteRule ^api/aceitar-convite$ src/api/aceitar_convite.php [L,QSA]
+RewriteRule ^api/admin-usuarios$ src/api/admin_usuarios.php [L,QSA]
+RewriteRule ^api/alterar-visibilidade-grafico$ src/api/alterar_visibilidade_grafico.php [L,QSA]
+RewriteRule ^api/alterar-visibilidade-projeto$ src/api/alterar_visibilidade_projeto.php [L,QSA]
+RewriteRule ^api/atualizar-grafico-avancado$ src/api/atualizar_grafico_avancado.php [L,QSA]
+RewriteRule ^api/atualizar-perfil$ src/api/atualizar_perfil.php [L,QSA]
+RewriteRule ^api/atualizar-senha$ src/api/atualizar_senha.php [L,QSA]
+RewriteRule ^api/buscar-payloads$ src/api/buscar_payloads.php [L,QSA]
+RewriteRule ^api/deletar-foto-perfil$ src/api/deletar_foto_perfil.php [L,QSA]
+RewriteRule ^api/deletar-projeto$ src/api/deletar_projeto.php [L,QSA]
+RewriteRule ^api/enviar-convite$ src/api/enviar_convite.php [L,QSA]
+RewriteRule ^api/enviar-payload$ src/api/enviar_payload.php [L,QSA]
+RewriteRule ^api/enviar-solicitacao-participacao$ src/api/enviar_solicitacao_participacao.php [L,QSA]
+RewriteRule ^api/exportar-dados-projeto$ src/api/exportar_dados_projeto.php [L,QSA]
+RewriteRule ^api/expulsar-participante$ src/api/expulsar_participante.php [L,QSA]
+RewriteRule ^api/listar-convites$ src/api/listar_convites.php [L,QSA]
+RewriteRule ^api/listar-meus-dispositivos$ src/api/listar_meus_dispositivos.php [L,QSA]
+RewriteRule ^api/listar-participantes$ src/api/listar_participantes.php [L,QSA]
+RewriteRule ^api/listar-solicitacoes-participacao$ src/api/listar_solicitacoes_participacao.php [L,QSA]
+RewriteRule ^api/listar-tags$ src/api/listar_tags.php [L,QSA]
+RewriteRule ^api/listar-usuarios$ src/api/listar_usuarios.php [L,QSA]
+RewriteRule ^api/obter-contagem-participantes$ src/api/obter_contagem_participantes.php [L,QSA]
+RewriteRule ^api/obter-csrf-token$ src/api/obter_csrf_token.php [L,QSA]
+RewriteRule ^api/obter-dados-grafico-avancado$ src/api/obter_dados_grafico_avancado.php [L,QSA]
+RewriteRule ^api/obter-dados-grafico-renderizado$ src/api/obter_dados_grafico_renderizado.php [L,QSA]
+RewriteRule ^api/obter-logs-mqtt$ src/api/obter_logs_mqtt.php [L,QSA]
+RewriteRule ^api/obter-notificacoes$ src/api/obter_notificacoes.php [L,QSA]
+RewriteRule ^api/obter-perfil-usuario$ src/api/obter_perfil_usuario.php [L,QSA]
+RewriteRule ^api/obter-stats-payloads$ src/api/obter_stats_payloads.php [L,QSA]
+RewriteRule ^api/promover-gerente$ src/api/promover_gerente.php [L,QSA]
+RewriteRule ^api/recusar-convite$ src/api/recusar_convite.php [L,QSA]
+RewriteRule ^api/responder-solicitacao-participacao$ src/api/responder_solicitacao_participacao.php [L,QSA]
+RewriteRule ^api/sair-projeto$ src/api/sair_projeto.php [L,QSA]
+RewriteRule ^api/salvar-grafico-avancado$ src/api/salvar_grafico_avancado.php [L,QSA]
+RewriteRule ^api/solicitacoes-perfil$ src/api/solicitacoes_perfil.php [L,QSA]
+RewriteRule ^api/ttn-webhook$ src/api/ttn_webhook.php [L,QSA]
+RewriteRule ^api/upload-foto-perfil$ src/api/upload_foto_perfil.php [L,QSA]
+
 <IfModule mod_headers.c>
     # HSTS - only send after HTTPS is active; long max-age with preload
     Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"

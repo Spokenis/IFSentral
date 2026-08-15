@@ -53,49 +53,64 @@ try {
             AND JSON_EXTRACT(p.payload, ?) IS NOT NULL
     ";
     
+    $hasDateFilter = false;
     if (isset($_GET['startDate']) && !empty($_GET['startDate'])) {
         $sql .= " AND p.created_at >= ? ";
         $params[] = $_GET['startDate'];
+        $hasDateFilter = true;
     }
-    
+
     if (isset($_GET['endDate']) && !empty($_GET['endDate'])) {
         $sql .= " AND p.created_at <= ? ";
         $params[] = $_GET['endDate'] . ' 23:59:59';
+        $hasDateFilter = true;
     }
 
-    $sql .= " ORDER BY p.created_at ASC ";
+    // Sem filtro de data explícito, busca os pontos mais RECENTES (DESC) e
+    // reordena em PHP — com ASC sem filtro, um dispositivo com bastante
+    // histórico sempre devolvia o mesmo início antigo da série, nunca o
+    // estado atual (e piorava conforme mais dados eram recebidos).
+    $sql .= $hasDateFilter ? " ORDER BY p.created_at ASC " : " ORDER BY p.created_at DESC ";
 
     // *** INÍCIO DA CORREÇÃO ***
 
-    // 1. Define o limite (padrão 500)
+    // 1. Define o limite (padrão 500, teto 2000 — sem teto, um cliente podia
+    // pedir um limit arbitrariamente grande)
     $limit = 500;
     if (isset($_GET['limit']) && is_numeric($_GET['limit'])) {
-        $limit = intval($_GET['limit']);
+        $limit = max(1, min(2000, intval($_GET['limit'])));
     }
-    
+
     // 2. Adiciona o placeholder para o LIMIT
     $sql .= " LIMIT ? ";
 
     // 3. Prepara a query
     $stmt = $conn->prepare($sql);
-    
+
     // 4. Amarra (bind) os parâmetros (json_path, device_id, json_path, datas)
     $param_index = 1;
     foreach ($params as $value) {
         $stmt->bindValue($param_index, $value);
         $param_index++;
     }
-    
+
     // 5. Amarra (bind) o LIMIT como um INTEIRO (PDO::PARAM_INT)
     $stmt->bindValue($param_index, $limit, PDO::PARAM_INT);
-    
+
     // 6. Executa
     $stmt->execute();
-    
+
     // *** FIM DA CORREÇÃO ***
-    
+
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
+    // Sem filtro de data, buscamos em DESC pra pegar os mais recentes —
+    // reordena cronologicamente antes de devolver (contrato da API é
+    // sempre ordem crescente de tempo).
+    if (!$hasDateFilter) {
+        $results = array_reverse($results);
+    }
+
     echo json_encode($results);
 
 } catch (PDOException $e) {

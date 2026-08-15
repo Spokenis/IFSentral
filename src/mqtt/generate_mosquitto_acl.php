@@ -15,7 +15,10 @@
 // Define diretórios
 define('ROOT_DIR', realpath(__DIR__ . '/../../'));
 define('CONFIG_DIR', ROOT_DIR . '/src/config');
-define('MOSQUITTO_CONF_DIR', '/etc/mosquitto/conf.d');
+// Volume compartilhado com o container mosquitto (ver docker-compose.yml,
+// volume 'mqtt_config' montado em /mosquitto/config). /etc/mosquitto não
+// existe na imagem do app.
+define('MOSQUITTO_CONF_DIR', '/mosquitto/config');
 
 // Carrega configurações
 require_once CONFIG_DIR . '/config.php';
@@ -90,7 +93,7 @@ try {
     if (!is_writable(MOSQUITTO_CONF_DIR)) {
         $acl_file = '/tmp/mosquitto_acl.acl';
         echo "⚠️  Sem permissão em " . MOSQUITTO_CONF_DIR . ". Salvando em: $acl_file\n";
-        echo "    Depois mova com: sudo mv $acl_file /etc/mosquitto/conf.d/acl.acl\n\n";
+        echo "    Depois mova com: mv $acl_file " . MOSQUITTO_CONF_DIR . "/acl.acl\n\n";
     }
     
     // Escreve arquivo
@@ -116,10 +119,10 @@ try {
     echo "=== Próximos Passos ===\n";
     echo "1. Gerar arquivo passwd:\n";
     echo "   php src/mqtt/generate_mosquitto_passwd.php\n\n";
-    echo "2. Se está em /tmp, copie para Mosquitto:\n";
-    echo "   sudo cp $acl_file " . MOSQUITTO_CONF_DIR . "/acl.acl\n\n";
-    echo "3. Recarregue configuração do Mosquitto:\n";
-    echo "   sudo systemctl reload mosquitto\n\n";
+    echo "2. Se está em /tmp, copie para o volume compartilhado:\n";
+    echo "   cp $acl_file " . MOSQUITTO_CONF_DIR . "/acl.acl\n\n";
+    echo "3. Reinicie o container mosquitto para recarregar a configuração:\n";
+    echo "   docker-compose restart mosquitto\n\n";
     
 } catch (\Exception $e) {
     echo "❌ Erro: " . $e->getMessage() . "\n";

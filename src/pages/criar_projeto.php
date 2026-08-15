@@ -12,12 +12,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 require '../config/db.php';
 require '../auth/auth_check.php'; // $username_logado e $_SESSION['user_id'] estão disponíveis
+require '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     http_response_code(405);
     echo json_encode(['error' => 'Método não permitido. Use POST.']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 $data = json_decode(file_get_contents("php://input"));
 

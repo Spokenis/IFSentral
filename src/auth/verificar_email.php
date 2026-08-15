@@ -30,7 +30,7 @@ function renderizarPagina($titulo, $mensagem, $tipo = 'erro') {
             <div class='icone'>{$icone}</div>
             <h1>{$titulo}</h1>
             <p>{$mensagem}</p>
-            <a href='login.html' class='btn'>Ir para o Login</a>
+            <a href='/login' class='btn'>Ir para o Login</a>
         </div>
     </body>
     </html>";

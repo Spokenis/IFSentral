@@ -3,12 +3,12 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['project_id']) || !is_numeric($_GET['project_id'])) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 $project_id_from_url = intval($_GET['project_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -20,13 +20,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
@@ -36,11 +36,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 } catch (Exception $e) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 ?>
@@ -111,7 +111,7 @@ try {
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1>Adicionar Novo Dispositivo</h1>
-            <p class="text-muted">Retornando para <a href="gerenciar-projeto.php?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
+            <p class="text-muted">Retornando para <a href="/projeto?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
           </div>
         </div>
       </div>
@@ -139,7 +139,7 @@ try {
                 </div>
                 <div class="card-footer">
                   <button type="submit" class="btn btn-primary" id="cadastrar-button">Cadastrar Dispositivo</button>
-                  <a href="gerenciar-projeto.php?id=<?php echo $project_id_from_url; ?>" class="btn btn-secondary">Cancelar</a>
+                  <a href="/projeto?id=<?php echo $project_id_from_url; ?>" class="btn btn-secondary">Cancelar</a>
                 </div>
               </form>
               
@@ -164,13 +164,13 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
     const formCadastrar = document.getElementById('form-cadastrar');
     const statusMsg = document.getElementById('status-msg');
     const cadastrarButton = document.getElementById('cadastrar-button');
-    const API_URL = 'cadastrar_device.php'; 
+    const API_URL = '/api/cadastrar-device'; 
 
     formCadastrar.addEventListener('submit', async function(event) {
         event.preventDefault();
@@ -208,7 +208,7 @@ try {
             
             // Aumentei o tempo para 10 segundos para dar tempo de copiar
             setTimeout(() => {
-                window.location.href = `gerenciar-projeto.php?id=${PROJECT_ID}`;
+                window.location.href = `/projeto?id=${PROJECT_ID}`;
             }, 10000); // 10 segundos
 
         } catch (error) {

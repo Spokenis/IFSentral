@@ -3,12 +3,12 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['project_id']) || !is_numeric($_GET['project_id'])) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 $project_id_from_url = intval($_GET['project_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -20,13 +20,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
@@ -36,11 +36,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 } catch (Exception $e) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 ?>
@@ -285,7 +285,7 @@ try {
             <button type="button" class="btn btn-primary btn-lg" id="btn-salvar-grafico">
               <i class="fas fa-save mr-2"></i> Salvar Gráfico
             </button>
-            <a href="gerenciar-projeto.php?id=<?php echo $project_id_from_url; ?>" class="btn btn-secondary btn-lg">
+            <a href="/projeto?id=<?php echo $project_id_from_url; ?>" class="btn btn-secondary btn-lg">
               <i class="fas fa-times mr-2"></i> Cancelar
             </a>
           </div>
@@ -304,13 +304,13 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
 const PROJECT_ID = <?php echo $project_id_from_url; ?>;
-const API_DEVICES = '../api/listar_devices.php';
-const API_CHAVES = '../api/obter_chaves_dispositivo.php';
-const API_SALVAR_GRAFICO = '../api/salvar_grafico_avancado.php';
+const API_DEVICES = '/api/listar-devices';
+const API_CHAVES = '/api/obter-chaves-dispositivo';
+const API_SALVAR_GRAFICO = '/api/salvar-grafico-avancado';
 
 let datasets = [];
 let selectedTimeRange = 'all';
@@ -549,7 +549,7 @@ async function salvarGrafico() {
     
     const result = await safeJson(response);
     alert('Gráfico salvo com sucesso!');
-    window.location.href = `gerenciar-projeto.php?id=${PROJECT_ID}`;
+    window.location.href = `/projeto?id=${PROJECT_ID}`;
   } catch (error) {
     alert('Erro ao salvar: ' + error.message);
   }

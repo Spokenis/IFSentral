@@ -1,6 +1,0 @@
-# ACL - Mosquitto IFSentral
-user admin
-topic readwrite #
-
-# Usuários do sistema (gerados dinamicamente pelo PHP)
-topic read $SYS/broker/#

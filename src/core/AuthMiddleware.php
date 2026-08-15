@@ -78,7 +78,10 @@ class AuthMiddleware
                 LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$user_id, $project_id]);
-            return $stmt->rowCount() > 0;
+            // fetch() em vez de rowCount() > 0: rowCount() para SELECT não é
+            // confiável em todos os drivers PDO (ex: sempre retorna 0 no
+            // driver sqlite, mesmo com linhas encontradas).
+            return $stmt->fetch() !== false;
         } catch (\Exception $e) {
             return false;
         }
@@ -100,7 +103,10 @@ class AuthMiddleware
                 LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$project_id, $user_id]);
-            return $stmt->rowCount() > 0;
+            // fetch() em vez de rowCount() > 0: rowCount() para SELECT não é
+            // confiável em todos os drivers PDO (ex: sempre retorna 0 no
+            // driver sqlite, mesmo com linhas encontradas).
+            return $stmt->fetch() !== false;
         } catch (\Exception $e) {
             return false;
         }
@@ -122,7 +128,10 @@ class AuthMiddleware
                 LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$user_id, $project_id]);
-            return $stmt->rowCount() > 0;
+            // fetch() em vez de rowCount() > 0: rowCount() para SELECT não é
+            // confiável em todos os drivers PDO (ex: sempre retorna 0 no
+            // driver sqlite, mesmo com linhas encontradas).
+            return $stmt->fetch() !== false;
         } catch (\Exception $e) {
             return false;
         }
@@ -140,7 +149,10 @@ class AuthMiddleware
                     WHERE d.id = ? AND up.user_id = ? AND d.deletedAt IS NULL LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$device_id, $user_id]);
-            return $stmt->rowCount() > 0;
+            // fetch() em vez de rowCount() > 0: rowCount() para SELECT não é
+            // confiável em todos os drivers PDO (ex: sempre retorna 0 no
+            // driver sqlite, mesmo com linhas encontradas).
+            return $stmt->fetch() !== false;
         } catch (\Exception $e) {
             return false;
         }
@@ -158,7 +170,10 @@ class AuthMiddleware
                     WHERE c.id = ? AND up.user_id = ? AND p.deletedAt IS NULL LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$chart_id, $user_id]);
-            return $stmt->rowCount() > 0;
+            // fetch() em vez de rowCount() > 0: rowCount() para SELECT não é
+            // confiável em todos os drivers PDO (ex: sempre retorna 0 no
+            // driver sqlite, mesmo com linhas encontradas).
+            return $stmt->fetch() !== false;
         } catch (\Exception $e) {
             return false;
         }

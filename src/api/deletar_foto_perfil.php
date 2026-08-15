@@ -8,6 +8,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../core/ApiError.php';
+require_once __DIR__ . '/../core/Csrf.php';
+
+use App\Core\Csrf;
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
@@ -22,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'DELETE' && $_SERVER['REQUEST_METHOD'] !== 'P
     echo json_encode(['error' => 'Método não permitido']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 try {
     // Obter ID do usuário da sessão

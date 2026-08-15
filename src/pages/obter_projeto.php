@@ -21,7 +21,7 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $project_id = intval($_GET['id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id_logado = $_SESSION['user_id'] ?? null;
 if (!$user_id_logado && isset($_SESSION['email'])) {
     try {

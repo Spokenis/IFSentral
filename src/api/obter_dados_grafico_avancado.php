@@ -27,7 +27,7 @@ $chart_id = intval($_GET['chart_id']);
 $date_start = $_GET['date_start'] ?? null;
 $date_end = $_GET['date_end'] ?? null;
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -132,15 +132,30 @@ foreach ($datasets as $dataset) {
             $data_sql .= " AND dp.created_at <= ?";
             $params[] = $date_end;
         }
-        
-        $data_sql .= " ORDER BY dp.created_at ASC LIMIT 1000";
-        
+
+        // Sem período explícito, buscamos os 1000 pontos mais RECENTES (DESC)
+        // em vez dos mais antigos: com ORDER BY ASC + LIMIT sem filtro de data,
+        // um dispositivo com meses de histórico sempre devolvia o mesmo início
+        // antigo da série, nunca o estado atual — e piorava a cada payload novo
+        // recebido, em vez de melhorar. Com filtro de data explícito, mantemos
+        // ASC (ordem cronológica dentro do período pedido, que é o esperado).
+        $sem_periodo_explicito = !$date_start && !$date_end;
+        $data_sql .= $sem_periodo_explicito
+            ? " ORDER BY dp.created_at DESC LIMIT 1000"
+            : " ORDER BY dp.created_at ASC LIMIT 1000";
+
         $data_stmt = $conn->prepare($data_sql);
         $data_stmt->execute($params);
-        
+
         // O fetchAll já retorna os arrays estruturados ['x' => ..., 'y' => ...]
         $data_points = $data_stmt->fetchAll(PDO::FETCH_ASSOC);
-        
+
+        // Reordena cronologicamente (o gráfico espera x crescente da esquerda
+        // pra direita) já que buscamos em DESC pra pegar os mais recentes.
+        if ($sem_periodo_explicito) {
+            $data_points = array_reverse($data_points);
+        }
+
         // 4. Casting rápido para numérico no PHP, garantindo a tipagem correta para o frontend
         foreach ($data_points as &$point) {
             $point['y'] = is_numeric($point['y']) ? (float)$point['y'] : $point['y'];

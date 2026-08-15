@@ -52,7 +52,10 @@ try {
     foreach ($devices as $device) {
         $old_username = $device['mqtt_username'];
         $api_key = $device['api_key'];
-        $key_hash = substr($api_key, 0, 16);
+        // Hash (não os caracteres crus da api_key!) — usernames MQTT aparecem em
+        // logs do broker, ACL e $SYS topics; usar substr($api_key, 0, 16) direto
+        // vazava 16 dos 64 caracteres da chave de API usada para autenticar HTTP.
+        $key_hash = substr(hash('sha256', $api_key), 0, 16);
         $new_username = "mqdev_" . $key_hash;
         
         echo "Device #{$device['device_id']} ({$device['device_name']})\n";

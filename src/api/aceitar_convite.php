@@ -4,6 +4,9 @@
 require_once '../config/config.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -20,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     echo json_encode(['error' => 'Método não permitido. Use POST.']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 $data = json_decode(file_get_contents("php://input"));
 

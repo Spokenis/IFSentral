@@ -137,26 +137,28 @@ try {
     
     echo "✅ admin (superuser)\n\n";
     
-    // Tenta salvar em /etc/mosquitto/passwd
-    $passwd_file = '/etc/mosquitto/passwd';
-    $saved_to_etc = false;
-    
-    if (is_writable('/etc/mosquitto')) {
+    // Volume compartilhado com o container mosquitto (ver docker-compose.yml,
+    // volume 'mqtt_config' montado em /mosquitto/config). O nome do arquivo
+    // tem que bater com mosquitto.conf (password_file .../passwords.txt).
+    $passwd_file = '/mosquitto/config/passwords.txt';
+    $saved_to_config = false;
+
+    if (is_writable('/mosquitto/config')) {
         if (file_put_contents($passwd_file, $passwd_content) !== false) {
             chmod($passwd_file, 0600);
-            $saved_to_etc = true;
+            $saved_to_config = true;
             echo "✅ Arquivo passwd salvo em: $passwd_file\n";
         }
     }
-    
-    if (!$saved_to_etc) {
+
+    if (!$saved_to_config) {
         // Fallback para /tmp
         $passwd_file = '/tmp/mosquitto_passwd';
         file_put_contents($passwd_file, $passwd_content);
         chmod($passwd_file, 0600);
-        echo "⚠️  Sem permissão em /etc/mosquitto. Salvo em: $passwd_file\n";
-        echo "    Execute: sudo cp $passwd_file /etc/mosquitto/passwd\n";
-        echo "             sudo chmod 600 /etc/mosquitto/passwd\n\n";
+        echo "⚠️  Sem permissão em /mosquitto/config. Salvo em: $passwd_file\n";
+        echo "    Execute: cp $passwd_file /mosquitto/config/passwords.txt\n";
+        echo "             chmod 600 /mosquitto/config/passwords.txt\n\n";
     }
     
     // Salva backup de senhas
@@ -184,21 +186,20 @@ try {
     // Próximos passos
     echo "=== Próximos Passos ===\n";
     echo "1. Verificar arquivo:\n";
-    if ($saved_to_etc) {
-        echo "   sudo ls -la /etc/mosquitto/passwd\n\n";
+    if ($saved_to_config) {
+        echo "   ls -la /mosquitto/config/passwords.txt\n\n";
     } else {
-        echo "   sudo cp /tmp/mosquitto_passwd /etc/mosquitto/passwd\n";
-        echo "   sudo chmod 600 /etc/mosquitto/passwd\n\n";
+        echo "   cp /tmp/mosquitto_passwd /mosquitto/config/passwords.txt\n";
+        echo "   chmod 600 /mosquitto/config/passwords.txt\n\n";
     }
-    
-    echo "2. Configurar Mosquitto:\n";
-    echo "   Edite /etc/mosquitto/mosquitto.conf e adicione:\n";
+
+    echo "2. Mosquitto já está configurado (mosquitto.conf) para ler:\n";
     echo "   allow_anonymous false\n";
-    echo "   password_file /etc/mosquitto/passwd\n";
-    echo "   acl_file /etc/mosquitto/conf.d/acl.acl\n\n";
-    
-    echo "3. Recarregar Mosquitto:\n";
-    echo "   sudo systemctl reload mosquitto\n\n";
+    echo "   password_file /mosquitto/config/passwords.txt\n";
+    echo "   acl_file /mosquitto/config/acl.acl\n\n";
+
+    echo "3. Reiniciar o container mosquitto para recarregar as credenciais:\n";
+    echo "   docker-compose restart mosquitto\n\n";
     
     echo "4. Testar autenticação:\n";
     echo "   mosquitto_sub -h localhost -u device_2 -P 'SENHA' -t 'mqtt/projects/2/devices/2'\n\n";

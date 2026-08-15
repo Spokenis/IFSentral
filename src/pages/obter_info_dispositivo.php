@@ -1,6 +1,7 @@
 <?php
 // obter_info_dispositivo.php
-// Retorna informações seguras do dispositivo (incluindo API key, mas apenas para o dono)
+// Retorna informações do dispositivo, incluindo a API key, para qualquer
+// membro do projeto ao qual o dispositivo pertence (não só quem o criou).
 
 require_once '../config/config.php';
 setupSecureCORS();
@@ -24,7 +25,7 @@ if (!isset($_GET['device_id']) || !is_numeric($_GET['device_id'])) {
 
 $device_id = intval($_GET['device_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -76,16 +77,20 @@ try {
             p.name AS project_name,
             u.username AS user_username,
             mc.mqtt_username,
-            mc.enabled as mqtt_enabled
-        FROM 
+            mc.enabled as mqtt_enabled,
+            ms.last_seen,
+            (ms.last_seen IS NOT NULL AND ms.last_seen > DATE_SUB(NOW(), INTERVAL 5 MINUTE)) AS is_online
+        FROM
             devices d
-        JOIN 
+        JOIN
             projects p ON d.project_id = p.id
-        JOIN 
+        JOIN
             users u ON d.user_id = u.id
-        LEFT JOIN 
+        LEFT JOIN
             mqtt_credentials mc ON d.id = mc.device_id AND mc.enabled = 1
-        WHERE 
+        LEFT JOIN
+            device_mqtt_status ms ON ms.device_id = d.id
+        WHERE
             d.id = ? AND d.deletedAt IS NULL
     ";
     

@@ -15,13 +15,15 @@ if ($identifier) {
 }
 
 if ($profile_logado !== 'Admin') {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
 require '../core/RateLimiter.php';
+require '../core/Csrf.php';
 
 use App\Core\RateLimiter;
+use App\Core\Csrf;
 
 
 // Inicializar Rate Limiter
@@ -33,6 +35,8 @@ $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_setting'])) {
+    Csrf::requireValidTokenFromPost();
+
     $settingKey = $_POST['setting_key'] ?? null;
     $settingValue = $_POST['setting_value'] ?? null;
 
@@ -120,6 +124,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
               </div>
               <div class="card-body">
                 <form method="POST" action="">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Csrf::getToken()); ?>">
                   <div class="form-group">
                     <label for="rate_limit_enabled">Habilitar Rate Limiting?</label>
                     <select id="rate_limit_enabled" name="setting_value" class="form-control" onchange="updateSetting('RATE_LIMIT_ENABLED', this.value)">

@@ -75,6 +75,40 @@ $sqls = [
             INDEX idx_username (mqtt_username)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
     ",
+    "login_attempts" => "
+        CREATE TABLE IF NOT EXISTS login_attempts (
+            id BIGINT PRIMARY KEY AUTO_INCREMENT,
+            identifier VARCHAR(255) NOT NULL,
+            ip_address VARCHAR(45),
+            success BOOLEAN NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_identifier_time (identifier, created_at DESC),
+            INDEX idx_ip_time (ip_address, created_at DESC)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    ",
+    "user_2fa" => "
+        CREATE TABLE IF NOT EXISTS user_2fa (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT UNSIGNED UNIQUE NOT NULL,
+            secret VARCHAR(64) NOT NULL,
+            enabled BOOLEAN DEFAULT 0,
+            last_used_step BIGINT DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    ",
+    "user_2fa_backup_codes" => "
+        CREATE TABLE IF NOT EXISTS user_2fa_backup_codes (
+            id INT PRIMARY KEY AUTO_INCREMENT,
+            user_id INT UNSIGNED NOT NULL,
+            code_hash VARCHAR(255) NOT NULL,
+            used_at TIMESTAMP NULL DEFAULT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+            INDEX idx_user (user_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
+    ",
 ];
 
 // Executar SQL
@@ -100,6 +134,9 @@ $default_settings = [
     'MQTT_ACL_ENABLED' => '1',
     'RATE_LIMIT_SOFT_LIMIT_PERCENT' => '80',
     'LOG_RATE_LIMIT_VIOLATIONS' => '1',
+    'LOGIN_RATE_LIMIT_ENABLED' => '1',
+    'LOGIN_RATE_LIMIT_MAX_ATTEMPTS' => '5',
+    'LOGIN_RATE_LIMIT_WINDOW_MINUTES' => '15',
 ];
 
 try {

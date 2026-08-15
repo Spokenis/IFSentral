@@ -1,5 +1,0 @@
-FROM eclipse-mosquitto:latest
-COPY mosquitto-entrypoint.sh /usr/local/bin/mosquitto-entrypoint.sh
-RUN chmod +x /usr/local/bin/mosquitto-entrypoint.sh
-ENTRYPOINT ["/usr/local/bin/mosquitto-entrypoint.sh"]
-CMD []

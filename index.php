@@ -5,6 +5,6 @@
  */
 
 // Redireciona para a página inicial
-header('Location: /src/pages/index.html');
+header('Location: /');
 exit;
 ?>

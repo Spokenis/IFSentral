@@ -15,11 +15,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 require '../config/db.php';
 require '../auth/auth_check.php'; // $username_logado e $_SESSION['user_id'] estão disponíveis
 require '../core/MosquittoSync.php';
+require '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 // Função para gerar credenciais MQTT
 function generateMQTTCredentials($conn, $device_id, $api_key) {
-    // Username baseado na API key (não expõe ID sequencial)
-    $key_hash = substr($api_key, 0, 16); // Primeiros 16 chars da API key
+    // Username baseado num hash da API key (não expõe ID sequencial nem os
+    // caracteres crus da chave — usernames MQTT aparecem em logs do broker,
+    // ACL e $SYS topics, então usar a chave direto vazaria parte dela)
+    $key_hash = substr(hash('sha256', $api_key), 0, 16);
     $username = "mqdev_" . $key_hash;
     $password = bin2hex(random_bytes(12)); // 24 caracteres
     
@@ -30,12 +35,15 @@ function generateMQTTCredentials($conn, $device_id, $api_key) {
     $hash_b64 = base64_encode($hash);
     $password_hash = sprintf('$7$%d$%s$%s', 101, $salt_b64, $hash_b64);
     
-    // Insere credenciais no banco
+    // Insere credenciais no banco. mqtt_password (texto puro) é gravado aqui
+    // também — sem isso, get_mqtt_credentials.php nunca encontra a senha
+    // pronta pra devolver e cai no fallback frágil de ler arquivo de backup,
+    // até acabar caindo no 424 "senha não encontrada" pra todo device novo.
     $stmt = $conn->prepare(
-        "INSERT INTO mqtt_credentials (device_id, mqtt_username, mqtt_password_hash, enabled) 
-         VALUES (?, ?, ?, 1)"
+        "INSERT INTO mqtt_credentials (device_id, mqtt_username, mqtt_password, mqtt_password_hash, enabled)
+         VALUES (?, ?, ?, ?, 1)"
     );
-    $stmt->execute([$device_id, $username, $password_hash]);
+    $stmt->execute([$device_id, $username, $password, $password_hash]);
     
     return [
         'username' => $username,
@@ -49,6 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     echo json_encode(['error' => 'Método não permitido. Use POST.']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 $data = json_decode(file_get_contents("php://input"));
 

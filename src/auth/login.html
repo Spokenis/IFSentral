@@ -48,7 +48,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="../pages/index.html"><b>IF</b>Sentral</a>
+    <a href="/"><b>IF</b>Sentral</a>
   </div>
   <div class="card card-outline card-primary">
     <div class="card-body login-card-body">
@@ -84,16 +84,33 @@
             <button type="submit" class="btn btn-primary btn-block" id="login-button">Entrar</button>
           </div>
         </div>
-        
+
         <div id="login-status-msg"></div>
 
       </form>
 
-      <p class="mb-1">
-        <a href="#">Esqueci minha senha</a>
+      <form id="twofa-form" style="display:none;">
+        <p class="login-box-msg">Informe o código de 6 dígitos do seu aplicativo autenticador (ou um código de backup)</p>
+        <div class="input-group mb-3">
+          <input type="text" class="form-control" placeholder="Código de verificação" id="twofa-code" autocomplete="one-time-code" inputmode="numeric" required>
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-shield-alt"></span>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block" id="twofa-button">Verificar</button>
+        <div id="twofa-status-msg"></div>
+        <p class="mb-0 mt-3">
+          <a href="#" id="twofa-voltar">Voltar ao login</a>
+        </p>
+      </form>
+
+      <p class="mb-1" id="esqueci-senha-link">
+        <a href="/esqueci-senha">Esqueci minha senha</a>
       </p>
-      <p class="mb-0">
-        <a href="register.html" class="text-center">Criar uma nova conta</a>
+      <p class="mb-0" id="criar-conta-link">
+        <a href="/registrar" class="text-center">Criar uma nova conta</a>
       </p>
     </div>
   </div>
@@ -107,11 +124,37 @@
     const loginForm = document.getElementById('login-form');
     const statusMsg = document.getElementById('login-status-msg');
     const loginButton = document.getElementById('login-button');
-    const API_URL = 'login_api.php';
+    const API_URL = '/api/login';
+
+    const twofaForm = document.getElementById('twofa-form');
+    const twofaStatusMsg = document.getElementById('twofa-status-msg');
+    const twofaButton = document.getElementById('twofa-button');
+    const twofaCodeInput = document.getElementById('twofa-code');
+    const twofaVoltarLink = document.getElementById('twofa-voltar');
+    const esqueciSenhaLink = document.getElementById('esqueci-senha-link');
+    const criarContaLink = document.getElementById('criar-conta-link');
+    const API_URL_2FA = '/api/verificar-2fa';
+
+    function mostrarEtapa2FA() {
+        loginForm.style.display = 'none';
+        esqueciSenhaLink.style.display = 'none';
+        criarContaLink.style.display = 'none';
+        twofaForm.style.display = 'block';
+        twofaCodeInput.focus();
+    }
+
+    function voltarParaLogin() {
+        twofaForm.style.display = 'none';
+        loginForm.style.display = 'block';
+        esqueciSenhaLink.style.display = 'block';
+        criarContaLink.style.display = 'block';
+        twofaStatusMsg.innerHTML = '';
+        twofaForm.reset();
+    }
 
     loginForm.addEventListener('submit', async function(event) {
         event.preventDefault(); // Impede o envio tradicional do formulário
-        
+
         statusMsg.innerHTML = 'Autenticando...';
         statusMsg.style.color = 'black';
         loginButton.disabled = true;
@@ -133,7 +176,7 @@
                 body: JSON.stringify(data),
                 // ESSENCIAL: Permite que o cookie de sessão seja enviado
                 // e recebido pelo navegador.
-                credentials: 'include' 
+                credentials: 'include'
             });
 
             const resultado = await response.json();
@@ -143,17 +186,59 @@
                 throw new Error(resultado.error || 'Erro desconhecido');
             }
 
+            if (resultado.twofa_required) {
+                statusMsg.innerHTML = '';
+                loginButton.disabled = false;
+                mostrarEtapa2FA();
+                return;
+            }
+
             // Sucesso!
             statusMsg.innerHTML = `<span style="color: green;">${resultado.message} Redirecionando...</span>`;
-            
+
             // Redireciona para a página de "Meus Projetos" após o login
             // (a mesma que estava no 'action' original do seu formulário)
-            window.location.href = '../pages/meus-projetos.php';
+            window.location.href = '/meus-projetos';
 
         } catch (error) {
             statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
             loginButton.disabled = false;
         }
+    });
+
+    twofaForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+
+        twofaStatusMsg.innerHTML = 'Verificando...';
+        twofaStatusMsg.style.color = 'black';
+        twofaButton.disabled = true;
+
+        try {
+            const response = await fetch(API_URL_2FA, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: twofaCodeInput.value.trim() }),
+                credentials: 'include'
+            });
+
+            const resultado = await response.json();
+
+            if (!response.ok) {
+                throw new Error(resultado.error || 'Erro desconhecido');
+            }
+
+            twofaStatusMsg.innerHTML = `<span style="color: green;">${resultado.message} Redirecionando...</span>`;
+            window.location.href = '/meus-projetos';
+
+        } catch (error) {
+            twofaStatusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
+            twofaButton.disabled = false;
+        }
+    });
+
+    twofaVoltarLink.addEventListener('click', function(event) {
+        event.preventDefault();
+        voltarParaLogin();
     });
 </script>
 </body>
