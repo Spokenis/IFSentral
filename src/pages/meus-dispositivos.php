@@ -150,7 +150,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
                     <i class="fas fa-microchip"></i>
                     <h4>Nenhum dispositivo encontrado</h4>
                     <p>Você ainda não possui dispositivos cadastrados em seus projetos.</p>
-                    <a href="meus-projetos.php" class="btn btn-primary mt-3">
+                    <a href="/meus-projetos" class="btn btn-primary mt-3">
                         <i class="fas fa-plus mr-2"></i>Ver Meus Projetos
                     </a>
                 </div>
@@ -166,11 +166,11 @@ require_once __DIR__ . '/../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 
 <script>
-    const API_LISTAR_DISPOSITIVOS = '../api/listar_meus_dispositivos.php';
+    const API_LISTAR_DISPOSITIVOS = '/api/listar-meus-dispositivos';
     
     const loadingState = document.getElementById('loading-state');
     const emptyState = document.getElementById('empty-state');
@@ -253,6 +253,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
                         <h5 class="card-title" style="color: var(--ifsc-primary);">
                             <i class="fas fa-microchip mr-2"></i>
                             ${escapeHtml(device.name)}
+                            ${device.is_online
+                                ? '<span class="badge badge-success ml-1"><i class="fas fa-circle mr-1"></i>Online</span>'
+                                : '<span class="badge badge-secondary ml-1"><i class="fas fa-circle mr-1"></i>Offline</span>'}
                         </h5>
                         <p class="card-text text-muted small mt-2">
                             ${escapeHtml(device.description || 'Sem descrição')}
@@ -276,7 +279,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
                         </div>
                     </div>
                     <div class="card-footer bg-white">
-                        <a href="gerenciar-projeto.php?id=${project.project_id}" class="btn btn-sm btn-outline-primary">
+                        <a href="/projeto?id=${project.project_id}" class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-eye mr-1"></i>Ver Projeto
                         </a>
                     </div>

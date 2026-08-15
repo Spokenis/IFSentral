@@ -94,9 +94,19 @@ if ($method === 'PUT') {
 
     try {
         $conn->beginTransaction();
-        
-        $stmt = $conn->prepare("UPDATE profile_requests SET status = ? WHERE id = ?");
+
+        // Só atualiza se ainda estiver pendente — evita reprocessar (e promover
+        // de novo, ou sobrescrever uma rejeição) uma solicitação já respondida
+        // por outra aba/admin.
+        $stmt = $conn->prepare("UPDATE profile_requests SET status = ? WHERE id = ? AND status = 'pendente'");
         $stmt->execute([$status, $request_id]);
+
+        if ($stmt->rowCount() === 0) {
+            $conn->rollBack();
+            http_response_code(409);
+            echo json_encode(['error' => 'Esta solicitação já foi respondida anteriormente.']);
+            exit;
+        }
 
         if ($status === 'aprovado') {
             $stmt = $conn->prepare("SELECT user_id FROM profile_requests WHERE id = ?");

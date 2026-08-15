@@ -35,7 +35,9 @@ if (
     exit;
 }
 
-$profile = isset($data->profile) ? $data->profile : 'User';
+// Cadastro público sempre cria conta com perfil 'User' — o campo 'profile'
+// do payload é ignorado para impedir que o cliente se auto-promova a Admin/Moderator.
+$profile = 'User';
 
 // --- HASH DA SENHA ---
 $password_hash = password_hash($data->password, PASSWORD_BCRYPT);

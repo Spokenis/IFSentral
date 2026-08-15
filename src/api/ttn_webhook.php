@@ -101,6 +101,20 @@ if (!$rateCheck['allowed']) {
 try {
     // Usa PayloadHandler para salvar (com validação e autenticação integrada)
     $handler = new PayloadHandler($conn);
+
+    // Mesma validação de estrutura aplicada em enviar_payload.php (HTTP) e no
+    // subscriber MQTT — faltava aqui, então payloads vindos do TTN escapavam
+    // dos limites de profundidade/tamanho/nº de chaves.
+    $validation = $handler->validatePayload($payload_real, $device_id);
+    if (!$validation['valid']) {
+        http_response_code(400);
+        echo json_encode([
+            'error' => 'Payload inválido',
+            'errors' => $validation['errors']
+        ]);
+        exit;
+    }
+
     $result = $handler->savePayload($device_id, $api_key, $payload_real, 'ttn');
 
     if ($result['success']) {

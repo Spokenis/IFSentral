@@ -3,7 +3,7 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: explorar_projetos.php');
+    header('Location: /explorar-projetos');
     exit;
 }
 $project_id_from_url = intval($_GET['id']);
@@ -28,17 +28,17 @@ try {
     $project = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$project) {
-        header('Location: explorar_projetos.php');
+        header('Location: /explorar-projetos');
         exit;
     }
     
     // Se o projeto não for público, redirecionar
     if (!$project['public']) {
-        header('Location: explorar_projetos.php');
+        header('Location: /explorar-projetos');
         exit;
     }
 } catch (Exception $e) {
-    header('Location: explorar_projetos.php');
+    header('Location: /explorar-projetos');
     exit;
 }
 
@@ -134,7 +134,7 @@ if (!empty($project['project_tags'])) {
             <p class="text-muted mt-2">
 
               <i class="fas fa-globe mr-1"></i>Projeto Público | 
-              <a href="explorar_projetos.php">Voltar para Explorar Projetos</a>
+              <a href="/explorar-projetos">Voltar para Explorar Projetos</a>
             </p>
           </div>
         </div>
@@ -219,8 +219,8 @@ if (!empty($project['project_tags'])) {
     const PROJECT_ID = <?php echo $project_id_from_url; ?>;
   const CURRENT_USER_ID = <?php echo intval($_SESSION['user_id'] ?? 0); ?>;
 </script>
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -231,11 +231,11 @@ if (!empty($project['project_tags'])) {
 <script>
 $(function() {
     // APIs
-    const API_LISTAR_GRAFICOS = `listar_graficos.php?project_id=${PROJECT_ID}`;
+    const API_LISTAR_GRAFICOS = `/api/listar-graficos?project_id=${PROJECT_ID}`;
 
-    const API_OBTER_DADOS_GRAFICO = '../api/obter_dados_grafico_renderizado.php';
-    const API_LISTAR_PARTICIPANTES = `../api/listar_participantes.php?project_id=${PROJECT_ID}`;
-    const API_ENVIAR_SOLICITACAO = '../api/enviar_solicitacao_participacao.php';
+    const API_OBTER_DADOS_GRAFICO = '/api/obter-dados-grafico-renderizado';
+    const API_LISTAR_PARTICIPANTES = `/api/listar-participantes?project_id=${PROJECT_ID}`;
+    const API_ENVIAR_SOLICITACAO = '/api/enviar-solicitacao-participacao';
     
     let chartInstances = {};
     let isUserParticipant = false;

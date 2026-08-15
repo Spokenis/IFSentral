@@ -143,7 +143,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                     <div class="row">
                                         <div class="col-md-4 text-center">
                                             <div class="mb-3">
-                                                <img id="preview-foto" src="../assets/img/default-avatar.svg" 
+                                                <img id="preview-foto" src="/assets/img/default-avatar.svg" 
                                                      alt="Foto de Perfil" 
                                                      class="img-fluid rounded-circle" 
                                                      style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--ifsc-primary);">
@@ -236,6 +236,63 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                         </button>
                                     </form>
                                 </div>
+
+                                <div class="form-section" id="secao-2fa">
+                                    <h4><i class="fas fa-shield-alt mr-2"></i>Autenticação de Dois Fatores (2FA)</h4>
+
+                                    <div id="twofa-loading" class="text-muted">Carregando status...</div>
+
+                                    <!-- Estado: 2FA desativado -->
+                                    <div id="twofa-disabled-view" style="display:none;">
+                                        <p class="text-muted">Adicione uma camada extra de segurança: além da senha, será exigido um código gerado por um aplicativo autenticador (Google Authenticator, Authy, etc.) a cada login.</p>
+                                        <button type="button" class="btn btn-primary" id="btn-iniciar-2fa">
+                                            <i class="fas fa-shield-alt mr-2"></i>Ativar 2FA
+                                        </button>
+                                    </div>
+
+                                    <!-- Estado: configurando (mostra segredo + pede código de confirmação) -->
+                                    <div id="twofa-setup-view" style="display:none;">
+                                        <p>1. Adicione esta chave no seu aplicativo autenticador (entrada manual):</p>
+                                        <div class="input-group mb-3">
+                                            <input type="text" class="form-control" id="twofa-secret" readonly>
+                                            <div class="input-group-append">
+                                                <button class="btn btn-outline-secondary" type="button" id="btn-copiar-secret">Copiar</button>
+                                            </div>
+                                        </div>
+                                        <p class="text-muted"><small>Ou use a URI de configuração: <span id="twofa-uri" style="word-break: break-all;"></span></small></p>
+
+                                        <p>2. Digite o código de 6 dígitos gerado pelo aplicativo para confirmar:</p>
+                                        <form id="form-confirmar-2fa">
+                                            <div class="form-group">
+                                                <input type="text" class="form-control" id="input-2fa-confirmar-codigo" placeholder="000000" inputmode="numeric" maxlength="6">
+                                            </div>
+                                            <div id="twofa-setup-status"></div>
+                                            <button type="submit" class="btn btn-primary" id="btn-confirmar-2fa">Confirmar e ativar</button>
+                                            <button type="button" class="btn btn-link" id="btn-cancelar-2fa">Cancelar</button>
+                                        </form>
+                                    </div>
+
+                                    <!-- Estado: códigos de backup (mostrados uma única vez) -->
+                                    <div id="twofa-backup-codes-view" style="display:none;">
+                                        <div class="alert alert-warning">
+                                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                                            <strong>Guarde estes códigos de backup em um local seguro.</strong> Cada um pode ser usado uma única vez para entrar caso você perca acesso ao seu aplicativo autenticador. Eles não serão mostrados novamente.
+                                        </div>
+                                        <pre id="twofa-backup-codes-list" class="bg-light p-3"></pre>
+                                        <button type="button" class="btn btn-primary" id="btn-concluir-2fa">Já salvei meus códigos</button>
+                                    </div>
+
+                                    <!-- Estado: 2FA ativado -->
+                                    <div id="twofa-enabled-view" style="display:none;">
+                                        <p><span class="badge badge-success"><i class="fas fa-check mr-1"></i>2FA está ativado</span></p>
+                                        <p class="text-muted">Para desativar, confirme sua senha atual.</p>
+                                        <form id="form-desativar-2fa" class="form-inline">
+                                            <input type="password" class="form-control mr-2" id="input-2fa-senha-desativar" placeholder="Senha atual">
+                                            <button type="submit" class="btn btn-danger" id="btn-desativar-2fa">Desativar 2FA</button>
+                                        </form>
+                                        <div id="twofa-disable-status"></div>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="tab-pane" id="conta">
@@ -282,15 +339,19 @@ require_once __DIR__ . '/../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 
 <script>
-    const API_OBTER_PERFIL = '../api/obter_perfil_usuario.php';
-    const API_ATUALIZAR_PERFIL = '../api/atualizar_perfil.php';
-    const API_ATUALIZAR_SENHA = '../api/atualizar_senha.php';
-    const API_UPLOAD_FOTO = '../api/upload_foto_perfil.php';
-    const API_DELETAR_FOTO = '../api/deletar_foto_perfil.php';
+    const API_OBTER_PERFIL = '/api/obter-perfil-usuario';
+    const API_ATUALIZAR_PERFIL = '/api/atualizar-perfil';
+    const API_ATUALIZAR_SENHA = '/api/atualizar-senha';
+    const API_UPLOAD_FOTO = '/api/upload-foto-perfil';
+    const API_DELETAR_FOTO = '/api/deletar-foto-perfil';
+    const API_2FA_STATUS = '/api/2fa-status';
+    const API_2FA_INICIAR = '/api/2fa-iniciar-configuracao';
+    const API_2FA_CONFIRMAR = '/api/2fa-confirmar-configuracao';
+    const API_2FA_DESATIVAR = '/api/2fa-desativar';
     
     const formPerfil = document.getElementById('form-perfil');
     const inputName = document.getElementById('input-name');
@@ -317,6 +378,25 @@ require_once __DIR__ . '/../auth/auth_check.php';
     const infoProfile = document.getElementById('info-profile');
     const infoCreated = document.getElementById('info-created');
     const infoUpdated = document.getElementById('info-updated');
+
+    const twofaLoading = document.getElementById('twofa-loading');
+    const twofaDisabledView = document.getElementById('twofa-disabled-view');
+    const twofaSetupView = document.getElementById('twofa-setup-view');
+    const twofaBackupCodesView = document.getElementById('twofa-backup-codes-view');
+    const twofaEnabledView = document.getElementById('twofa-enabled-view');
+    const btnIniciar2fa = document.getElementById('btn-iniciar-2fa');
+    const twofaSecretInput = document.getElementById('twofa-secret');
+    const twofaUriEl = document.getElementById('twofa-uri');
+    const btnCopiarSecret = document.getElementById('btn-copiar-secret');
+    const formConfirmar2fa = document.getElementById('form-confirmar-2fa');
+    const inputConfirmarCodigo = document.getElementById('input-2fa-confirmar-codigo');
+    const twofaSetupStatus = document.getElementById('twofa-setup-status');
+    const btnCancelar2fa = document.getElementById('btn-cancelar-2fa');
+    const twofaBackupCodesList = document.getElementById('twofa-backup-codes-list');
+    const btnConcluir2fa = document.getElementById('btn-concluir-2fa');
+    const formDesativar2fa = document.getElementById('form-desativar-2fa');
+    const inputSenhaDesativar2fa = document.getElementById('input-2fa-senha-desativar');
+    const twofaDisableStatus = document.getElementById('twofa-disable-status');
     
     async function carregarPerfil() {
         try {
@@ -333,10 +413,10 @@ require_once __DIR__ . '/../auth/auth_check.php';
             inputUsername.value = user.username || '';
             
             if (user.profile_picture) {
-                previewFoto.src = '../../' + user.profile_picture;
+                previewFoto.src = '/' + user.profile_picture;
                 btnDeletarFoto.disabled = false;
             } else {
-                previewFoto.src = '../assets/img/default-avatar.svg';
+                previewFoto.src = '/assets/img/default-avatar.svg';
                 btnDeletarFoto.disabled = true;
             }
             
@@ -549,13 +629,110 @@ require_once __DIR__ . '/../auth/auth_check.php';
         }
     }
     
+    function mostrarView2fa(view) {
+        [twofaLoading, twofaDisabledView, twofaSetupView, twofaBackupCodesView, twofaEnabledView].forEach(function(el) {
+            el.style.display = 'none';
+        });
+        view.style.display = 'block';
+    }
+
+    async function carregar2FAStatus() {
+        try {
+            const response = await fetch(API_2FA_STATUS, { credentials: 'include' });
+            const data = await safeJson(response);
+            mostrarView2fa(data.enabled ? twofaEnabledView : twofaDisabledView);
+        } catch (error) {
+            twofaLoading.textContent = 'Erro ao carregar status do 2FA: ' + error.message;
+        }
+    }
+
+    async function iniciar2FA() {
+        btnIniciar2fa.disabled = true;
+        try {
+            const response = await fetch(API_2FA_INICIAR, { method: 'POST', credentials: 'include' });
+            const data = await safeJson(response);
+            twofaSecretInput.value = data.secret;
+            twofaUriEl.textContent = data.otpauth_uri;
+            inputConfirmarCodigo.value = '';
+            twofaSetupStatus.innerHTML = '';
+            mostrarView2fa(twofaSetupView);
+        } catch (error) {
+            alert('Erro ao iniciar configuração do 2FA: ' + error.message);
+        } finally {
+            btnIniciar2fa.disabled = false;
+        }
+    }
+
+    async function confirmar2FA(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btn-confirmar-2fa');
+        btn.disabled = true;
+        twofaSetupStatus.innerHTML = '';
+
+        try {
+            const response = await fetch(API_2FA_CONFIRMAR, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ code: inputConfirmarCodigo.value.trim() })
+            });
+            const data = await safeJson(response);
+
+            twofaBackupCodesList.textContent = data.backup_codes.join('\n');
+            mostrarView2fa(twofaBackupCodesView);
+        } catch (error) {
+            twofaSetupStatus.innerHTML = '<div class="alert alert-danger mt-3 mb-0">' + error.message + '</div>';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+
+    async function desativar2FA(e) {
+        e.preventDefault();
+        const senha = inputSenhaDesativar2fa.value;
+        if (!senha) {
+            twofaDisableStatus.innerHTML = '<div class="alert alert-warning mt-3 mb-0">Informe sua senha atual</div>';
+            return;
+        }
+
+        document.getElementById('btn-desativar-2fa').disabled = true;
+        twofaDisableStatus.innerHTML = '';
+
+        try {
+            const response = await fetch(API_2FA_DESATIVAR, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ password: senha })
+            });
+            await safeJson(response);
+            formDesativar2fa.reset();
+            mostrarView2fa(twofaDisabledView);
+        } catch (error) {
+            twofaDisableStatus.innerHTML = '<div class="alert alert-danger mt-3 mb-0">' + error.message + '</div>';
+        } finally {
+            document.getElementById('btn-desativar-2fa').disabled = false;
+        }
+    }
+
+    btnIniciar2fa.addEventListener('click', iniciar2FA);
+    formConfirmar2fa.addEventListener('submit', confirmar2FA);
+    btnCancelar2fa.addEventListener('click', function () { mostrarView2fa(twofaDisabledView); });
+    btnConcluir2fa.addEventListener('click', carregar2FAStatus);
+    formDesativar2fa.addEventListener('submit', desativar2FA);
+    btnCopiarSecret.addEventListener('click', function () {
+        twofaSecretInput.select();
+        navigator.clipboard && navigator.clipboard.writeText(twofaSecretInput.value);
+    });
+
     formPerfil.addEventListener('submit', atualizarPerfil);
     formSenha.addEventListener('submit', alterarSenha);
     formFoto.addEventListener('submit', uploadFoto);
     inputFoto.addEventListener('change', previewFotoSelecionada);
     btnDeletarFoto.addEventListener('click', deletarFoto);
-    
+
     carregarPerfil();
+    carregar2FAStatus();
 </script>
 
 </body>

@@ -48,7 +48,7 @@
 <body class="hold-transition register-page">
 <div class="register-box">
   <div class="register-logo">
-    <a href="../pages/index.html"><b>IF</b>Sentral</a>
+    <a href="/"><b>IF</b>Sentral</a>
   </div>
 
   <div class="card card-outline card-primary">
@@ -103,7 +103,7 @@
             <div class="icheck-primary">
               <input type="checkbox" id="agreeTerms" name="terms" value="agree" required>
               <label for="agreeTerms">
-               Eu concordo com os <a href="../pages/termos.php" target="_blank">termos</a>
+               Eu concordo com os <a href="/termos" target="_blank">termos</a>
               </label>
             </div>
           </div>
@@ -116,7 +116,7 @@
         
       </form>
 
-      <a href="login.html" class="text-center">Eu já tenho uma conta</a>
+      <a href="/login" class="text-center">Eu já tenho uma conta</a>
     </div>
   </div>
 </div>
@@ -129,7 +129,7 @@
     const registerForm = document.getElementById('register-form');
     const statusMsg = document.getElementById('register-status-msg');
     const registerButton = document.getElementById('register-button');
-    const API_URL = 'cadastrar_usuario.php';
+    const API_URL = '/api/cadastrar-usuario';
 
     registerForm.addEventListener('submit', async function(event) {
         event.preventDefault(); // Impede o envio tradicional
@@ -189,7 +189,7 @@
             
             // Redireciona para o login após 2 segundos
             setTimeout(() => {
-                window.location.href = '../auth/login.html';
+                window.location.href = '/login';
             }, 2000);
 
         } catch (error) {

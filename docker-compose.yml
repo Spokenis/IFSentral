@@ -93,14 +93,21 @@ services:
     command: []
     ports:
       - "1883:1883"
+      - "8883:8883"
       - "9001:9001"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - ./mosquitto-entrypoint.sh:/usr/local/bin/mosquitto-entrypoint.sh:ro
       - mqtt_config:/mosquitto/config
       - mqtt_data:/mosquitto/data
+      # Mesmos certificados usados pelo Apache (ver setup-ssl.sh) — montados
+      # read-only, exatamente como no serviço web/worker.
+      - /etc/ssl/certs/ifsentral-chain.crt:/etc/ssl/certs/ifsentral-chain.crt:ro
+      - /etc/ssl/private/ifsentral.key:/etc/ssl/private/ifsentral.key:ro
     healthcheck:
-      test: ["CMD-SHELL", "nc -z localhost 1883 || exit 1"]
+      # Checa 1883 e 8883: se o certificado estiver com problema, o listener
+      # TLS falha ao subir mesmo com o broker "saudável" em 1883.
+      test: ["CMD-SHELL", "nc -z localhost 1883 && nc -z localhost 8883 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

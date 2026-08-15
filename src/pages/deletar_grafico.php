@@ -3,6 +3,9 @@
 
 require_once '../config/config.php';
 setupSecureCORS();
+require_once '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -13,6 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 
 require '../config/db.php';
 require '../auth/auth_check.php'; // Protegido
+
+Csrf::requireValidToken();
 
 // Aceita JSON
 $data = json_decode(file_get_contents("php://input"));
@@ -25,7 +30,7 @@ if (!isset($data->chart_id) || !is_numeric($data->chart_id)) {
 
 $chart_id = $data->chart_id;
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {

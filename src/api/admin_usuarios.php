@@ -6,6 +6,9 @@ require_once '../core/ApiError.php';
 header("Content-Type: application/json; charset=UTF-8");
 require '../config/db.php';
 require '../auth/auth_check.php';
+require_once '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 // Verifica se é Admin
 $identifier = $_SESSION['user_id'] ?? $_SESSION['email'];
@@ -23,12 +26,51 @@ if (!$admin || $admin['profile'] !== 'Admin') {
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// LISTAR USUÁRIOS
+// PUT/DELETE alteram estado — exige token CSRF válido (GET de listagem fica de fora)
+if ($method === 'PUT' || $method === 'DELETE') {
+    Csrf::requireValidToken();
+}
+
+// LISTAR USUÁRIOS (paginado, com busca opcional por nome/e-mail/username)
 if ($method === 'GET') {
     try {
-        $stmt = $conn->query("SELECT id, name, email, profile, createdAt FROM users WHERE deletedAt IS NULL ORDER BY createdAt DESC");
+        $page = max(1, intval($_GET['page'] ?? 1));
+        $perPage = max(1, min(100, intval($_GET['per_page'] ?? 20)));
+        $offset = ($page - 1) * $perPage;
+        $search = trim($_GET['search'] ?? '');
+        $searchLike = '%' . $search . '%';
+
+        $whereSearch = "AND (? = '' OR name LIKE ? OR email LIKE ? OR username LIKE ?)";
+
+        $countStmt = $conn->prepare("SELECT COUNT(*) FROM users WHERE deletedAt IS NULL $whereSearch");
+        $countStmt->execute([$search, $searchLike, $searchLike, $searchLike]);
+        $total = (int) $countStmt->fetchColumn();
+
+        $stmt = $conn->prepare("
+            SELECT id, name, email, profile, createdAt
+            FROM users
+            WHERE deletedAt IS NULL $whereSearch
+            ORDER BY createdAt DESC
+            LIMIT ? OFFSET ?
+        ");
+        $stmt->bindValue(1, $search);
+        $stmt->bindValue(2, $searchLike);
+        $stmt->bindValue(3, $searchLike);
+        $stmt->bindValue(4, $searchLike);
+        $stmt->bindValue(5, $perPage, PDO::PARAM_INT);
+        $stmt->bindValue(6, $offset, PDO::PARAM_INT);
+        $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($users);
+
+        echo json_encode([
+            'data' => $users,
+            'pagination' => [
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'total_pages' => (int) ceil($total / $perPage),
+            ],
+        ]);
     } catch (PDOException $e) {
         api_error_response('Erro ao listar usuários', $e, 500);
     }

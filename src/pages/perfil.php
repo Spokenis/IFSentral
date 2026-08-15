@@ -73,12 +73,12 @@ require '../auth/auth_check.php';
             <div class="card card-primary card-outline text-center">
               <div class="card-body">
                 <img class="user-profile-picture img-fluid rounded-circle mb-3" 
-                     src="../assets/img/default-avatar.svg" 
+                     src="/assets/img/default-avatar.svg" 
                      alt="Foto de Perfil"
                      style="width: 150px; height: 150px; object-fit: cover; border: 3px solid #1B7D3D;">
                 <h5 id="profile-name"><?php echo htmlspecialchars($username_logado); ?></h5>
                 <p class="text-muted" id="profile-email"><?php echo htmlspecialchars($_SESSION['email'] ?? ''); ?></p>
-                <a href="configuracoes.php" class="btn btn-sm btn-primary">
+                <a href="/configuracoes" class="btn btn-sm btn-primary">
                   <i class="fas fa-edit mr-1"></i>Editar Perfil
                 </a>
               </div>
@@ -128,18 +128,18 @@ require '../auth/auth_check.php';
   <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </div>
 
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 
 <script>
   $(function () {
-    const API_LISTAR_CONVITES = '../api/listar_convites.php';
-    const API_ACEITAR_CONVITE = '../api/aceitar_convite.php';
-    const API_RECUSAR_CONVITE = '../api/recusar_convite.php';
-    const API_SOLICITACOES_PERFIL = '../api/solicitacoes_perfil.php';
+    const API_LISTAR_CONVITES = '/api/listar-convites';
+    const API_ACEITAR_CONVITE = '/api/aceitar-convite';
+    const API_RECUSAR_CONVITE = '/api/recusar-convite';
+    const API_SOLICITACOES_PERFIL = '/api/solicitacoes-perfil';
 
 
     const invitesStatus = document.getElementById('invites-status');

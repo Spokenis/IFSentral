@@ -5,8 +5,10 @@ require_once '../config/config.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/Csrf.php';
 
 use App\Core\AuthMiddleware;
+use App\Core\Csrf;
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -22,6 +24,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     echo json_encode(['error' => 'Método não permitido. Use POST.']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -39,30 +43,16 @@ $invited_email = trim($data->invited_email);
 $role_id = intval($data->role_id);
 
 try {
+    // Apenas o Gerente do projeto pode convidar membros (mesma regra usada em
+    // alterar_visibilidade_projeto.php, promover_gerente.php, expulsar_participante.php).
+    // Antes havia uma checagem extra exigindo perfil global Moderator/Admin,
+    // o que impedia um Gerente comum de convidar gente para o próprio projeto.
     if (!AuthMiddleware::isProjectManager($conn, $user_id, $project_id)) {
         http_response_code(403);
         echo json_encode(['error' => 'Você não tem permissão para convidar membros a este projeto.']);
         exit;
     }
 
-    $profileSql = "SELECT profile FROM users WHERE id = ? AND deletedAt IS NULL LIMIT 1";
-    $profileStmt = $conn->prepare($profileSql);
-    $profileStmt->execute([$user_id]);
-    $userProfile = $profileStmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$userProfile) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Usuário não encontrado.']);
-        exit;
-    }
-
-    // Verificar se o usuário é Moderator ou Admin no sistema (pode ser gerente)
-    if ($userProfile['profile'] !== 'Moderator' && $userProfile['profile'] !== 'Admin') {
-        http_response_code(403);
-        echo json_encode(['error' => 'Apenas Moderadores podem gerenciar projetos.']);
-        exit;
-    }
-    
     // Verificar se o e-mail é válido
     if (!filter_var($invited_email, FILTER_VALIDATE_EMAIL)) {
         http_response_code(400);

@@ -3,6 +3,11 @@
 
 require_once '../config/config.php';
 require_once '../core/ApiError.php';
+require_once '../core/RateLimiter.php';
+require_once '../core/Csrf.php';
+
+use App\Core\RateLimiter;
+use App\Core\Csrf;
 
 // Configura CORS seguro
 setupSecureCORS();
@@ -44,22 +49,63 @@ if (!isset($data->email) || !isset($data->password)) {
     exit;
 }
 
-// 3. Busca o usuário pelo e-mail
+// 3. Verifica se e-mail/IP excederam tentativas de login mal-sucedidas
+$client_ip = $_SERVER['REMOTE_ADDR'] ?? null;
+$rateLimiter = new RateLimiter($conn);
+$loginCheck = $rateLimiter->checkLoginAttempts($data->email, $client_ip);
+
+if (!$loginCheck['allowed']) {
+    http_response_code(429);
+    echo json_encode([
+        'error' => 'Muitas tentativas de login. Tente novamente mais tarde.',
+        'retry_info' => "Limite de {$loginCheck['max_attempts']} tentativas excedido."
+    ]);
+    exit;
+}
+
+// 4. Busca o usuário pelo e-mail
 try {
-    $sql = "SELECT id, username, email, password_hash 
-            FROM users 
+    $sql = "SELECT id, username, email, password_hash
+            FROM users
             WHERE email = ? AND deletedAt IS NULL";
-    
+
     $stmt = $conn->prepare($sql);
     $stmt->execute([$data->email]);
-    
+
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // 4. Verifica se o usuário existe E se a senha está correta
+    // 5. Verifica se o usuário existe E se a senha está correta
     if ($user && password_verify($data->password, $user['password_hash'])) {
-        
-        // 5. SUCESSO! Armazena os dados na sessão
-        // Não armazene a senha ou o hash!
+
+        $rateLimiter->recordLoginAttempt($data->email, $client_ip, true);
+
+        // 6. Se o usuário tiver 2FA ativado, a senha correta só confirma o
+        // primeiro fator — o login só se completa em verificar_2fa_api.php.
+        $stmt2fa = $conn->prepare("SELECT enabled FROM user_2fa WHERE user_id = ?");
+        $stmt2fa->execute([$user['id']]);
+        $twofa = $stmt2fa->fetch(PDO::FETCH_ASSOC);
+
+        if ($twofa && $twofa['enabled']) {
+            // O usuário já provou conhecer a senha, então regeneramos a
+            // sessão aqui também (login ainda não está completo).
+            session_regenerate_id(true);
+            $_SESSION['2fa_pending_user_id'] = $user['id'];
+            $_SESSION['2fa_pending_remember'] = $remember;
+
+            http_response_code(200);
+            echo json_encode([
+                'twofa_required' => true,
+                'message' => 'Informe o código de autenticação de dois fatores.'
+            ]);
+            exit;
+        }
+
+        // 7. SUCESSO! Regenera o ID de sessão e o token CSRF para prevenir
+        // session fixation (descarta qualquer ID/token pré-autenticação)
+        session_regenerate_id(true);
+        Csrf::regenerateToken();
+
+        // Armazena os dados na sessão. Não armazene a senha ou o hash!
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['username'] = $user['username'];
         $_SESSION['email'] = $user['email'];
@@ -80,6 +126,7 @@ try {
 
     } else {
         // Falha no login (usuário não encontrado ou senha errada)
+        $rateLimiter->recordLoginAttempt($data->email, $client_ip, false);
         http_response_code(401); // Unauthorized
         echo json_encode(['error' => 'E-mail ou senha inválidos.']);
     }

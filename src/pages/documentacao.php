@@ -6,7 +6,7 @@ require '../auth/auth_check.php';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Documentação da API | IFSentral</title>
+  <title>Documentação | IFSentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -80,8 +80,8 @@ require '../auth/auth_check.php';
       <div class="container">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1>Documentação da API</h1>
-            <p class="text-muted">Como enviar e receber dados dos seus dispositivos.</p>
+            <h1>Documentação</h1>
+            <p class="text-muted">Como usar a plataforma: navegação, permissões, convites — e a documentação técnica da API de dispositivos.</p>
           </div>
         </div>
       </div>
@@ -91,11 +91,119 @@ require '../auth/auth_check.php';
       <div class="container">
         <div class="row">
           <div class="col-md-12">
-            
+
+            <div class="card card-success card-outline">
+              <div class="card-header"><h3 class="card-title"><i class="fas fa-map-signs mr-1"></i> Mapa da Plataforma — Onde Encontrar Cada Coisa</h3></div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                      <tr><th>Quero...</th><th>Onde ir</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Ver os projetos dos quais participo</td><td><strong>Meus Projetos</strong> (menu superior)</td></tr>
+                      <tr><td>Encontrar e pedir para entrar em um projeto público de outra pessoa</td><td><strong>Explorar Projetos</strong> (menu superior) — tem busca por nome, tag ou gerente</td></tr>
+                      <tr><td>Ver todos os meus dispositivos, de todos os projetos, de uma vez</td><td><strong>Meu Perfil ▸ Meus Sensores</strong> (menu do avatar, canto superior direito)</td></tr>
+                      <tr><td>Gerenciar um dispositivo específico (payloads, tags, mapeamento de valores, credenciais, excluir)</td><td>Dentro do projeto ▸ aba <strong>Dispositivos</strong> ▸ clique no dispositivo</td></tr>
+                      <tr><td>Ver/aceitar convites recebidos, ou pedir para virar Moderador</td><td><strong>Meu Perfil</strong> (menu do avatar)</td></tr>
+                      <tr><td>Trocar senha, ativar 2FA, editar dados da conta</td><td><strong>Configurações</strong> (menu do avatar) ▸ aba <strong>Segurança</strong></td></tr>
+                      <tr><td>Ver notificações de convites e solicitações pendentes</td><td>Ícone de sino 🔔 no menu superior (fica ao lado do seu avatar)</td></tr>
+                      <tr><td>Convidar alguém, aprovar solicitações de entrada, expulsar/promover membro, excluir o projeto</td><td>Dentro do projeto ▸ abas <strong>Participantes</strong>, <strong>Solicitações</strong> e <strong>Configurações</strong> (só aparecem funcionais se você for Gerente daquele projeto)</td></tr>
+                      <tr><td>Gerenciar usuários do sistema, aprovar pedidos de Moderador</td><td><strong>Administração</strong> (menu superior — só visível para Admin)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-primary card-outline">
+              <div class="card-header"><h3 class="card-title"><i class="fas fa-user-shield mr-1"></i> Perfis e Permissões</h3></div>
+              <div class="card-body">
+                <p>O sistema tem <strong>dois níveis</strong> de permissão que não devem ser confundidos: o <strong>perfil global</strong> da sua conta, e o <strong>papel</strong> que você tem dentro de <em>cada</em> projeto.</p>
+
+                <h5>1. Perfil Global da Conta</h5>
+                <table class="table table-bordered table-sm">
+                  <thead class="thead-light"><tr><th>Perfil</th><th>O que pode fazer</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="badge badge-secondary">User</span></td>
+                      <td>Perfil padrão de todo cadastro novo. Pode entrar em projetos (por convite ou solicitação), gerenciar seus próprios dispositivos dentro deles. <strong>Não pode criar projetos novos.</strong></td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-success">Moderator</span></td>
+                      <td>Tudo que User faz, <strong>mais</strong> a permissão de criar novos projetos (e virar Gerente deles). Vira Moderator solicitando em <strong>Meu Perfil</strong> e sendo aprovado por um Admin.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-danger">Admin</span></td>
+                      <td>Tudo que Moderator faz, mais: gerenciar todos os usuários do sistema (promover/rebaixar perfil, remover conta), aprovar ou rejeitar pedidos de Moderator, e configurar limites de requisição (rate limiting) da plataforma.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h5 class="mt-4">2. Papel dentro de um Projeto</h5>
+                <p>Ao entrar em um projeto (como convidado ou por solicitação aprovada), você recebe um dos dois papéis abaixo — <strong>independente do seu perfil global</strong>:</p>
+                <table class="table table-bordered table-sm">
+                  <thead class="thead-light"><tr><th>Papel</th><th>O que pode fazer <em>naquele projeto</em></th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="badge badge-success">Gerente</span></td>
+                      <td>Quem cria o projeto vira Gerente automaticamente. Pode: editar e excluir o projeto, convidar e expulsar membros, aprovar/rejeitar solicitações de entrada, promover um Participante a Gerente, criar/editar gráficos, gerenciar tags e mapeamento de valores dos dispositivos, e <strong>excluir dispositivos</strong> (permissão <code>canDeleteSensor</code>).</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-secondary">Participante</span></td>
+                      <td>Pode ver o projeto, os dados e gráficos, e cadastrar novos dispositivos. <strong>Não pode</strong> convidar/expulsar ninguém, editar ou excluir o projeto, nem excluir dispositivos.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="callout callout-info">
+                  <p class="mb-0"><i class="icon fas fa-info"></i> Ou seja: um <strong>Admin</strong> do sistema pode muito bem ser só <strong>Participante</strong> num projeto específico se foi convidado como tal — os dois níveis são independentes.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-warning card-outline">
+              <div class="card-header"><h3 class="card-title"><i class="fas fa-user-plus mr-1"></i> Como Entrar em um Projeto: Convites vs. Solicitações</h3></div>
+              <div class="card-body">
+                <p>Existem <strong>duas formas diferentes</strong> de entrar em um projeto — não confunda:</p>
+
+                <h5><i class="fas fa-envelope mr-1"></i> Convite (quem convida é o Gerente)</h5>
+                <ol>
+                  <li>Um Gerente do projeto te convida pelo seu e-mail, na aba <strong>Participantes</strong> do projeto, escolhendo o papel (Gerente ou Participante) que você vai ter.</li>
+                  <li>Você recebe o convite em <strong>Meu Perfil ▸ Convites Pendentes</strong> (e, se tiver conta cadastrada, também aparece no sino de notificações 🔔). Se o e-mail estiver configurado no servidor, você também recebe um e-mail.</li>
+                  <li>Você pode <strong>Aceitar</strong> (entra no projeto com o papel definido pelo convite) ou <strong>Recusar</strong>.</li>
+                  <li>Convites expiram automaticamente após um tempo — se perder o prazo, peça um novo convite.</li>
+                </ol>
+                <p class="text-muted"><small>Funciona para projetos públicos <strong>e</strong> privados — é a única forma de entrar num projeto privado.</small></p>
+
+                <h5 class="mt-4"><i class="fas fa-hand-paper mr-1"></i> Solicitação de Participação (quem pede é você)</h5>
+                <ol>
+                  <li>Em <strong>Explorar Projetos</strong>, você encontra um projeto <strong>público</strong> que te interessa e clica em "Solicitar Participação".</li>
+                  <li>O pedido cai na aba <strong>Solicitações</strong> do projeto, visível só para o Gerente (com um contador de pendências no menu).</li>
+                  <li>O Gerente aprova ou rejeita. Se aprovado, você entra automaticamente como <strong>Participante</strong>.</li>
+                </ol>
+                <p class="text-muted"><small>Só funciona para projetos marcados como <strong>públicos</strong>. Projetos privados não aparecem em Explorar Projetos.</small></p>
+
+                <div class="callout callout-warning">
+                  <h5><i class="icon fas fa-exclamation-triangle"></i> Resumo</h5>
+                  <p class="mb-0"><strong>Convite</strong> = o Gerente vem até você, funciona pra qualquer projeto, você escolhe o papel. <strong>Solicitação</strong> = você vai até o projeto, só pra projetos públicos, você sempre entra como Participante.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="card card-info card-outline">
+              <div class="card-header"><h3 class="card-title"><i class="fas fa-shield-alt mr-1"></i> Segurança da Conta</h3></div>
+              <div class="card-body">
+                <ul>
+                  <li><strong>Esqueci minha senha:</strong> na tela de login, clique em "Esqueci minha senha" e informe seu e-mail. Um link de redefinição é enviado (só funciona se o servidor tiver e-mail configurado — pergunte ao administrador se não chegar nada).</li>
+                  <li><strong>Autenticação de dois fatores (2FA):</strong> opcional, ativada em <strong>Configurações ▸ Segurança</strong>. Depois de ativada, todo login pede também um código de 6 dígitos do seu aplicativo autenticador (Google Authenticator, Authy, etc). Guarde os códigos de backup mostrados na hora da ativação — cada um só funciona uma vez, e servem pra entrar caso perca acesso ao aplicativo.</li>
+                </ul>
+              </div>
+            </div>
+
             <div class="card card-warning card-outline">
               <div class="card-header"><h3 class="card-title"><i class="fas fa-broadcast-tower mr-1"></i> Integração: The Things Network (TTN)</h3></div>
               <div class="card-body">
-                <p>O Webhook do TTN envia um formato JSON complexo e possui limitações de URL (máx 64 caracteres). Para esta integração, utilize o nosso script "adaptador" chamado <code>ttn_webhook.php</code>.</p>
+                <p>O Webhook do TTN envia um formato JSON complexo e possui limitações de URL (máx 64 caracteres). Para esta integração, utilize o nosso script "adaptador" chamado <code>/api/ttn-webhook</code>.</p>
                 <p>Os dados recebidos via TTN serão salvos com <code>source='ttn'</code>, permitindo diferenciar dados de diferentes fontes (HTTP, MQTT ou TTN).</p>
                 <div class="callout callout-warning">
                   <h5><i class="icon fas fa-exclamation-triangle"></i> Pré-requisito Obrigatório</h5>
@@ -106,11 +214,11 @@ require '../auth/auth_check.php';
                   <li>No IFSentral, copie o <strong>ID do Dispositivo</strong> e a <strong>API Key</strong> do seu dispositivo.</li>
                   <li>No painel do TTN, adicione um Webhook JSON.</li>
                   <li>No campo <strong>Base URL</strong>, coloque a URL do seu servidor:
-                    <pre><code>https://ifsentral.online/src/api/</code></pre>
+                    <pre><code>https://ifsentral.online/</code></pre>
                   </li>
                   <li>Marque a caixa <strong>Uplink message</strong>.</li>
-                  <li>No campo <strong>Uplink message path</strong>, coloque **apenas** o nome do script e o `device_id`:
-                    <pre><code>ttn_webhook.php?device_id=8</code></pre>
+                  <li>No campo <strong>Uplink message path</strong>, coloque **apenas** o caminho do endpoint e o `device_id`:
+                    <pre><code>api/ttn-webhook?device_id=8</code></pre>
                   </li>
                   <li>Em <strong>Additional headers</strong>, clique em <strong>+ Add header entry</strong>.</li>
                   <li>Preencha os campos:
@@ -127,9 +235,9 @@ require '../auth/auth_check.php';
               <div class="card-header"><h3 class="card-title"><i class="fas fa-key mr-1"></i> Autenticação da API de Dispositivos</h3></div>
               <div class="card-body">
                 <h5>REST API (HTTP)</h5>
-                <p>As rotas de ingestão e integração externa usam <code>X-Api-Key</code>, como <code>/src/api/enviar_payload.php</code>, <code>/src/api/buscar_payloads.php</code> e <code>/src/api/ttn_webhook.php</code>.</p>
+                <p>As rotas de envio e consulta de dados do seu dispositivo usam <code>X-Api-Key</code>:</p>
                 <pre><code>X-Api-Key: SUA_API_KEY_AQUI</code></pre>
-                <p>As rotas de leitura e visualização de gráficos usam autenticação por sessão, como <code>/src/pages/obter_dados_grafico.php</code>, <code>/src/api/obter_dados_grafico_renderizado.php</code>, <code>/src/api/obter_dados_grafico_avancado.php</code> e <code>/src/api/obter_stats_payloads.php</code>.</p>
+                <p>Os gráficos e estatísticas exibidos no painel do IFSentral usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
 
                 <hr>
                 <h5>MQTT</h5>
@@ -172,7 +280,7 @@ Password: x9y8z7w6v5u4t3s2r1q0p9o8
 
                 <h5>Via API</h5>
                 <p>Você pode obter credenciais MQTT via API usando sua chave de API. Por padrão, a senha não é retornada por questões de segurança. Para incluir a senha na resposta, é necessário passar o parâmetro <code>?reveal=true</code> na URL:</p>
-                <pre><code>GET /src/pages/get_mqtt_credentials.php?reveal=true
+                <pre><code>GET /api/get-mqtt-credentials?reveal=true
 
 Headers Requeridos:
 X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
@@ -194,11 +302,11 @@ X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
                 
                 <p><strong>Exemplos de uso:</strong></p>
                 <pre><code><strong>cURL:</strong>
-curl -X GET "https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true" \
+curl -X GET "https://ifsentral.online/api/get-mqtt-credentials?reveal=true" \
   -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
 
 <strong>JavaScript/Fetch:</strong>
-fetch('/src/pages/get_mqtt_credentials.php?reveal=true', {
+fetch('/api/get-mqtt-credentials?reveal=true', {
   headers: {
     'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'
   }
@@ -209,10 +317,25 @@ fetch('/src/pages/get_mqtt_credentials.php?reveal=true', {
 <strong>Python:</strong>
 import requests
 response = requests.get(
-  'https://ifsentral.online/src/pages/get_mqtt_credentials.php?reveal=true',
+  'https://ifsentral.online/api/get-mqtt-credentials?reveal=true',
   headers={'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'}
 )
 print(response.json())</code></pre>
+
+                <hr>
+                <h5>Se a senha não for encontrada (HTTP 424)</h5>
+                <p>Pode acontecer em dispositivos mais antigos. Nesse caso, gere uma senha nova (mesmo username) chamando <code>POST /api/regenerate-mqtt-password</code> com a mesma <code>X-Api-Key</code> — a senha nova já sincroniza com o broker na hora. Ela só aparece nessa resposta, uma vez; se perder, é só chamar de novo.</p>
+                <pre><code>curl -X POST "https://ifsentral.online/api/regenerate-mqtt-password" \
+  -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
+
+{
+  "mqtt_username": "mqdev_a1b2c3d4e5f6g7h8",
+  "mqtt_password": "b3f8a1c9d2e7f4a6b1c8d3e9",
+  "sync_status": "synchronized"
+}</code></pre>
+                <div class="callout callout-warning mb-0">
+                  <p class="mb-0">Regenerar invalida a senha antiga imediatamente — qualquer dispositivo/cliente ainda usando a senha anterior perde a conexão até ser reconfigurado com a nova.</p>
+                </div>
               </div>
             </div>
 
@@ -325,6 +448,7 @@ client.on('error', (err) => {
 # Requer: pip install paho-mqtt
 
 import paho.mqtt.client as mqtt
+import ssl
 import json
 import time
 
@@ -347,30 +471,43 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_publish = on_publish
 
+# IMPORTANTE: a porta 8883 é o listener TLS do broker — sem isso, o
+# connect() abaixo tenta uma conexão em texto puro na porta TLS e falha.
+# Por padrão o certificado é autoassinado (gerado pelo setup-ssl.sh), então
+# cert_reqs=CERT_NONE ignora a validação — troque por um cafile real em
+# produção assim que tiver um certificado emitido por uma CA confiável.
+client.tls_set(cert_reqs=ssl.CERT_NONE)
+client.tls_insecure_set(True)
+
 try:
     client.connect(BROKER_HOST, BROKER_PORT, keepalive=60)
     client.loop_start()
-    
+
     # Publicar dados
     payload = {
         "temperatura": 25.5,
         "umidade": 60,
         "pressão": 1013
     }
-    
+
     client.publish(TOPIC, json.dumps(payload), qos=1)
     print(f"Publicado em: {TOPIC}")
-    
+
     time.sleep(1)
     client.loop_stop()
     client.disconnect()
-    
+
 except Exception as e:
-    print(f"Erro: {e}")</code></pre>
+    print(f"Erro: {e}")
+
+# Alternativa sem TLS (rede local/confiável apenas):
+# BROKER_PORT = 1883
+# (remova as duas linhas client.tls_set()/tls_insecure_set() acima)</code></pre>
                       </div>
                       <div class="tab-pane fade" id="tabs-mqtt-esp" role="tabpanel">
 <pre><code>// Requer bibliotecas: PubSubClient.h, ArduinoJson.h
 #include &lt;WiFi.h&gt;
+#include &lt;WiFiClientSecure.h&gt; // TLS — necessário pra porta 8883
 #include &lt;PubSubClient.h&gt;
 #include &lt;ArduinoJson.h&gt;
 
@@ -383,7 +520,11 @@ const int PROJECT_ID = 2;
 const int DEVICE_ID = 5;
 char topic[100];
 
-WiFiClient espClient;
+// IMPORTANTE: WiFiClient (sem TLS) NÃO conecta na porta 8883 — o broker
+// espera handshake TLS nela. Use WiFiClientSecure. Por padrão o certificado
+// é autoassinado (setup-ssl.sh), então setInsecure() ignora a validação;
+// troque por setCACert() com o certificado real assim que tiver um.
+WiFiClientSecure espClient;
 PubSubClient client(espClient);
 
 void setup() {
@@ -396,7 +537,9 @@ void setup() {
     Serial.println("Conectando ao WiFi...");
   }
   Serial.println("WiFi conectado");
-  
+
+  espClient.setInsecure(); // Certificado autoassinado — ignora validação
+
   // Configurar MQTT
   snprintf(topic, sizeof(topic), "mqtt/projects/%d/devices/%d", PROJECT_ID, DEVICE_ID);
   client.setServer(mqtt_broker, mqtt_port);
@@ -456,7 +599,7 @@ void loop() {
                 <p>Escolha a linguagem que seu dispositivo usa:</p>
                 <ol>
                   <li>Identifique seu <strong>Project ID</strong> e <strong>Device ID</strong> no painel do IFSentral.</li>
-                  <li>Pegue o <strong>endereço do broker MQTT</strong> com o administrador (normalmente é `mqtt://seu.servidor.com:1883`).</li>
+                  <li>Pegue o <strong>endereço do broker MQTT</strong> com o administrador — texto puro em <code>mqtt://seu.servidor.com:1883</code>, ou TLS (recomendado fora da rede local) em <code>mqtts://seu.servidor.com:8883</code>.</li>
                   <li>Use um dos exemplos acima para conectar e publicar dados.</li>
                   <li>Os dados serão salvos automaticamente em seu dashboard!</li>
                 </ol>
@@ -476,7 +619,13 @@ void loop() {
                   <h5><i class="icon fas fa-info"></i> Novo: Identificação de Origem</h5>
                   <p>Cada payload agora é marcado com sua origem: <code>http</code> (este endpoint), <code>mqtt</code>, ou <code>ttn</code>. Isso permite rastrear facilmente de onde vieram seus dados!</p>
                 </div>
-                <h5><kbd class="bg-primary">POST</kbd> <code>/enviar_payload.php</code></h5>
+
+                <div class="callout callout-warning">
+                  <h5><i class="icon fas fa-ruler mr-1"></i> Limites do Payload</h5>
+                  <p class="mb-0">Mantenha o payload pequeno e simples: até <strong>2KB</strong> por envio (8KB via TTN), sem aninhamento profundo de objetos e sem chaves/textos muito longos. Payloads fora desses limites são rejeitados com <code>HTTP 400</code> e uma mensagem explicando o motivo.</p>
+                </div>
+
+                <h5><kbd class="bg-primary">POST</kbd> <code>/api/enviar-payload</code></h5>
                 <hr>
                 <h5>Headers HTTP</h5>
                 <pre><code>Content-Type: application/json
@@ -497,7 +646,12 @@ X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
   "payload_id": 42,
   "device_id": 1,
   "project_id": 2,
-  "source": "http"
+  "source": "http",
+  "rate_limit": {
+    "requests": 12,
+    "limit": 60,
+    "remaining": 48
+  }
 }</code></pre>
                 <hr>
                 <h5>Exemplos de Código</h5>
@@ -512,7 +666,7 @@ X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
                   <div class="card-body p-0">
                     <div class="tab-content" id="tabs-enviar-content">
                       <div class="tab-pane fade show active" id="tabs-enviar-js" role="tabpanel">
-<pre><code>const API_URL = 'https://ifsentral.online/src/api/enviar_payload.php';
+<pre><code>const API_URL = 'https://ifsentral.online/api/enviar-payload';
 const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
 const DEVICE_ID = 1;
 
@@ -543,7 +697,7 @@ enviarDados(25.5, 60);</code></pre>
                       </div>
                       <div class="tab-pane fade" id="tabs-enviar-php" role="tabpanel">
 <pre><code>&lt;?php
-$apiUrl = 'https://ifsentral.online/src/api/enviar_payload.php';
+$apiUrl = 'https://ifsentral.online/api/enviar-payload';
 $apiKey = 'SUA_CHAVE_DE_API_AQUI';
 $deviceId = 1;
 $data = [
@@ -581,7 +735,7 @@ echo "Resposta: " . $response;
 #include &lt;WiFiClientSecure.h&gt; // Para HTTPS
 #include &lt;ArduinoJson.h&gt;
 
-const char* serverName = "https://ifsentral.online/src/api/enviar_payload.php";
+const char* serverName = "https://ifsentral.online/api/enviar-payload";
 const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
 const int deviceId = 1;
 
@@ -629,7 +783,7 @@ void enviarDados(float temp, float umid) {
               <div class="card-header"><h3 class="card-title">Endpoint: Buscar Últimos Dados (Padrão)</h3></div>
               <div class="card-body">
                 <p>Este endpoint é usado para buscar os últimos payloads registrados por um dispositivo.</p>
-                <h5><kbd class="bg-success">GET</kbd> <code>/src/api/buscar_payloads.php</code></h5>
+                <h5><kbd class="bg-success">GET</kbd> <code>/api/buscar-payloads</code></h5>
                 <hr>
                 <h5>Headers HTTP</h5>
                 <pre><code>X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
@@ -638,11 +792,11 @@ void enviarDados(float temp, float umid) {
                 <h5>Parâmetros (Query String)</h5>
                 <ul>
                   <li><code>device_id</code> (Obrigatório): O ID do seu dispositivo.</li>
-                  <li><code>limit</code> (Opcional): Número de resultados. (Padrão: 10).</li>
+                  <li><code>limit</code> (Opcional): Número de resultados. (Padrão: 10, máximo 1000).</li>
                   <li><code>startDate</code> (Opcional): Data de início (Formato: YYYY-MM-DD).</li>
                   <li><code>endDate</code> (Opcional): Data de fim (Formato: YYYY-MM-DD).</li>
                 </ul>
-                <pre><code>/src/api/buscar_payloads.php?device_id=1&limit=50&startDate=2025-11-01</code></pre>
+                <pre><code>/api/buscar-payloads?device_id=1&limit=50&startDate=2025-11-01</code></pre>
                 
                 <hr>
                 <h5>Exemplos de Código</h5>
@@ -658,7 +812,7 @@ void enviarDados(float temp, float umid) {
                     <div class="tab-content" id="tabs-buscar-content">
                       <div class="tab-pane fade show active" id="tabs-buscar-js" role="tabpanel">
 <pre><code>// Exemplo buscando os últimos 25
-const API_URL = 'https://ifsentral.online/src/api/buscar_payloads.php';
+const API_URL = 'https://ifsentral.online/api/buscar-payloads';
 const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
 const DEVICE_ID = 1;
 
@@ -684,13 +838,13 @@ $queryParams = http_build_query([
     'startDate' => '2025-11-01',
     'endDate' => '2025-11-05'
 ]);
-$apiUrl = 'https://ifsentral.online/src/api/buscar_payloads.php?' . $queryParams;
+$apiUrl = 'https://ifsentral.online/api/buscar-payloads?' . $queryParams;
 // ... (resto do código PHP)
 ?&gt;</code></pre>
                       </div>
                       <div class="tab-pane fade" id="tabs-buscar-esp" role="tabpanel">
 <pre><code>// Exemplo buscando os últimos 25
-const char* serverName = "https://ifsentral.online/src/api/buscar_payloads.php";
+const char* serverName = "https://ifsentral.online/api/buscar-payloads";
 const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
 const int deviceId = 1;
 
@@ -708,43 +862,6 @@ void buscarDados() {
               </div>
             </div>
 
-            <div class="card card-info">
-              <div class="card-header"><h3 class="card-title">Endpoint: Obter Dados para Gráficos (Compatibilidade)</h3></div>
-              <div class="card-body">
-                <p>Este endpoint mantém compatibilidade com a versão anterior e busca uma chave JSON específica de um dispositivo para retorno em formato <code>(time, value)</code>.</p>
-                <p>Ele exige sessão autenticada no site e usa a rota de página em <code>/src/pages/obter_dados_grafico.php</code>.</p>
-                
-                <h5><kbd class="bg-info">GET</kbd> <code>/src/pages/obter_dados_grafico.php</code></h5>
-                <hr>
-                <h5>Headers HTTP</h5>
-                <pre><code>X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
-                <hr>
-                
-                <h5>Parâmetros (Query String)</h5>
-                <ul>
-                  <li><code>device_id</code> (Obrigatório): O ID do seu dispositivo.</li>
-                  <li><code>json_key</code> (Obrigatório): A chave JSON que você quer plotar (ex: <code>temperatura</code>).</li>
-                  <li><code>limit</code> (Opcional): Número de resultados. (Padrão: 500).</li>
-                  <li><code>startDate</code> (Opcional): Data de início (Formato: YYYY-MM-DD).</li>
-                  <li><code>endDate</code> (Opcional): Data de fim (Formato: YYYY-MM-DD).</li>
-                </ul>
-                <pre><code>/src/pages/obter_dados_grafico.php?device_id=3&json_key=temperatura&limit=1000&startDate=2025-11-01</code></pre>
-                
-                <hr>
-                <h5>Resposta (Sucesso 200 OK)</h5>
-                <pre><code>[
-  {
-    "time": "2025-11-06 01:05:50",
-    "value": "25"
-  },
-  {
-    "time": "2025-11-06 01:05:52",
-    "value": "25"
-  }
-]</code></pre>
-              </div>
-            </div>
-
             <div class="card card-danger">
               <div class="card-header"><h3 class="card-title"><i class="fas fa-tachometer-alt mr-1"></i> Rate Limiting</h3></div>
               <div class="card-body">
@@ -757,24 +874,13 @@ void buscarDados() {
                 <h5>Como Funciona</h5>
                 <ul>
                   <li>Cada dispositivo tem sua própria cota de 60 req/min</li>
-                  <li>Inclui ambos: requisições HTTP E publicações MQTT</li>
+                  <li>Aplica-se apenas ao <strong>envio</strong> de dados (<code>/api/enviar-payload</code>, <code>/api/ttn-webhook</code> e publicações MQTT) — endpoints de <strong>leitura</strong> como <code>/api/buscar-payloads</code> não têm rate limit por enquanto</li>
                   <li>O contador reseta a cada minuto</li>
                   <li>Admins podem aumentar o limite por dispositivo</li>
                 </ul>
 
                 <h5>Quando Você Ultrapassa o Limite</h5>
-                <p>Se ultrapassar 60 requisições/min, receberá resposta:</p>
-                <pre><code>HTTP 429 Too Many Requests
-
-{
-  "error": "Limite de requisições excedido",
-  "rate_limit": {
-    "requests": 65,
-    "limit": 60,
-    "remaining": 0
-  }
-}
-</code></pre>
+                <p>Se ultrapassar 60 requisições/min, você recebe <code>HTTP 429 Too Many Requests</code> com uma mensagem de erro e o campo <code>retry_after</code> indicando em quantos segundos tentar de novo.</p>
 
                 <h5>💡 Como Evitar</h5>
                 <ol>
@@ -790,18 +896,7 @@ void buscarDados() {
                 </div>
 
                 <h5>Monitoramento</h5>
-                <p>Toda vez que você faz uma requisição, obtém informações de uso no header ou resposta:</p>
-                <pre><code>X-Rate-Limit-Limit: 60
-X-Rate-Limit-Remaining: 55
-X-Rate-Limit-Reset: 1677000000
-</code></pre>
-                <hr>
-                <h5>Novos Endpoints de Gráficos</h5>
-                <ul>
-                  <li><code>GET /src/api/obter_dados_grafico_renderizado.php?chart_id=1</code> retorna o gráfico com payloads prontos para renderização.</li>
-                  <li><code>GET /src/api/obter_dados_grafico_avancado.php?chart_id=1&amp;date_start=2025-11-01&amp;date_end=2025-11-30</code> retorna datasets com pontos filtrados por período.</li>
-                  <li>Ambos exigem sessão autenticada.</li>
-                </ul>
+                <p>Toda resposta de sucesso do envio de dados inclui um campo <code>rate_limit</code> mostrando quantas requisições você já usou e quantas ainda restam nesse minuto.</p>
               </div>
             </div>
 
@@ -883,9 +978,9 @@ X-Rate-Limit-Reset: 1677000000
               <div class="card-body">
                 <h5>Para Usuários Novos</h5>
                 <ul>
-                  <li><a href="get_mqtt_credentials.php" target="_blank">🔑 Credenciais MQTT do dispositivo</a></li>
-                  <li><a href="obter_chaves_dispositivo.php" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
-                  <li><a href="documentacao.php" target="_blank">📘 Esta documentação da API</a></li>
+                  <li><a href="/api/get-mqtt-credentials" target="_blank">🔑 Credenciais MQTT do dispositivo</a></li>
+                  <li><a href="/api/obter-chaves-dispositivo" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
+                  <li><a href="/documentacao" target="_blank">📘 Esta documentação da API</a></li>
                 </ul>
 
                 <h5>Documentação Técnica</h5>
@@ -925,8 +1020,8 @@ X-Rate-Limit-Reset: 1677000000
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 
 </body>
 </html>

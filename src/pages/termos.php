@@ -44,14 +44,14 @@
   <!-- Navbar -->
   <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
     <div class="container">
-      <a href="../auth/login.html" class="navbar-brand">
+      <a href="/login" class="navbar-brand">
         <span class="brand-text font-weight-bold" style="color: var(--ifsc-primary);">
           <i class="fas fa-network-wired mr-2"></i>IFSentral
         </span>
       </a>
       <ul class="navbar-nav ml-auto">
         <li class="nav-item">
-          <a href="../auth/login.html" class="btn btn-outline-success btn-sm">Voltar ao Login</a>
+          <a href="/login" class="btn btn-outline-success btn-sm">Voltar ao Login</a>
         </li>
       </ul>
     </div>
@@ -94,7 +94,7 @@
           <p>Dúvidas, sugestões ou solicitações relativas a estes Termos de Serviço podem ser encaminhadas através do suporte oficial da instituição.</p>
 
           <div class="mt-4 text-center">
-            <a href="../auth/register.html" class="btn btn-success">
+            <a href="/registrar" class="btn btn-success">
               <i class="fas fa-arrow-left mr-2"></i> Voltar ao Cadastro
             </a>
           </div>

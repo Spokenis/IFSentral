@@ -95,22 +95,34 @@ try {
         ];
     }
 
+    // Sem período definido no gráfico (time_range 'all', o padrão), aplica uma
+    // janela dos últimos 30 dias em vez de agregar o histórico inteiro do
+    // dispositivo a cada carregamento. Isso importa mais aqui do que em outros
+    // endpoints porque o GROUP BY roda ANTES do LIMIT — ou seja, sem um bound
+    // de data o custo da query cresce com o volume TOTAL de dados já
+    // armazenados, não com o que de fato é exibido no gráfico.
+    $effective_date_start = $chart['date_start'];
+    $effective_date_end = $chart['date_end'];
+    if (empty($effective_date_start) && empty($effective_date_end)) {
+        $effective_date_start = date('Y-m-d H:i:s', strtotime('-30 days'));
+    }
+
     // 2. Mapeamento, Bucketing e extração dos pontos das séries
     $rendered_datasets = [];
     foreach ($datasets as $dataset) {
         $var_name = $dataset['variable_name'];
-        
+
         // Proteção contra caminhos maliciosos ou injeção de caracteres no path do JSON
         if (!preg_match('/^[a-zA-Z0-9_]+$/', $var_name)) {
             continue;
         }
 
-        // Determinar o intervalo do bucket (em segundos) com base no período selecionado
+        // Determinar o intervalo do bucket (em segundos) com base no período efetivo
         $bucket_seconds = 60; // Padrão: 1 minuto
-        
-        if (!empty($chart['date_start']) && !empty($chart['date_end'])) {
-            $start = strtotime($chart['date_start']);
-            $end = strtotime($chart['date_end']);
+
+        if (!empty($effective_date_start)) {
+            $start = strtotime($effective_date_start);
+            $end = !empty($effective_date_end) ? strtotime($effective_date_end) : time();
             $diff_hours = ($end - $start) / 3600;
 
             if ($diff_hours > 720) {       // Mais de 30 dias -> buckets de 1 dia
@@ -124,72 +136,43 @@ try {
             }
         }
 
-        // Query com agrupamento temporal e agregação matemática (AVG)
+        // Query com agrupamento temporal, retornando a HORA EXATA da leitura
+        // (MIN do bucket) e a média do valor no bucket
         $data_sql = "
-            SELECT 
-                FROM_UNIXTIME(FLOOR(UNIX_TIMESTAMP(dp.created_at) / ?) * ?) AS x,
-                AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) AS DECIMAL(10,4))) AS y
-            FROM 
-                device_payloads dp
-            WHERE 
-                dp.device_id = ?
-                AND JSON_EXTRACT(dp.payload, CONCAT('$.', ?)) IS NOT NULL
-        ";
-        
-        $params = [
-            $bucket_seconds,
-            $bucket_seconds,
-            $var_name,
-            $dataset['device_id'],
-            $var_name
-        ];
-        
-        // Filtros temporais baseados no gráfico
-        if (!empty($chart['date_start'])) {
-            $data_sql .= " AND dp.created_at >= ?";
-            $params[] = $chart['date_start'];
-        }
-        if (!empty($chart['date_end'])) {
-            $data_sql .= " AND dp.created_at <= ?";
-            $params[] = $chart['date_end'];
-        }
-        
-        // Query com agrupamento temporal, mas retornando a HORA EXATA da leitura
-        $data_sql = "
-            SELECT 
+            SELECT
                 MIN(dp.created_at) AS x,
                 AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) AS DECIMAL(10,4))) AS y
-            FROM 
+            FROM
                 device_payloads dp
-            WHERE 
+            WHERE
                 dp.device_id = ?
                 AND JSON_EXTRACT(dp.payload, CONCAT('$.', ?)) IS NOT NULL
         ";
-        
+
         $params = [
             $var_name,
             $dataset['device_id'],
             $var_name
         ];
-        
-        // Filtros temporais baseados no gráfico
-        if (!empty($chart['date_start'])) {
+
+        // Filtros temporais (do gráfico, ou a janela padrão de 30 dias acima)
+        if (!empty($effective_date_start)) {
             $data_sql .= " AND dp.created_at >= ?";
-            $params[] = $chart['date_start'];
+            $params[] = $effective_date_start;
         }
-        if (!empty($chart['date_end'])) {
+        if (!empty($effective_date_end)) {
             $data_sql .= " AND dp.created_at <= ?";
-            $params[] = $chart['date_end'];
+            $params[] = $effective_date_end;
         }
-        
+
         // Agrupa pelos blocos de tempo calculados
-        $data_sql .= " 
+        $data_sql .= "
             GROUP BY FLOOR(UNIX_TIMESTAMP(dp.created_at) / ?)
-            ORDER BY x ASC 
+            ORDER BY x ASC
             LIMIT 2000
         ";
         $params[] = $bucket_seconds;
-        
+
         $data_stmt = $conn->prepare($data_sql);
         $data_stmt->execute($params);
         $data_points = $data_stmt->fetchAll(PDO::FETCH_ASSOC);

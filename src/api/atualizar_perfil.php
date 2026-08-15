@@ -8,6 +8,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../core/ApiError.php';
+require_once __DIR__ . '/../core/Csrf.php';
+
+use App\Core\Csrf;
 
 header('Content-Type: application/json; charset=utf-8');
 setupSecureCORS();
@@ -22,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PUT
     echo json_encode(['error' => 'Método não permitido']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 try {
     // Obter ID do usuário da sessão
@@ -101,8 +106,11 @@ try {
     $updateStmt = $conn->prepare($updateSql);
     $updateStmt->execute([$name, $email, $username, $user_id]);
     
-    // Atualizar sessão com novo e-mail se necessário
-    $_SESSION['user_email'] = $email;
+    // Atualizar sessão com novos dados — a chave usada em todo o resto do
+    // sistema é 'email' (não 'user_email'); manter em sincronia evita que
+    // convites/checagens que comparam $_SESSION['email'] fiquem com o e-mail antigo.
+    $_SESSION['email'] = $email;
+    $_SESSION['username'] = $username;
     
     http_response_code(200);
     echo json_encode([

@@ -3,13 +3,13 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id']) || !isset($_GET['project_id']) || !is_numeric($_GET['project_id'])) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 $device_id_from_url = intval($_GET['id']);
 $project_id_from_url = intval($_GET['project_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -21,13 +21,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
@@ -37,11 +37,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 } catch (Exception $e) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 ?>
@@ -55,7 +55,9 @@ try {
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
-  
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+
   <style>
     :root {
       --ifsc-primary: #1B7D3D;
@@ -148,8 +150,13 @@ try {
       <div class="container">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 id="device-title">Carregando Dispositivo...</h1>
-            <p class="text-muted">Retornando para <a href="gerenciar-projeto.php?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
+            <h1 id="device-title">Carregando Dispositivo... <span id="device-status-badge"></span></h1>
+            <p class="text-muted">Retornando para <a href="/projeto?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
+          </div>
+          <div class="col-sm-6 text-right">
+            <button type="button" class="btn btn-outline-danger" id="btn-excluir-dispositivo">
+              <i class="fas fa-trash mr-2"></i>Excluir Dispositivo
+            </button>
           </div>
         </div>
       </div>
@@ -177,6 +184,19 @@ try {
                   <button type="submit" class="btn btn-primary" id="enviar-button">Enviar Payload</button>
                 </div>
               </form>
+            </div>
+
+            <div class="card card-primary card-outline">
+              <div class="card-header">
+                <h3 class="card-title">Tags</h3>
+              </div>
+              <div class="card-body">
+                <select id="device-tags-select" class="form-control" multiple="multiple" style="width: 100%;"></select>
+                <div id="tags-status" class="mt-2"></div>
+                <button type="button" class="btn btn-primary btn-sm mt-2" id="btn-salvar-tags">
+                  <i class="fas fa-save mr-1"></i>Salvar Tags
+                </button>
+              </div>
             </div>
 
             <div class="card card-secondary">
@@ -211,7 +231,7 @@ try {
                   </div>
                   <small class="text-muted d-block mt-2">
                     💡 <strong>Host:</strong> localhost (ou seu IP do servidor)<br>
-                    💡 <strong>Porta:</strong> 1883 (MQTT padrão)<br>
+                    💡 <strong>Porta:</strong> 1883 (texto puro) ou <strong>8883 (TLS, recomendado fora da rede local)</strong><br>
                     💡 <strong>Protocolo:</strong> MQTT v3.1.1
                   </small>
                 </div>
@@ -220,6 +240,36 @@ try {
           </div>
 
           <div class="col-md-7">
+            <div class="card card-outline card-primary">
+              <div class="card-header">
+                <h3 class="card-title">Mapeamento de Valores</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small">Traduza um valor bruto do payload para uma descrição legível (ex: campo <code>status</code>, valor <code>1</code> → "Ligado").</p>
+                <form id="form-mapeamento" class="form-row align-items-end">
+                  <div class="col-md-3 mb-2">
+                    <label class="small mb-1">Campo (json_key)</label>
+                    <input type="text" class="form-control form-control-sm" id="map-json-key" placeholder="status" required>
+                  </div>
+                  <div class="col-md-3 mb-2">
+                    <label class="small mb-1">Valor bruto</label>
+                    <input type="text" class="form-control form-control-sm" id="map-value-read" placeholder="1" required>
+                  </div>
+                  <div class="col-md-4 mb-2">
+                    <label class="small mb-1">Descrição</label>
+                    <input type="text" class="form-control form-control-sm" id="map-description" placeholder="Ligado" required>
+                  </div>
+                  <div class="col-md-2 mb-2">
+                    <button type="submit" class="btn btn-primary btn-sm btn-block">Adicionar</button>
+                  </div>
+                </form>
+                <div id="mapeamento-status"></div>
+                <table class="table table-sm table-borderless mt-2 mb-0" id="mapeamentos-tabela">
+                  <tbody></tbody>
+                </table>
+              </div>
+            </div>
+
             <div class="card card-info">
               <div class="card-header">
                 <h3 class="card-title">Últimos Payloads Recebidos</h3>
@@ -270,7 +320,8 @@ try {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
     // --- Elementos DOM (Principais) ---
@@ -295,10 +346,16 @@ try {
     const filterEnd = document.getElementById('filter-end');
 
     // --- APIs ---
-    const API_OBTER_DISPOSITIVO = 'obter_info_dispositivo.php';
-    const API_MQTT_CREDENTIALS = 'get_mqtt_credentials.php';
-    const API_ENVIAR = '../api/enviar_payload.php';
-    const API_BUSCAR = '../api/buscar_payloads.php';
+    const API_OBTER_DISPOSITIVO = '/api/obter-info-dispositivo';
+    const API_MQTT_CREDENTIALS = '/api/get-mqtt-credentials';
+    const API_ENVIAR = '/api/enviar-payload';
+    const API_BUSCAR = '/api/buscar-payloads';
+    const API_DELETAR_DISPOSITIVO = '/api/deletar-dispositivo';
+    const API_TAGS_DISPOSITIVO = '/api/gerenciar-tags-dispositivo';
+    const API_TAGS_URL = '/api/listar-tags';
+    const API_MAPEAMENTOS = '/api/gerenciar-mapeamentos-dispositivo';
+
+    let mapeamentos = []; // cache local: [{id, json_key, value_read, description}]
 
     let DEVICE_API_KEY = null;
 
@@ -315,7 +372,16 @@ try {
                 throw new Error('Dispositivo não encontrado');
             }
             
-            deviceTitleEl.textContent = `Gerenciando: ${device.name}`;
+            deviceTitleEl.textContent = `Gerenciando: ${device.name} `;
+
+            const badge = document.getElementById('device-status-badge');
+            if (Number(device.is_online) === 1) {
+                badge.innerHTML = '<span class="badge badge-success" style="font-size: 0.9rem;"><i class="fas fa-circle mr-1"></i>Online</span>';
+            } else {
+                const desde = device.last_seen ? new Date(device.last_seen).toLocaleString('pt-BR') : 'nunca';
+                badge.innerHTML = `<span class="badge badge-secondary" style="font-size: 0.9rem;" title="Último payload: ${desde}"><i class="fas fa-circle mr-1"></i>Offline</span>`;
+            }
+
             DEVICE_API_KEY = device.api_key;
             
             apiInfoId.textContent = device.id;
@@ -456,13 +522,15 @@ try {
             
             payloads.forEach(item => {
                 const dataFormatada = new Date(item.created_at).toLocaleString('pt-BR');
-                const payloadFormatado = JSON.stringify(item.payload, null, 2); 
-                
+                const payloadFormatado = JSON.stringify(item.payload, null, 2);
+                const traducoesHtml = renderizarValoresTraduzidos(item.payload);
+
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'payload-item';
                 itemDiv.innerHTML = `
                     <small>Recebido em: ${dataFormatada}</small>
-                    <pre>${payloadFormatado}</pre>
+                    <pre>${escapeHtml(payloadFormatado)}</pre>
+                    ${traducoesHtml}
                 `;
                 payloadsContainer.appendChild(itemDiv);
             });
@@ -520,8 +588,201 @@ try {
         await carregarPayloads(); 
     });
 
+    function escapeHtml(str) {
+        return (str ?? '').toString()
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    // Função 3.4: Mapeamento de valores (state_mappings) — traduz valores brutos do payload
+    function renderizarValoresTraduzidos(payload) {
+        if (!payload || mapeamentos.length === 0) return '';
+
+        const linhas = [];
+        Object.keys(payload).forEach(key => {
+            const valorBruto = String(payload[key]);
+            const match = mapeamentos.find(m => m.json_key === key && m.value_read === valorBruto);
+            if (match) {
+                linhas.push(`<strong>${escapeHtml(key)}</strong>: ${escapeHtml(valorBruto)} → <em>${escapeHtml(match.description)}</em>`);
+            }
+        });
+
+        if (linhas.length === 0) return '';
+        return `<div class="mt-2 small text-primary">${linhas.join('<br>')}</div>`;
+    }
+
+    function renderizarMapeamentosTabela() {
+        const tbody = document.querySelector('#mapeamentos-tabela tbody');
+        if (mapeamentos.length === 0) {
+            tbody.innerHTML = '<tr><td class="text-muted small">Nenhum mapeamento cadastrado ainda.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = mapeamentos.map(m => `
+            <tr>
+                <td><code>${escapeHtml(m.json_key)}</code></td>
+                <td><code>${escapeHtml(m.value_read)}</code></td>
+                <td>→ ${escapeHtml(m.description)}</td>
+                <td class="text-right">
+                    <button type="button" class="btn btn-sm btn-outline-danger btn-remover-mapeamento" data-id="${m.id}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+
+        document.querySelectorAll('.btn-remover-mapeamento').forEach(btn => {
+            btn.addEventListener('click', () => removerMapeamento(parseInt(btn.dataset.id)));
+        });
+    }
+
+    async function carregarMapeamentos() {
+        try {
+            const response = await fetch(`${API_MAPEAMENTOS}?device_id=${DEVICE_ID}`, { credentials: 'include' });
+            mapeamentos = await safeJson(response);
+            renderizarMapeamentosTabela();
+        } catch (error) {
+            document.querySelector('#mapeamentos-tabela tbody').innerHTML =
+                `<tr><td class="text-danger small">${escapeHtml(error.message)}</td></tr>`;
+        }
+    }
+
+    document.getElementById('form-mapeamento').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const statusEl = document.getElementById('mapeamento-status');
+        statusEl.innerHTML = 'Salvando...';
+
+        try {
+            const response = await fetch(API_MAPEAMENTOS, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    device_id: DEVICE_ID,
+                    json_key: document.getElementById('map-json-key').value.trim(),
+                    value_read: document.getElementById('map-value-read').value.trim(),
+                    description: document.getElementById('map-description').value.trim()
+                })
+            });
+            const resultado = await safeJson(response);
+            statusEl.innerHTML = `<span class="text-success small">${resultado.message}</span>`;
+            document.getElementById('form-mapeamento').reset();
+            await carregarMapeamentos();
+            await carregarPayloads();
+        } catch (error) {
+            statusEl.innerHTML = `<span class="text-danger small">${error.message}</span>`;
+        }
+    });
+
+    async function removerMapeamento(mappingId) {
+        if (!confirm('Remover este mapeamento?')) return;
+
+        try {
+            const response = await fetch(API_MAPEAMENTOS, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ mapping_id: mappingId })
+            });
+            await safeJson(response);
+            await carregarMapeamentos();
+            await carregarPayloads();
+        } catch (error) {
+            alert('Erro ao remover mapeamento: ' + error.message);
+        }
+    }
+
+    // Função 3.5: Tags do dispositivo (Select2, mesmo padrão usado em novo-projeto.php)
+    async function inicializarTagsDispositivo() {
+        let tagsExistentesFormatadas = [];
+        try {
+            const response = await fetch(API_TAGS_URL, { credentials: 'include' });
+            const tagsApi = await safeJson(response).catch(() => []);
+            tagsExistentesFormatadas = tagsApi.map(tag => ({ id: tag.value, text: tag.text }));
+        } catch (error) {
+            console.error(error);
+        }
+
+        $('#device-tags-select').select2({
+            theme: 'bootstrap4',
+            placeholder: 'Ex: temperatura, ESP32, externo...',
+            tags: true,
+            data: tagsExistentesFormatadas
+        });
+
+        try {
+            const response = await fetch(`${API_TAGS_DISPOSITIVO}?device_id=${DEVICE_ID}`, { credentials: 'include' });
+            const tagsAtuais = await safeJson(response);
+
+            tagsAtuais.forEach(tag => {
+                if ($('#device-tags-select').find(`option[value='${tag.id}']`).length === 0) {
+                    $('#device-tags-select').append(new Option(tag.name, tag.id, true, true));
+                }
+            });
+            $('#device-tags-select').val(tagsAtuais.map(t => String(t.id))).trigger('change');
+        } catch (error) {
+            document.getElementById('tags-status').innerHTML = `<span style="color: red;">${error.message}</span>`;
+        }
+    }
+
+    document.getElementById('btn-salvar-tags').addEventListener('click', async function() {
+        const btn = this;
+        const statusEl = document.getElementById('tags-status');
+        btn.disabled = true;
+        statusEl.innerHTML = 'Salvando...';
+
+        try {
+            const response = await fetch(API_TAGS_DISPOSITIVO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ device_id: DEVICE_ID, tags: $('#device-tags-select').val() })
+            });
+            const resultado = await safeJson(response);
+            statusEl.innerHTML = `<span style="color: green;">${resultado.message}</span>`;
+        } catch (error) {
+            statusEl.innerHTML = `<span style="color: red;">${error.message}</span>`;
+        } finally {
+            btn.disabled = false;
+        }
+    });
+
+    // Função 4: Exclui o dispositivo (exige permissão canDeleteSensor no papel do usuário)
+    document.getElementById('btn-excluir-dispositivo').addEventListener('click', async function() {
+        if (!confirm('Tem certeza que deseja excluir este dispositivo? Essa ação não pode ser desfeita.')) {
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(API_DELETAR_DISPOSITIVO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ device_id: DEVICE_ID })
+            });
+            const resultado = await safeJson(response);
+
+            alert(resultado.message);
+            window.location.href = `/projeto?id=${PROJECT_ID}`;
+
+        } catch (error) {
+            alert('Erro ao excluir dispositivo: ' + error.message);
+            btn.disabled = false;
+        }
+    });
+
     // Inicializador
-    document.addEventListener('DOMContentLoaded', carregarDetalhesDispositivo);
+    document.addEventListener('DOMContentLoaded', async function() {
+        await carregarMapeamentos(); // precisa estar pronto antes de carregarPayloads() traduzir os valores
+        carregarDetalhesDispositivo();
+        inicializarTagsDispositivo();
+    });
 </script>
 </body>
 </html>

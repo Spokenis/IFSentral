@@ -4,14 +4,14 @@
  */
 
 // Caminho padrão para avatar
-const DEFAULT_AVATAR = '../assets/img/default-avatar.svg';
+const DEFAULT_AVATAR = '/assets/img/default-avatar.svg';
 
 /**
  * Carrega a foto de perfil do usuário logado e atualiza elementos da página
  */
 async function loadUserProfilePicture() {
     try {
-        const response = await fetch('../api/obter_perfil_usuario.php', {
+        const response = await fetch('/api/obter-perfil-usuario', {
             method: 'GET',
             credentials: 'include'
         });
@@ -36,7 +36,7 @@ async function loadUserProfilePicture() {
  * Atualiza todos os elementos com classe 'user-profile-picture' com a foto
  */
 function updateProfilePictureElements(profilePicture) {
-    const imageUrl = profilePicture ? '../../' + profilePicture : DEFAULT_AVATAR;
+    const imageUrl = profilePicture ? '/' + profilePicture : DEFAULT_AVATAR;
     
     // Atualizar imagens com classe específica
     document.querySelectorAll('.user-profile-picture').forEach(img => {
@@ -72,7 +72,7 @@ function updateProfilePictureElements(profilePicture) {
  */
 function createAvatarElement(profilePicture, size = 40, className = '') {
     const img = document.createElement('img');
-    img.src = profilePicture ? '../../' + profilePicture : DEFAULT_AVATAR;
+    img.src = profilePicture ? '/' + profilePicture : DEFAULT_AVATAR;
     img.className = `rounded-circle ${className}`;
     img.style.width = size + 'px';
     img.style.height = size + 'px';
@@ -85,7 +85,7 @@ function createAvatarElement(profilePicture, size = 40, className = '') {
  * Retorna HTML para avatar inline
  */
 function getAvatarHTML(profilePicture, size = 40, className = '') {
-    const src = profilePicture ? '../../' + profilePicture : DEFAULT_AVATAR;
+    const src = profilePicture ? '/' + profilePicture : DEFAULT_AVATAR;
     return `<img src="${src}" class="rounded-circle ${className}" 
                  style="width: ${size}px; height: ${size}px; object-fit: cover; border: 2px solid #dee2e6;">`;
 }

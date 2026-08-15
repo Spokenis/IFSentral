@@ -3,12 +3,12 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 $project_id_from_url = intval($_GET['id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -20,13 +20,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 
@@ -36,11 +36,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: meus-projetos.php');
+        header('Location: /meus-projetos');
         exit;
     }
 } catch (Exception $e) {
-    header('Location: meus-projetos.php');
+    header('Location: /meus-projetos');
     exit;
 }
 ?>
@@ -246,7 +246,7 @@ try {
           <div class="col-sm-6">
             <h1 id="project-title" style="display: inline-block; margin-right: 15px;">Carregando projeto...</h1>
             <span id="project-tags-container"></span> 
-            <p class="text-muted">Retornando de <a href="meus-projetos.php">Meus Projetos</a></p>
+            <p class="text-muted">Retornando de <a href="/meus-projetos">Meus Projetos</a></p>
           </div>
         </div>
       </div>
@@ -446,7 +446,7 @@ try {
                   <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-microchip mr-2"></i>Dispositivos do Projeto</h3>
                     <div class="card-tools">
-                      <a href="novo-dispositivo.php?project_id=<?php echo $project_id_from_url; ?>" class="btn btn-primary btn-sm">
+                      <a href="/novo-dispositivo?project_id=<?php echo $project_id_from_url; ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Novo Dispositivo
                       </a>
                     </div>
@@ -665,8 +665,8 @@ try {
 <script>
     const PROJECT_ID = <?php echo $project_id_from_url; ?>;
 </script>
-<script src="../assets/js/fetch-helpers.js"></script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -680,28 +680,28 @@ try {
   $(function () {
     
     // --- URLs das APIs ---
-    const API_PROJETOS = 'listar_projetos.php';
-    const API_DEVICES = 'listar_devices.php';
-    const API_PARTICIPANTES_COUNT = `../api/obter_contagem_participantes.php?project_id=${PROJECT_ID}`;
-    const API_STATS_PAYLOADS = `../api/obter_stats_payloads.php?project_id=${PROJECT_ID}`;
-    const API_GRAFICO_DADOS = 'obter_dados_grafico.php';
-    const API_LISTAR_GRAFICOS = `listar_graficos.php?project_id=${PROJECT_ID}`;
-    const API_OBTER_CHAVES = 'obter_chaves_dispositivo.php';
-    const API_LISTAR_MEMBROS = `../api/listar_participantes.php?project_id=${PROJECT_ID}`;
-    const API_DELETAR_GRAFICO = 'deletar_grafico.php';
-    const API_SALVAR_GRAFICO_FORM = '../api/salvar_grafico_avancado.php';
-    const API_OBTER_DADOS_GRAFICO = '../api/obter_dados_grafico_renderizado.php';
-    const API_ALTERAR_VISIBILIDADE_GRAFICO = '../api/alterar_visibilidade_grafico.php';
-    const API_ALTERAR_VISIBILIDADE_PROJETO = '../api/alterar_visibilidade_projeto.php';
-    const API_DEVICES_FORM = 'listar_devices.php';
-    const API_ENVIAR_CONVITE = '../api/enviar_convite.php';
-    const API_DELETAR_PROJETO = '../api/deletar_projeto.php';
-    const API_EXPORTAR_DADOS = '../api/exportar_dados_projeto.php';
-    const API_LISTAR_SOLICITACOES = `../api/listar_solicitacoes_participacao.php?project_id=${PROJECT_ID}`;
-    const API_RESPONDER_SOLICITACAO = '../api/responder_solicitacao_participacao.php';
-    const API_SAIR_PROJETO = '../api/sair_projeto.php';
-    const API_EXPULSAR_PARTICIPANTE = '../api/expulsar_participante.php';
-    const API_PROMOVER_GERENTE = '../api/promover_gerente.php';
+    const API_PROJETOS = '/api/listar-projetos';
+    const API_DEVICES = '/api/listar-devices';
+    const API_PARTICIPANTES_COUNT = `/api/obter-contagem-participantes?project_id=${PROJECT_ID}`;
+    const API_STATS_PAYLOADS = `/api/obter-stats-payloads?project_id=${PROJECT_ID}`;
+    const API_GRAFICO_DADOS = '/api/obter-dados-grafico';
+    const API_LISTAR_GRAFICOS = `/api/listar-graficos?project_id=${PROJECT_ID}`;
+    const API_OBTER_CHAVES = '/api/obter-chaves-dispositivo';
+    const API_LISTAR_MEMBROS = `/api/listar-participantes?project_id=${PROJECT_ID}`;
+    const API_DELETAR_GRAFICO = '/api/deletar-grafico';
+    const API_SALVAR_GRAFICO_FORM = '/api/salvar-grafico-avancado';
+    const API_OBTER_DADOS_GRAFICO = '/api/obter-dados-grafico-renderizado';
+    const API_ALTERAR_VISIBILIDADE_GRAFICO = '/api/alterar-visibilidade-grafico';
+    const API_ALTERAR_VISIBILIDADE_PROJETO = '/api/alterar-visibilidade-projeto';
+    const API_DEVICES_FORM = '/api/listar-devices';
+    const API_ENVIAR_CONVITE = '/api/enviar-convite';
+    const API_DELETAR_PROJETO = '/api/deletar-projeto';
+    const API_EXPORTAR_DADOS = '/api/exportar-dados-projeto';
+    const API_LISTAR_SOLICITACOES = `/api/listar-solicitacoes-participacao?project_id=${PROJECT_ID}`;
+    const API_RESPONDER_SOLICITACAO = '/api/responder-solicitacao-participacao';
+    const API_SAIR_PROJETO = '/api/sair-projeto';
+    const API_EXPULSAR_PARTICIPANTE = '/api/expulsar-participante';
+    const API_PROMOVER_GERENTE = '/api/promover-gerente';
     
     // --- Referências DOM (Principais) ---
     const projectTitleEl = document.getElementById('project-title');
@@ -759,7 +759,7 @@ try {
     async function carregarDadosPrincipais() {
         try {
             // Obter informações do projeto específico
-            const responseProject = await fetch(`obter_projeto.php?id=${PROJECT_ID}`, { credentials: 'include' });
+            const responseProject = await fetch(`/api/obter-projeto?id=${PROJECT_ID}`, { credentials: 'include' });
             const project = await safeJson(responseProject);
 
             projectTitleEl.textContent = project.name;
@@ -774,7 +774,7 @@ try {
                 tagsArray.forEach(tag => {
                     const cores = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger'];
                     const cor = cores[Math.floor(Math.random() * cores.length)];
-                    tagsHtml += `<span class="badge ${cor}">${tag}</span> `;
+                    tagsHtml += `<span class="badge ${cor}">${escapeHtml(tag)}</span> `;
                 });
                 projectTagsContainer.innerHTML = tagsHtml;
                 geralTagsContainer.innerHTML = tagsHtml;
@@ -807,11 +807,11 @@ try {
                 projectDevicesList.forEach(device => {
                     const row = sensoresTbody.insertRow();
                     row.innerHTML = `
-                        <td>${device.name}</td>
-                        <td>${device.user_username}</td>
+                        <td>${escapeHtml(device.name)}</td>
+                        <td>${escapeHtml(device.user_username)}</td>
                         <td><code>${device.id}</code></td>
                         <td>
-                            <a href="gerenciar-dispositivo.php?id=${device.id}&project_id=${PROJECT_ID}" class="btn btn-sm btn-info"><i class="fas fa-cog mr-1"></i>Gerenciar</a> 
+                            <a href="/dispositivo?id=${device.id}&project_id=${PROJECT_ID}" class="btn btn-sm btn-info"><i class="fas fa-cog mr-1"></i>Gerenciar</a> 
                             <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash mr-1"></i>Remover</a>
                         </td>
                     `;
@@ -1064,9 +1064,9 @@ try {
                 // Usar foto real se disponível, senão usar placeholder com iniciais
                 let avatar;
                 if (membro.profile_picture) {
-                    avatar = `<img src="../../${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
+                    avatar = `<img src="/${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
                 } else {
-                    avatar = `<img src="https://placehold.co/128x128/007BFF/FFFFFF?text=${iniciais}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3">`;
+                    avatar = `<img src="https://placehold.co/128x128/007BFF/FFFFFF?text=${escapeHtml(iniciais)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3">`;
                 }
                 
                 // Gerar menu de ações
@@ -1088,7 +1088,7 @@ try {
                     <div class="d-flex align-items-center">
                         ${avatar}
                         <div>
-                            <strong>${membro.user_name}</strong> (@${membro.user_username})
+                            <strong>${escapeHtml(membro.user_name)}</strong> (@${escapeHtml(membro.user_username)})
                             <small class="d-block ${roleClass}">${membro.role_name}</small>
                         </div>
                     </div>
@@ -1202,7 +1202,7 @@ try {
             if (result.success) {
                 sairStatus.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i>' + result.message + '</div>';
                 setTimeout(() => {
-                    window.location.href = 'meus-projetos.php';
+                    window.location.href = '/meus-projetos';
                 }, 2000);
             } else {
                 sairStatus.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle mr-2"></i>${result.error || result.message}</div>`;
@@ -1392,7 +1392,7 @@ try {
             deleteStatusEl.innerHTML = '<div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-2"></i>Projeto excluído com sucesso! Redirecionando...</div>';
             
             setTimeout(() => {
-                window.location.href = 'meus-projetos.php';
+                window.location.href = '/meus-projetos';
             }, 2000);
 
         } catch (error) {
@@ -1503,37 +1503,77 @@ try {
     }
     
     // --- EXPORTAR DADOS DO PROJETO ---
+    // A API agora pagina (era um LIMIT 10000 fixo que truncava projetos
+    // grandes silenciosamente). Aqui buscamos todas as páginas e juntamos
+    // antes de gerar o arquivo, mantendo o "exportar tudo" de um clique só.
+    const EXPORT_MAX_RECORDS = 500000; // trava de segurança pra não estourar a memória do navegador
+
     async function exportarDados(formato) {
       const statusEl = document.getElementById('export-status');
       const btnCsv = document.getElementById('btn-export-csv');
       const btnJson = document.getElementById('btn-export-json');
       const btnExcel = document.getElementById('btn-export-excel');
-      
+
       // Desabilitar botões
       btnCsv.disabled = true;
       btnJson.disabled = true;
       btnExcel.disabled = true;
-      
+
       statusEl.innerHTML = '<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando dados...</div>';
-      
+
       try {
-        const response = await fetch(`${API_EXPORTAR_DADOS}?project_id=${PROJECT_ID}`, {
-          credentials: 'include'
-        });
-        
-        const result = await safeJson(response);
-        
-        if (!result.success || !result.data || result.data.length === 0) {
+        let allData = [];
+        let projectInfo = null;
+        let devicesInfo = null;
+        let page = 1;
+        let totalPages = 1;
+        let truncated = false;
+
+        do {
+          const response = await fetch(`${API_EXPORTAR_DADOS}?project_id=${PROJECT_ID}&page=${page}&per_page=5000`, {
+            credentials: 'include'
+          });
+          const result = await safeJson(response);
+
+          if (!result.success) {
+            throw new Error(result.error || 'Falha ao buscar dados');
+          }
+
+          if (page === 1) {
+            projectInfo = result.project;
+            devicesInfo = result.devices;
+          }
+
+          allData = allData.concat(result.data);
+          totalPages = result.pagination.total_pages;
+
+          if (allData.length >= EXPORT_MAX_RECORDS) {
+            truncated = true;
+            break;
+          }
+
+          statusEl.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando dados... (${allData.length}/${result.pagination.total})</div>`;
+          page++;
+        } while (page <= totalPages);
+
+        if (allData.length === 0) {
           statusEl.innerHTML = '<div class="alert alert-warning mb-0">Nenhum dado disponível para exportar</div>';
           return;
         }
-        
+
+        const result = {
+          project: projectInfo,
+          devices: devicesInfo,
+          data: allData,
+          total_records: allData.length
+        };
+
         const projectName = result.project.name.replace(/\s+/g, '_');
         const timestamp = new Date().toISOString().slice(0, 10);
         const filename = `${projectName}_${timestamp}`;
-        
+
         statusEl.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando arquivo ${formato.toUpperCase()}...</div>`;
-        
+
         switch (formato) {
           case 'csv':
             exportarCSV(result.data, filename);
@@ -1545,13 +1585,19 @@ try {
             exportarExcel(result.data, filename, result.project.name);
             break;
         }
-        
-        statusEl.innerHTML = `<div class="alert alert-success mb-0"><i class="fas fa-check mr-2"></i>Arquivo exportado com sucesso! (${result.total_records} registros)</div>`;
-        
-        setTimeout(() => {
-          statusEl.innerHTML = '';
-        }, 3000);
-        
+
+        const avisoTruncado = truncated
+          ? ` <strong>Atenção:</strong> há mais de ${EXPORT_MAX_RECORDS.toLocaleString('pt-BR')} registros; a exportação foi limitada a esse total para não travar o navegador. Use um período mais específico para exportar o restante.`
+          : '';
+
+        statusEl.innerHTML = `<div class="alert ${truncated ? 'alert-warning' : 'alert-success'} mb-0"><i class="fas fa-check mr-2"></i>Arquivo exportado com sucesso! (${result.total_records} registros)${avisoTruncado}</div>`;
+
+        if (!truncated) {
+          setTimeout(() => {
+            statusEl.innerHTML = '';
+          }, 3000);
+        }
+
       } catch (error) {
         console.error('Erro ao exportar:', error);
         statusEl.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-times mr-2"></i>${error.message}</div>`;
@@ -1955,7 +2001,7 @@ try {
         let html = '<option value="">-- Escolha um dispositivo --</option>';
         devices.forEach(device => {
           if (device.project_id == PROJECT_ID) {
-            html += `<option value="${device.id}">${device.name}</option>`;
+            html += `<option value="${device.id}">${escapeHtml(device.name)}</option>`;
           }
         });
         
@@ -1983,7 +2029,7 @@ try {
         let html = '<option value="">-- Escolha uma variável --</option>';
         if (Array.isArray(variables)) {
           variables.forEach(varName => {
-            html += `<option value="${varName}">${varName}</option>`;
+            html += `<option value="${escapeHtml(varName)}">${escapeHtml(varName)}</option>`;
           });
         }
         
@@ -2064,7 +2110,7 @@ try {
             </button>
             <div class="dataset-header">
               <div>
-                <strong>${ds.device_name}</strong> / <code>${ds.variable_name}</code>
+                <strong>${escapeHtml(ds.device_name)}</strong> / <code>${escapeHtml(ds.variable_name)}</code>
                 <div style="margin-top: 5px;">
                   <span style="display: inline-block; width: 20px; height: 20px; background: ${ds.color}; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
                   <small>Eixo: <strong>${ds.axis.toUpperCase()}</strong></small>

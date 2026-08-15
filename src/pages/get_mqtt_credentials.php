@@ -136,7 +136,7 @@ try {
                 'error' => 'Senha MQTT não encontrada. Você pode regenerá-la.',
                 'mqtt_username' => $mqtt_creds['mqtt_username'],
                 'regenerate_needed' => true,
-                'regenerate_url' => 'regenerate_mqtt_password.php'
+                'regenerate_url' => '/api/regenerate-mqtt-password'
             ]);
             exit;
         }

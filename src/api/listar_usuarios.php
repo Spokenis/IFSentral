@@ -16,21 +16,32 @@ if ($_SERVER['REQUEST_METHOD'] != 'GET') {
 require '../config/db.php';
 require '../auth/auth_check.php'; // BUG FIX: Requerer autenticação
 
+// Apenas Admin/Moderator podem ver a lista completa com e-mails — qualquer
+// outro usuário logado recebia o e-mail de todos os usuários do sistema.
+$identifier = $_SESSION['user_id'] ?? $_SESSION['email'] ?? null;
+$column = isset($_SESSION['user_id']) ? 'id' : 'email';
+$stmtRole = $conn->prepare("SELECT profile FROM users WHERE $column = ? AND deletedAt IS NULL");
+$stmtRole->execute([$identifier]);
+$requester = $stmtRole->fetch(PDO::FETCH_ASSOC);
+$isPrivileged = $requester && in_array($requester['profile'], ['Admin', 'Moderator']);
+
 try {
-    // Nunca selecione a coluna password_hash
+    // Nunca selecione a coluna password_hash. Usuários sem privilégio não
+    // recebem o e-mail alheio, apenas dados já públicos dentro da plataforma.
+    $emailColumn = $isPrivileged ? 'email' : 'NULL as email';
     $sql = "
-        SELECT 
-            id, 
-            name, 
-            email, 
+        SELECT
+            id,
+            name,
+            $emailColumn,
             username,
             profile,
             createdAt
-        FROM 
+        FROM
             users
-        WHERE 
+        WHERE
             deletedAt IS NULL
-        ORDER BY 
+        ORDER BY
             createdAt DESC
     ";
     

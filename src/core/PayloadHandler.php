@@ -78,6 +78,8 @@ class PayloadHandler
 
             $last_id = $this->conn->lastInsertId();
 
+            $this->atualizarStatusDispositivo($device_id, $payload_data);
+
             return [
                 'success' => true,
                 'message' => 'Payload salvo com sucesso',
@@ -93,6 +95,39 @@ class PayloadHandler
                 'message' => 'Erro ao salvar payload: ' . $e->getMessage(),
                 'id' => null
             ];
+        }
+    }
+
+    /**
+     * Atualiza device_mqtt_status (last_seen/is_online/signal_strength) a cada
+     * payload recebido com sucesso. "Online" é depois calculado na leitura
+     * com base na atualidade de last_seen — não há flip automático pra
+     * offline aqui, então não depende de nenhum cron/job em background.
+     */
+    private function atualizarStatusDispositivo($device_id, $payload_data)
+    {
+        try {
+            $payload_array = (array) $payload_data;
+            $signal = null;
+            foreach (['rssi', 'signal_strength', 'signal'] as $key) {
+                if (isset($payload_array[$key]) && is_numeric($payload_array[$key])) {
+                    $signal = (int) $payload_array[$key];
+                    break;
+                }
+            }
+
+            $sql = "
+                INSERT INTO device_mqtt_status (device_id, last_seen, is_online, signal_strength)
+                VALUES (?, NOW(), 1, ?)
+                ON DUPLICATE KEY UPDATE
+                    last_seen = NOW(),
+                    is_online = 1,
+                    signal_strength = COALESCE(VALUES(signal_strength), signal_strength)
+            ";
+            $stmt = $this->conn->prepare($sql);
+            $stmt->execute([$device_id, $signal]);
+        } catch (\PDOException $e) {
+            // Não bloqueia o salvamento do payload se a atualização de status falhar
         }
     }
 
@@ -143,14 +178,16 @@ class PayloadHandler
             return "O payload excede a profundidade máxima de aninhamento permitida (5 níveis).";
         }
 
-        // Limite de 50 chaves/nós no total do JSON
-        if ($keyCount > 50) {
-            return "O payload contém um número excessivo de chaves (máximo 50 no total).";
-        }
-
         foreach ($data as $key => $value) {
             $keyCount++;
-            
+
+            // Checado a cada chave (não só na entrada da função) — senão um
+            // objeto totalmente plano com milhares de chaves nunca disparava
+            // o limite, já que a contagem só era revista em chamadas recursivas.
+            if ($keyCount > 50) {
+                return "O payload contém um número excessivo de chaves (máximo 50 no total).";
+            }
+
             if (is_string($key) && strlen($key) > 40) {
                 return "A chave '$key' excede o limite de 40 caracteres.";
             }

@@ -5,6 +5,9 @@
 require_once '../config/config.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/Csrf.php';
+
+use App\Core\Csrf;
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -22,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'PUT') {
     exit;
 }
 
+Csrf::requireValidToken();
+
 $data = json_decode(file_get_contents("php://input"));
 
 if (!isset($data->chart_id)) {
@@ -32,7 +37,7 @@ if (!isset($data->chart_id)) {
 
 $chart_id = intval($data->chart_id);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -71,7 +76,9 @@ try {
         echo json_encode(['error' => 'Permissão negada.']);
         exit;
     }
-    
+
+    $chart_project_id = $authStmt->fetch(PDO::FETCH_ASSOC)['project_id'];
+
     $conn->beginTransaction();
     
     // Atualizar campos do gráfico
@@ -119,6 +126,21 @@ try {
     
     // Se houver datasets, atualizar
     if (isset($data->datasets) && is_array($data->datasets)) {
+        // Validar que todos os dispositivos pertencem ao projeto deste gráfico
+        // (evita que um usuário aponte o gráfico para device_id de outro projeto)
+        $devicesStmt = $conn->prepare("SELECT id FROM devices WHERE project_id = ? AND deletedAt IS NULL");
+        $devicesStmt->execute([$chart_project_id]);
+        $validDeviceIds = $devicesStmt->fetchAll(PDO::FETCH_COLUMN);
+
+        foreach ($data->datasets as $dataset) {
+            if (!isset($dataset->device_id) || !in_array($dataset->device_id, $validDeviceIds)) {
+                $conn->rollBack();
+                http_response_code(403);
+                echo json_encode(['error' => 'Um ou mais dispositivos não pertencem a este projeto.']);
+                exit;
+            }
+        }
+
         // Deletar datasets antigos
         $delete_sql = "DELETE FROM chart_datasets WHERE chart_id = ?";
         $delete_stmt = $conn->prepare($delete_sql);

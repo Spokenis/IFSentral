@@ -13,8 +13,10 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/../core/AuthMiddleware.php';
 setupSecureCORS();
 require_once __DIR__ . '/../core/ApiError.php';
+require_once __DIR__ . '/../core/Csrf.php';
 
 use App\Core\AuthMiddleware;
+use App\Core\Csrf;
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -30,6 +32,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['error' => 'Método não permitido']);
     exit;
 }
+
+Csrf::requireValidToken();
 
 try {
     $input = json_decode(file_get_contents('php://input'), true);

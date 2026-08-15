@@ -12,7 +12,7 @@
             <h4 style="margin-top:0;margin-bottom:8px;">Sessão expirada</h4>
             <div id="session-expired-message" style="margin-bottom:16px;color:#333;"></div>
             <div style="text-align:right">
-              <a id="session-expired-login" href="login.html" style="margin-right:8px;padding:8px 12px;background:#007bff;color:#fff;border-radius:4px;text-decoration:none;">Fazer login</a>
+              <a id="session-expired-login" href="/login" style="margin-right:8px;padding:8px 12px;background:#007bff;color:#fff;border-radius:4px;text-decoration:none;">Fazer login</a>
               <button id="session-expired-close" style="padding:8px 12px;background:#6c757d;color:#fff;border:none;border-radius:4px;">Fechar</button>
             </div>
           </div>
@@ -25,7 +25,20 @@
     if (msgEl) msgEl.textContent = message || 'Sua sessão expirou. Faça login novamente.';
   };
 
-  // Wrap fetch to always set X-Requested-With and handle 401
+  // Cache em memória do token CSRF da aba atual (buscado sob demanda)
+  let _csrfTokenPromise = null;
+  function getCsrfToken(){
+    if (!_csrfTokenPromise) {
+      _csrfTokenPromise = _fetch('/api/obter-csrf-token', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.ok ? r.json() : null)
+        .then(j => (j && j.csrf_token) || null)
+        .catch(() => null);
+    }
+    return _csrfTokenPromise;
+  }
+
+  // Wrap fetch to always set X-Requested-With, anexar token CSRF em
+  // requisições que alteram estado, e tratar 401 globalmente
   const _fetch = window.fetch.bind(window);
   window.fetch = function(resource, init){
     init = init || {};
@@ -36,7 +49,12 @@
     } catch(e) {
       // ignore
     }
-    return _fetch(resource, init).then(response => {
+
+    const method = (init.method || 'GET').toUpperCase();
+    const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+    const isTokenEndpoint = typeof resource === 'string' && resource.indexOf('/api/obter-csrf-token') !== -1;
+
+    const doFetch = () => _fetch(resource, init).then(response => {
       if (response.status === 401) {
         response.clone().json().then(j => {
           const msg = j && j.error ? j.error : 'Não autenticado. Faça login primeiro.';
@@ -47,6 +65,18 @@
       }
       return response;
     });
+
+    if (isStateChanging && !isTokenEndpoint) {
+      return getCsrfToken().then(token => {
+        if (token) {
+          const hasCsrf = Object.keys(init.headers).some(h => h.toLowerCase() === 'x-csrf-token');
+          if (!hasCsrf) init.headers['X-CSRF-Token'] = token;
+        }
+        return doFetch();
+      });
+    }
+
+    return doFetch();
   };
 
   // Helper to safely parse JSON responses

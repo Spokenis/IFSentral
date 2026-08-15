@@ -67,9 +67,9 @@ require '../auth/auth_check.php';
       <div class="container">
         <div class="row mb-4">
             <div class="col-md-12">
-                <form action="#">
+                <form id="search-form" onsubmit="return false;">
                     <div class="input-group">
-                        <input type="search" class="form-control form-control-lg" placeholder="Buscar por nome, tag ou gerente...">
+                        <input type="search" id="search-input" class="form-control form-control-lg" placeholder="Buscar por nome, tag ou gerente...">
                         <div class="input-group-append">
                             <button type="submit" class="btn btn-lg btn-default"><i class="fa fa-search"></i></button>
                         </div>
@@ -80,11 +80,19 @@ require '../auth/auth_check.php';
 
         <div class="row" id="project-list-container">
             </div>
-        
+
         <div class="row">
             <div id="status-msg" class="col-12" style="display: none;"></div>
         </div>
-        
+
+        <div class="row">
+            <div class="col-12 d-flex justify-content-center align-items-center" id="pagination-container" style="display: none; gap: 12px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-pagina-anterior"><i class="fas fa-chevron-left mr-1"></i>Anterior</button>
+                <span id="pagination-info" class="text-muted"></span>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-proxima-pagina">Próxima<i class="fas fa-chevron-right ml-1"></i></button>
+            </div>
+        </div>
+
       </div>
     </section>
   </div>
@@ -96,17 +104,34 @@ require '../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="../assets/js/fetch-helpers.js"></script>
+<script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
-    const API_URL_LISTAR = 'listar_projetos_publicos.php';
+    const API_URL_LISTAR = '/api/listar-projetos-publicos';
     const container = document.getElementById('project-list-container');
     const statusMsg = document.getElementById('status-msg');
+    const searchInput = document.getElementById('search-input');
+    const paginationContainer = document.getElementById('pagination-container');
+    const paginationInfo = document.getElementById('pagination-info');
+    const btnPaginaAnterior = document.getElementById('btn-pagina-anterior');
+    const btnProximaPagina = document.getElementById('btn-proxima-pagina');
+
+    let paginaAtual = 1;
+    let debounceTimer = null;
+
+    function escapeHtml(str) {
+        return (str ?? '').toString()
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
 
     // *** Função de criar card ATUALIZADA com TAGS ***
     function criarCardProjeto(proj) {
-        
-        const gerente = proj.manager_name;
+
+        const gerente = escapeHtml(proj.manager_name);
         const participantes = Number(proj.participant_count || 0);
         const maxUsers = proj.maxUsers;
         const isMember = Number(proj.is_member || 0) === 1;
@@ -126,7 +151,7 @@ require '../auth/auth_check.php';
                 const cores = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger'];
                 tagsArray.forEach((tag, index) => {
                     const cor = cores[index % cores.length];
-                    tagsHtml += `<span class="badge ${cor} mr-1">${tag}</span> `;
+                    tagsHtml += `<span class="badge ${cor} mr-1">${escapeHtml(tag)}</span> `;
                 });
             } else {
                 tagsHtml = '<span class="text-muted">(Sem tags)</span>';
@@ -151,15 +176,15 @@ require '../auth/auth_check.php';
 
         const botao = isLotado
             ? '<a href="#" class="btn btn-secondary btn-sm disabled">Solicitar Participação</a>'
-            : `<a href="visualizar_projeto.php?id=${proj.id}" class="btn btn-primary btn-sm">Saber Mais</a>`;
+            : `<a href="/ver-projeto?id=${proj.id}" class="btn btn-primary btn-sm">Saber Mais</a>`;
 
         return `
         <div class="col-md-6 col-lg-4 mb-4">
           <div class="card card-primary card-outline h-100">
             <div class="card-body d-flex flex-column">
               <div>
-                <h5 class="card-title"><b>${proj.name}</b></h5>
-                <p class="card-text mt-3">${proj.description || '<i>Sem descrição</i>'}</p>
+                <h5 class="card-title"><b>${escapeHtml(proj.name)}</b></h5>
+                <p class="card-text mt-3">${proj.description ? escapeHtml(proj.description) : '<i>Sem descrição</i>'}</p>
               </div>
               <div class="mt-auto pt-3">
                 <p class="text-sm text-muted mb-2">
@@ -178,37 +203,80 @@ require '../auth/auth_check.php';
         `;
     }
 
+    function renderizarProjetos(lista) {
+        if (lista.length === 0) {
+            container.innerHTML = '';
+            statusMsg.innerHTML = 'Nenhum projeto encontrado.';
+            statusMsg.style.display = 'block';
+            return;
+        }
+
+        statusMsg.style.display = 'none';
+        container.innerHTML = lista.map(criarCardProjeto).join('');
+    }
+
+    function renderizarPaginacao(pag) {
+        if (!pag || pag.total_pages <= 1) {
+            paginationContainer.style.display = 'none';
+            return;
+        }
+
+        paginationContainer.style.display = 'flex';
+        paginationInfo.textContent = `Página ${pag.page} de ${pag.total_pages} (${pag.total} projetos)`;
+        btnPaginaAnterior.disabled = pag.page <= 1;
+        btnProximaPagina.disabled = pag.page >= pag.total_pages;
+    }
+
     async function carregarProjetos() {
         container.innerHTML = '';
         statusMsg.innerHTML = 'Carregando projetos...';
         statusMsg.style.display = 'block';
+        paginationContainer.style.display = 'none';
 
         try {
-            const response = await fetch(API_URL_LISTAR, {
+            const params = new URLSearchParams({
+                page: paginaAtual,
+                per_page: 12,
+                search: searchInput.value.trim()
+            });
+
+            const response = await fetch(`${API_URL_LISTAR}?${params.toString()}`, {
                 credentials: 'include'
             });
-            const projetosPublicos = await safeJson(response);
-            if (projetosPublicos.error) throw new Error(projetosPublicos.error);
-            
-            if (projetosPublicos.length === 0) {
-                statusMsg.innerHTML = 'Nenhum projeto público encontrado no momento.';
-                return;
-            }
+            const resultado = await safeJson(response);
+            if (resultado.error) throw new Error(resultado.error);
 
-            statusMsg.style.display = 'none';
-
-            let htmlCards = '';
-            projetosPublicos.forEach(proj => {
-                htmlCards += criarCardProjeto(proj);
-            });
-            container.innerHTML = htmlCards;
+            renderizarProjetos(resultado.data);
+            renderizarPaginacao(resultado.pagination);
 
         } catch (error) {
             statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
         }
     }
+
+    function irParaPagina(pagina) {
+        paginaAtual = pagina;
+        carregarProjetos();
+    }
+
     document.addEventListener('DOMContentLoaded', carregarProjetos);
+
+    searchInput.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(function () {
+            paginaAtual = 1;
+            carregarProjetos();
+        }, 300);
+    });
+
+    btnPaginaAnterior.addEventListener('click', function () {
+        if (paginaAtual > 1) irParaPagina(paginaAtual - 1);
+    });
+
+    btnProximaPagina.addEventListener('click', function () {
+        irParaPagina(paginaAtual + 1);
+    });
 </script>
-<script src="../assets/js/profile-picture-helper.js"></script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

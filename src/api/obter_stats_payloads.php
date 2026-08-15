@@ -16,7 +16,7 @@ if (!isset($_GET['project_id']) || !is_numeric($_GET['project_id'])) {
 }
 $project_id = intval($_GET['project_id']);
 
-// Obter user_id da sessão ou do banco de dados basado no email
+// Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
     try {
@@ -51,33 +51,41 @@ try {
         exit;
     }
     
-    // Esta consulta junta os payloads com os dispositivos
-    // para filtrar por project_id
-    $sql = "
-        SELECT 
-            -- Conta apenas os payloads criados hoje (CURDATE())
-            COUNT(CASE WHEN DATE(p.created_at) = CURDATE() THEN 1 ELSE NULL END) AS leituras_hoje,
-            -- Pega a data mais recente de payload
-            MAX(p.created_at) AS ultima_leitura
-        FROM 
-            device_payloads p
-        JOIN 
-            devices d ON p.device_id = d.id
-        WHERE 
-            d.project_id = ?
+    // Duas queries separadas em vez de uma só sem filtro de data: a original
+    // fazia COUNT(CASE WHEN DATE(p.created_at) = CURDATE() ...) sem NENHUM
+    // filtro no WHERE, então escaneava o histórico inteiro de payloads do
+    // projeto a cada carregamento da página — e piora conforme os dados
+    // crescem. "Leituras hoje" agora tem um WHERE sargable (usa o índice
+    // idx_device_time via device_id + created_at >= CURDATE()).
+    $countSql = "
+        SELECT COUNT(*) AS leituras_hoje
+        FROM device_payloads p
+        JOIN devices d ON p.device_id = d.id
+        WHERE d.project_id = ? AND p.created_at >= CURDATE()
     ";
-    
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([$project_id]);
-    
-    $result = $stmt->fetch(PDO::FETCH_ASSOC);
+    $countStmt = $conn->prepare($countSql);
+    $countStmt->execute([$project_id]);
+    $leituras_hoje = (int) $countStmt->fetchColumn();
 
-    // Se nunca houve leitura, 'ultima_leitura' será NULL
-    if ($result['ultima_leitura'] === null) {
-        $result['ultima_leitura'] = "Nenhuma";
-    }
-    
-    echo json_encode($result); 
+    // "Última leitura" continua precisando olhar todo o histórico (não tem
+    // como saber o máximo sem isso), mas agora é só esse único agregado,
+    // sem o CASE por linha somado a uma contagem sem filtro nenhum.
+    $maxSql = "
+        SELECT MAX(p.created_at) AS ultima_leitura
+        FROM device_payloads p
+        JOIN devices d ON p.device_id = d.id
+        WHERE d.project_id = ?
+    ";
+    $maxStmt = $conn->prepare($maxSql);
+    $maxStmt->execute([$project_id]);
+    $ultima_leitura = $maxStmt->fetchColumn();
+
+    $result = [
+        'leituras_hoje' => $leituras_hoje,
+        'ultima_leitura' => $ultima_leitura ?: 'Nenhuma',
+    ];
+
+    echo json_encode($result);
 
 } catch (PDOException $e) {
     api_error_response('Erro no banco', $e, 500);

@@ -21,8 +21,11 @@ class MosquittoSync {
     public function __construct($conn, $silent = false) {
         $this->conn = $conn;
         $this->silent = $silent;
-        $this->passwd_file = '/etc/mosquitto/passwd';
-        $this->acl_file = '/etc/mosquitto/conf.d/acl.acl';
+        // Deve apontar para o volume compartilhado 'mqtt_config' (ver docker-compose.yml),
+        // montado em /mosquitto/config nos containers web, worker E mosquitto — não existe
+        // /etc/mosquitto na imagem do app, então esses caminhos eram inacessíveis.
+        $this->passwd_file = '/mosquitto/config/passwords.txt';
+        $this->acl_file = '/mosquitto/config/acl.acl';
     }
     
     /**
@@ -172,38 +175,41 @@ class MosquittoSync {
             chmod($passwd_tmp, 0600);
             chmod($acl_tmp, 0644);
             
-            // Tenta mover para /etc/mosquitto
-            if (is_writable('/etc/mosquitto')) {
+            // Tenta mover para o volume compartilhado /mosquitto/config
+            $config_dir = dirname($this->passwd_file);
+            if (is_writable($config_dir)) {
                 // Move passwd
                 $mv_passwd = "mv $passwd_tmp $this->passwd_file 2>&1";
                 exec($mv_passwd, $output1, $code1);
-                
+
                 if ($code1 === 0) {
-                    exec("chown mosquitto:mosquitto $this->passwd_file 2>&1");
+                    // 1883:1883 é o usuário/grupo "mosquitto" na imagem eclipse-mosquitto
+                    // (mesmo uid usado por docker-entrypoint.sh na geração inicial)
+                    exec("chown 1883:1883 $this->passwd_file 2>&1");
                     exec("chmod 600 $this->passwd_file 2>&1");
                 }
-                
+
                 // Move ACL
                 $mv_acl = "mv $acl_tmp $this->acl_file 2>&1";
                 exec($mv_acl, $output2, $code2);
-                
+
                 if ($code2 === 0) {
-                    exec("chown mosquitto:mosquitto $this->acl_file 2>&1");
+                    exec("chown 1883:1883 $this->acl_file 2>&1");
                     exec("chmod 644 $this->acl_file 2>&1");
                 }
-                
+
                 if ($code1 === 0 && $code2 === 0) {
-                    $this->log("Arquivos salvos em /etc/mosquitto/");
+                    $this->log("Arquivos salvos em $config_dir/");
                     return ['success' => true];
                 }
             }
-            
+
             // Se falhou ou não tem permissão, mantém em /tmp
-            $this->log("⚠️ Arquivos em /tmp (sem permissão em /etc/mosquitto)");
-            $this->log("Execute: sudo mv $passwd_tmp $this->passwd_file");
-            $this->log("Execute: sudo mv $acl_tmp $this->acl_file");
-            $this->log("Execute: sudo chown mosquitto:mosquitto $this->passwd_file $this->acl_file");
-            $this->log("Execute: sudo systemctl reload mosquitto");
+            $this->log("⚠️ Arquivos em /tmp (sem permissão em $config_dir)");
+            $this->log("Execute: mv $passwd_tmp $this->passwd_file");
+            $this->log("Execute: mv $acl_tmp $this->acl_file");
+            $this->log("Execute: chown 1883:1883 $this->passwd_file $this->acl_file");
+            $this->log("Reinicie o container mosquitto para recarregar as credenciais");
             
             return [
                 'success' => false,

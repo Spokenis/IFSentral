@@ -31,7 +31,7 @@ class ServicoEmail {
 
     public function enviarEmailConvite($paraEmail, $nomeProjeto, $nomeRemetente) {
         $baseUrl = rtrim(APP_URL, '/');
-        $linkSistema = $baseUrl . "/src/pages/login.html";
+        $linkSistema = $baseUrl . "/login";
         
         $assunto = "Convite para participar do projeto: {$nomeProjeto}";
         $corpo = "
@@ -45,8 +45,8 @@ class ServicoEmail {
     }
 
     public function enviarEmailConfirmacao($paraEmail, $paraNome, $token) {
-        $baseUrl = str_replace('/src/pages/index.html', '', APP_URL);
-        $linkVerificacao = $baseUrl . "/src/auth/verificar_email.php?token=" . $token;
+        $baseUrl = str_replace('/', '', APP_URL);
+        $linkVerificacao = $baseUrl . "/verificar-email?token=" . $token;
         
         $assunto = "Confirme seu cadastro no IFSentral - Smart Campus";
         $corpo = "
@@ -57,6 +57,25 @@ class ServicoEmail {
             <p>Ou copie e cole este link no seu navegador:</p>
             <p>{$linkVerificacao}</p>
             <p><small>Este link expira em 24 horas.</small></p>
+        ";
+
+        return $this->enviar($paraEmail, $paraNome, $assunto, $corpo);
+    }
+
+    public function enviarEmailRedefinicaoSenha($paraEmail, $paraNome, $token) {
+        $baseUrl = rtrim(APP_URL, '/');
+        $linkRedefinicao = $baseUrl . "/redefinir-senha?token=" . $token;
+
+        $assunto = "Redefinição de senha - IFSentral";
+        $corpo = "
+            <h2>Redefinição de senha</h2>
+            <p>Olá, {$paraNome}.</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no IFSentral. Clique no botão abaixo para escolher uma nova senha:</p>
+            <p><a href='{$linkRedefinicao}' style='padding: 10px 15px; background-color: #1B7D3D; color: white; text-decoration: none; border-radius: 5px;'>Redefinir minha senha</a></p>
+            <br>
+            <p>Ou copie e cole este link no seu navegador:</p>
+            <p>{$linkRedefinicao}</p>
+            <p><small>Este link expira em 1 hora. Se você não solicitou a redefinição de senha, ignore este e-mail — sua senha atual continua válida.</small></p>
         ";
 
         return $this->enviar($paraEmail, $paraNome, $assunto, $corpo);

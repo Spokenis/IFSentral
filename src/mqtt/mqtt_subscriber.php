@@ -47,6 +47,20 @@ function mqtt_log($message, $level = 'INFO')
     file_put_contents($log_file, $log_message, FILE_APPEND);
 }
 
+// Anuncia que o worker está online no mesmo tópico usado pelo Last Will
+// (retain=true), completando o par online/offline. O LWT sozinho só cobre a
+// queda inesperada; sem isso, o último estado retido após um restart normal
+// continuaria sendo "offline" do processo anterior.
+function publishWorkerOnlineStatus(MqttClient $client, string $topic, string $workerId)
+{
+    $payload = json_encode([
+        'status' => 'online',
+        'worker_id' => $workerId,
+        'pid' => getmypid(),
+    ]);
+    $client->publish($topic, $payload, 1, true);
+}
+
 // ==========================================
 // FUNÇÃO DE PROTEÇÃO DO BANCO DE DADOS
 // ==========================================
@@ -97,6 +111,10 @@ try {
     // Configurações de conexão
     mqtt_log('MQTT credentials: user=' . (MQTT_USERNAME ?: '(null)') . ' password_set=' . (MQTT_PASSWORD ? 'yes' : 'no'), 'DEBUG');
     $connectionSettings = new ConnectionSettings();
+    // TLS fica desligado aqui de propósito: este worker conversa com o broker
+    // dentro da mesma rede Docker (container-a-container), não atravessa rede
+    // não confiável. O listener 8883/TLS existe para dispositivos externos
+    // (ver mosquitto.conf e README).
     $connectionSettings
         ->setKeepAliveInterval(MQTT_KEEP_ALIVE)
         ->setConnectTimeout(5)
@@ -106,7 +124,26 @@ try {
 
     // CRÍTICO: Cria ID de cliente único para permitir múltiplas instâncias
     $unique_client_id = MQTT_CLIENT_ID . '_' . getmypid() . '_' . uniqid();
-    
+
+    // Last Will and Testament: se este worker cair sem se desconectar
+    // corretamente (crash, rede, OOM-kill), o broker publica esta mensagem
+    // por ele. Tópico é por-instância (inclui o client_id) — com múltiplos
+    // workers rodando em paralelo (shared subscription), um tópico
+    // compartilhado faria o "online" de um worker vivo ser sobrescrito pelo
+    // "offline" de outro que morreu, com retain=true.
+    $lwt_topic = 'ifsentral/workers/' . $unique_client_id . '/status';
+    $lwt_offline_payload = json_encode([
+        'status' => 'offline',
+        'worker_id' => $unique_client_id,
+        'reason' => 'unexpected_disconnect',
+    ]);
+
+    $connectionSettings
+        ->setLastWillTopic($lwt_topic)
+        ->setLastWillMessage($lwt_offline_payload)
+        ->setLastWillQualityOfService(1)
+        ->setRetainLastWill(true);
+
     // Cria cliente MQTT
     $client = new MqttClient(MQTT_HOST, MQTT_PORT, $unique_client_id);
 
@@ -118,6 +155,7 @@ try {
     // Conecta ao broker
     $client->connect($connectionSettings);
     mqtt_log('Conectado ao broker MQTT com sucesso (ID: ' . $unique_client_id . ')', 'INFO');
+    publishWorkerOnlineStatus($client, $lwt_topic, $unique_client_id);
 
     // Nome do grupo de balanceamento (Shared Subscription)
     $worker_group = 'cluster_db';
@@ -179,8 +217,18 @@ try {
                         
                         // Passamos a conexão garantida para o handler
                         $handler = new PayloadHandler($conn);
+
+                        // Mesma validação de estrutura (profundidade/tamanho/nº de chaves)
+                        // já aplicada no caminho HTTP em enviar_payload.php — sem isso,
+                        // payloads MQTT passavam sem nenhum limite de tamanho/complexidade.
+                        $validation = $handler->validatePayload($payload_data, $device_id);
+                        if (!$validation['valid']) {
+                            mqtt_log("Payload MQTT rejeitado (inválido) - Device: $device_id: " . implode('; ', $validation['errors']), 'WARN');
+                            return;
+                        }
+
                         $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt');
-                        
+
                         if ($result['success']) {
                             mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id", 'INFO');
                         } else {
@@ -221,6 +269,7 @@ try {
             try {
                 $client->connect($connectionSettings);
                 mqtt_log("Reconectado ao broker com sucesso", 'INFO');
+                publishWorkerOnlineStatus($client, $lwt_topic, $unique_client_id);
                 $reconnect_attempts = 0;
             } catch (\Exception $e) {
                 mqtt_log("Falha na reconexão MQTT: " . $e->getMessage(), 'ERROR');

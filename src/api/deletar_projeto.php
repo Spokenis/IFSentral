@@ -5,8 +5,10 @@ require_once '../config/config.php';
 require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/Csrf.php';
 
 use App\Core\AuthMiddleware;
+use App\Core\Csrf;
 
 header("Content-Type: application/json; charset=UTF-8");
 
@@ -23,6 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] != 'DELETE' && $_SERVER['REQUEST_METHOD'] != 'POS
     exit;
 }
 
+Csrf::requireValidToken();
+
 $data = json_decode(file_get_contents("php://input"));
 
 if (!isset($data->project_id) || !is_numeric($data->project_id)) {
@@ -38,6 +42,10 @@ $project_id = intval($data->project_id);
 try {
     $conn->beginTransaction();
     
+    // Apenas o Gerente do projeto pode deletá-lo (mesma regra usada em
+    // alterar_visibilidade_projeto.php, promover_gerente.php, expulsar_participante.php).
+    // Antes havia uma checagem extra exigindo perfil global Moderator/Admin,
+    // o que impedia um Gerente comum de deletar o próprio projeto.
     if (!AuthMiddleware::isProjectManager($conn, $user_id, $project_id)) {
         $conn->rollBack();
         http_response_code(403);
@@ -45,27 +53,6 @@ try {
         exit;
     }
 
-    // Regra de negócio adicional: apenas Moderator/Admin do sistema
-    $profileSql = "SELECT profile FROM users WHERE id = ? AND deletedAt IS NULL LIMIT 1";
-    $profileStmt = $conn->prepare($profileSql);
-    $profileStmt->execute([$user_id]);
-    $userProfile = $profileStmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$userProfile) {
-        $conn->rollBack();
-        http_response_code(404);
-        echo json_encode(['error' => 'Usuário não encontrado']);
-        exit;
-    }
-
-    // Verificar se o usuário é Moderator ou Admin no sistema
-    if ($userProfile['profile'] !== 'Moderator' && $userProfile['profile'] !== 'Admin') {
-        $conn->rollBack();
-        http_response_code(403);
-        echo json_encode(['error' => 'Apenas Moderadores podem gerenciar projetos.']);
-        exit;
-    }
-    
     // Soft delete: marcar como deletado
     $deleteSql = "UPDATE projects SET deletedAt = NOW() WHERE id = ?";
     $deleteStmt = $conn->prepare($deleteSql);

@@ -34,7 +34,7 @@ try {
     }
     
     // Buscar todos os dispositivos dos projetos onde o usuário participa
-    $sql = "SELECT 
+    $sql = "SELECT
                 d.id,
                 d.name,
                 d.description,
@@ -45,13 +45,16 @@ try {
                 p.name as project_name,
                 p.description as project_description,
                 r.name as role_name,
-                r.id as role_id
+                r.id as role_id,
+                ms.last_seen,
+                (ms.last_seen IS NOT NULL AND ms.last_seen > DATE_SUB(NOW(), INTERVAL 5 MINUTE)) AS is_online
             FROM devices d
             INNER JOIN projects p ON d.project_id = p.id
             INNER JOIN users_projects up ON p.id = up.project_id
             INNER JOIN roles r ON up.role_id = r.id
-            WHERE up.user_id = ? 
-            AND d.deletedAt IS NULL 
+            LEFT JOIN device_mqtt_status ms ON ms.device_id = d.id
+            WHERE up.user_id = ?
+            AND d.deletedAt IS NULL
             AND p.deletedAt IS NULL
             ORDER BY p.name ASC, d.name ASC";
     
@@ -83,7 +86,9 @@ try {
             'description' => $device['description'],
             'api_key' => $device['api_key'],
             'createdAt' => $device['createdAt'],
-            'updatedAt' => $device['updatedAt']
+            'updatedAt' => $device['updatedAt'],
+            'last_seen' => $device['last_seen'],
+            'is_online' => (bool) $device['is_online']
         ];
         
         $totalDevices++;
