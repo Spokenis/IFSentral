@@ -83,6 +83,27 @@ try {
     echo "📄 Arquivo: $passwd_file\n";
     echo "📊 Usuários gravados: " . (count($credentials) - $skipped) . " (pulados: $skipped)\n\n";
 
+    // Este script sobrescreve o arquivo inteiro a cada execução, então o
+    // usuário admin (usado pelo worker MQTT e por scripts administrativos)
+    // precisa ser regravado aqui sempre — caso contrário toda regeneração
+    // (inclusive as automáticas feitas por docker-entrypoint.sh a cada boot
+    // do container worker) apaga o admin e derruba a autenticação do worker.
+    // O binário mosquitto_passwd não está disponível nas imagens web/worker
+    // (só nos pacotes do broker), então o hash é gerado em PHP com a mesma
+    // função usada para os dispositivos (PBKDF2-SHA512, formato $7$...).
+    $admin_user = env('MQTT_USERNAME', 'admin');
+    $admin_pass = env('MQTT_PASSWORD', 'ifsentral_admin_2024');
+    $admin_salt = random_bytes(12);
+    $admin_hash_raw = hash_pbkdf2('sha512', $admin_pass, $admin_salt, 101, 64, true);
+    $admin_hash = sprintf('$7$%d$%s$%s', 101, base64_encode($admin_salt), base64_encode($admin_hash_raw));
+
+    if (file_put_contents($passwd_file, "{$admin_user}:{$admin_hash}\n", FILE_APPEND) === false) {
+        echo "⚠️  Não foi possível sincronizar o usuário admin ('$admin_user') no arquivo de senhas.\n\n";
+    } else {
+        chmod($passwd_file, 0600);
+        echo "🔑 Usuário '$admin_user' (admin) sincronizado no arquivo de senhas.\n\n";
+    }
+
     echo "=== Próximos Passos ===\n";
     echo "1. Gerar arquivo ACL:\n";
     echo "   php src/mqtt/generate_mosquitto_acl.php\n\n";

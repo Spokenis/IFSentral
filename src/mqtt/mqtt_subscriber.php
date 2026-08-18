@@ -115,7 +115,11 @@ try {
     // dentro da mesma rede Docker (container-a-container), não atravessa rede
     // não confiável. O listener 8883/TLS existe para dispositivos externos
     // (ver mosquitto.conf e README).
-    $connectionSettings
+    // ConnectionSettings é imutável: cada setter retorna uma cópia nova, então
+    // o encadeamento precisa ser reatribuído — sem isso $connectionSettings
+    // continua sendo o objeto original vazio (sem usuário/senha/keep-alive),
+    // e o broker recebe um CONNECT anônimo, rejeitado com "not authorized".
+    $connectionSettings = $connectionSettings
         ->setKeepAliveInterval(MQTT_KEEP_ALIVE)
         ->setConnectTimeout(5)
         ->setUseTls(false)
@@ -138,7 +142,7 @@ try {
         'reason' => 'unexpected_disconnect',
     ]);
 
-    $connectionSettings
+    $connectionSettings = $connectionSettings
         ->setLastWillTopic($lwt_topic)
         ->setLastWillMessage($lwt_offline_payload)
         ->setLastWillQualityOfService(1)

@@ -65,8 +65,10 @@ try {
 echo "\n4️⃣  VERIFICANDO MQTT...\n";
 if (file_exists(ROOT_DIR . '/src/config/mqtt.php')) {
     echo "   $OK Configuração MQTT encontrada\n";
-    
+
     if (file_exists(ROOT_DIR . '/.mqtt_worker.pid')) {
+        // Deploy legado (sem Docker): worker roda como processo em background
+        // no mesmo host, gerenciado por deploy-production.sh / mqtt_health_check.php.
         $pid = intval(file_get_contents(ROOT_DIR . '/.mqtt_worker.pid'));
         if (posix_getpgid($pid) !== false) {
             echo "   $OK MQTT Worker rodando com PID $pid\n";
@@ -75,7 +77,44 @@ if (file_exists(ROOT_DIR . '/src/config/mqtt.php')) {
             echo "   $FAIL MQTT Worker não está rodando (PID: $pid)\n";
         }
     } else {
-        echo "   $WARN MQTT Worker não foi iniciado ainda\n";
+        // Deploy Docker (padrão do README): o worker roda no container
+        // separado 'worker', não neste container 'web' — não existe PID
+        // local para checar. Os dois containers compartilham o volume
+        // ./logs, então inferimos a saúde pela última linha relevante que o
+        // worker gravou em mqtt_subscriber.log.
+        $worker_log = ROOT_DIR . '/logs/mqtt_subscriber.log';
+        if (file_exists($worker_log)) {
+            $lines = file($worker_log, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            $tail = array_slice($lines, -200);
+
+            $last_connected_at = null;
+            $last_error_at = null;
+            foreach ($tail as $i => $line) {
+                // Cobre tanto a conexão inicial quanto uma reconexão bem-sucedida
+                // após queda momentânea do broker (ex.: `docker compose restart
+                // mosquitto`) — o worker sempre loga um [ERROR] antes de tentar
+                // reconectar, então isso sozinho não indica falha atual.
+                if (
+                    str_contains($line, 'Conectado ao broker MQTT com sucesso')
+                    || str_contains($line, 'Reconectado ao broker com sucesso')
+                ) {
+                    $last_connected_at = $i;
+                } elseif (str_contains($line, '[ERROR]') || str_contains($line, '[FATAL]')) {
+                    $last_error_at = $i;
+                }
+            }
+
+            if ($last_connected_at !== null && ($last_error_at === null || $last_error_at < $last_connected_at)) {
+                echo "   $OK MQTT Worker conectado ao broker (container 'worker', via logs/mqtt_subscriber.log)\n";
+                $checks['mqtt'] = true;
+            } elseif ($last_error_at !== null) {
+                echo "   $FAIL MQTT Worker com erro recente em logs/mqtt_subscriber.log — veja: docker compose logs worker\n";
+            } else {
+                echo "   $WARN MQTT Worker não foi iniciado ainda (sem registro de conexão em logs/mqtt_subscriber.log)\n";
+            }
+        } else {
+            echo "   $WARN MQTT Worker não foi iniciado ainda (logs/mqtt_subscriber.log não existe)\n";
+        }
     }
 } else {
     echo "   $FAIL Configuração MQTT não encontrada\n";

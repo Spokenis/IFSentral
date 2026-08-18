@@ -1,158 +1,156 @@
-# IFSentral — Plataforma IoT Smart Campus
+# IFSentral - Plataforma IoT Smart Campus
 
-O **IFSentral** é uma plataforma integrada de Internet das Coisas (IoT) desenvolvida para gerenciar projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real (gráficos avançados e telemetria) em ambiente de campus inteligente.
+Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real. Documentação técnica para implantação.
 
-Este guia é destinado à **Equipe de Tecnologia da Informação (TI)** do campus para orientar a implantação da aplicação em um servidor local da instituição.
+## Arquitetura do Sistema
 
----
+O sistema opera sob containers (Docker e Docker Compose) divididos nos seguintes serviços:
+1. Web Server: Apache + PHP 8.x
+2. Banco de Dados: MySQL 8.0
+3. Broker MQTT: Eclipse Mosquitto
+4. Worker MQTT: Processo PHP em background (ifsentral_worker)
 
-## 🏗️ Arquitetura do Sistema
+Atenção: Todo comando PHP deve ser executado obrigatoriamente através do container Web. A execução direta no host falhará por incapacidade de resolução da rede interna do Docker. Utilize o prefixo `docker compose exec web php`.
 
-O sistema foi containerizado utilizando **Docker** e **Docker Compose**, garantindo isolamento, facilidade de manutenção e reproducibilidade. A stack é composta por:
-1. **Web Server (Apache + PHP 8.x):** Responsável por servir a interface web (AdminLTE) e as APIs REST de gerenciamento e ingestão HTTP.
-2. **Banco de Dados (MySQL 8.0):** Armazena usuários, projetos, permissões, chaves de API e históricos de payloads.
-3. **Broker MQTT (Eclipse Mosquitto):** Gerencia a mensageria MQTT para os dispositivos de hardware com autenticação e ACLs restritas.
-4. **MQTT Subscriber (Worker PHP em Background — container `ifsentral_worker`):** Consome as mensagens MQTT do broker e injeta os payloads no banco de dados em tempo real.
+## Procedimento de Instalação
 
----
+### 0. Pré-requisitos
+* Docker Engine e Docker Compose v2 (plugin `docker compose`) instalados no host. Se o host ainda não tem Docker, o script `get-docker.sh` incluso no repositório instala a versão oficial (`sudo ./get-docker.sh`).
+* `git` instalado para obter o código-fonte.
 
-## ⚙️ Pré-requisitos de Infraestrutura
-
-Antes de iniciar a instalação no servidor local (recomenda-se **Ubuntu Server 22.04 LTS** ou superior), certifique-se de que o servidor possui:
-* **Docker** (versão 24.0+)
-* **Docker Compose** (versão 2.20+)
-* **Portas livres na rede/firewall:**
-  * `80` (HTTP) / `443` (HTTPS) — Acesso web à plataforma.
-  * `1883` (MQTT) — Comunicação dos dispositivos IoT com o broker (texto puro).
-  * `8883` (MQTT sobre TLS) — Recomendado para dispositivos fora da rede local/confiável; usa os mesmos certificados gerados pelo `setup-ssl.sh`.
-  * `8080` ou porta customizada para testes locais (configurável via `.env`).
-
----
-
-## 🚀 Passo a Passo para Implantação
-
-### 1. Clonar ou Transferir o Repositório
-Transfira os arquivos do sistema para o diretório de produção no servidor (ex: `/var/www/ifsentral` ou `/opt/ifsentral`).
+### 1. Obter o Código
+Clone o repositório no diretório de instalação (ajuste o caminho conforme necessário).
 
 ```bash
+sudo mkdir -p /opt/ifsentral
+sudo chown $USER:$USER /opt/ifsentral
+git clone https://github.com/Spokenis/IFSentral.git /opt/ifsentral
 cd /opt/ifsentral
 ```
 
-### 2. Configurar as Variáveis de Ambiente (`.env`)
-Copie o arquivo de exemplo e edite com as credenciais definitivas da instituição:
+### 2. Preparação do Ambiente
+Configure as credenciais da aplicação.
 
 ```bash
 cp src/config/.env.example .env
 nano .env
 ```
+Parâmetros obrigatórios no `.env`:
+* DB_PASS e DB_ROOT_PASS
+* MQTT_PASSWORD (necessário para a autenticação do worker)
+* APP_URL (use `http://localhost:8080` para testes locais; a aplicação redireciona automaticamente para HTTPS, então o acesso real ocorrerá pela porta HTTPS — veja a seção "Acessando a Aplicação")
 
-**Parâmetros críticos a configurar no `.env`:**
-* `DB_PASS` e `DB_ROOT_PASS`: Defina senhas fortes para o banco de dados MySQL.
-* `MQTT_PASSWORD`: Defina a senha do administrador MQTT.
-* `APP_URL`: URL base da aplicação no campus (ex: `http://ifsentral.seu-campus.edu.br` ou IP do servidor).
-* `ENABLE_EMAIL_FEATURES`: Defina como `true` caso possuam servidor SMTP configurado, ou `false` para cadastro de usuários com ativação automática imediata. **Atenção:** a recuperação de senha ("Esqueci minha senha") depende de e-mail para funcionar — com `ENABLE_EMAIL_FEATURES=false` (ou SMTP mal configurado), o sistema segue respondendo com sucesso genérico por segurança, mas o e-mail nunca chega e o usuário fica sem forma de redefinir a senha sozinho.
+Atenção: `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`, `MQTT_HOST`, `MQTT_PORT`, `MQTT_USERNAME` e `MQTT_PASSWORD` são injetados nos containers `web`/`worker` diretamente pelo `docker-compose.yml`. As demais variáveis (`APP_URL`, `SMTP_*`, `SESSION_*` etc.) são lidas do arquivo `.env`, que é copiado para dentro da imagem no momento do build (etapa 5). **Se você editar o `.env` depois de já ter buildado a imagem, é necessário rodar `docker compose up -d --build` novamente para que a mudança tenha efeito.**
 
-### 3. Configurar SSL e Diretórios do Host
-O `docker-compose.yml` monta certificados e configurações a partir de caminhos fixos no host (`/etc/ifsentral`, `/etc/ssl/certs/ifsentral-chain.crt`, `/etc/ssl/private/ifsentral.key`). **Este passo é obrigatório antes do `docker-compose up`** — sem ele, o Docker cria esses caminhos como diretórios vazios e o container web falha ao iniciar o Apache/SSL.
+### 3. Configuração SSL
+A geração de certificados é pré-requisito para o container Web iniciar o Apache.
 
 ```bash
 chmod +x setup-ssl.sh
 ./setup-ssl.sh
 ```
 
-O script cria os diretórios necessários e, caso a instituição ainda não possua certificados válidos (ex: emitidos por uma CA ou Let's Encrypt), gera um certificado autoassinado temporário em `/etc/ssl/`. Para produção, substitua os arquivos gerados pelos certificados oficiais do campus antes de prosseguir.
-
-### 4. Configurar Permissões de Pastas e Diretórios Críticos
-Garanta que os diretórios de logs e uploads possuam permissões adequadas para o container web:
+### 4. Permissões de Sistema de Arquivos
+Crie as pastas necessárias e atribua a propriedade ao usuário do Apache (www-data / UID 33).
 
 ```bash
 mkdir -p logs uploads/profile
-chmod -R 755 logs uploads
-sudo chown -R 33:33 logs uploads  # www-data (ID 33) no Debian/Ubuntu
+sudo chmod -R 755 logs uploads
+sudo chown -R 33:33 logs uploads
 ```
 
-### 5. Subir os Containers com Docker Compose
-Execute o Docker Compose em modo detach para construir e iniciar os serviços:
+### 5. Inicialização dos Containers
+Construa e inicie os serviços em segundo plano.
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
-Para verificar se todos os containers estão rodando corretamente (`ifsentral_web`, `ifsentral_worker`, `ifsentral_db`, `ifsentral_mqtt`):
+O container `db` leva alguns segundos para concluir a importação do schema inicial (`src/db/ifsentral_bd.sql`) antes de ser considerado "healthy"; os containers `web` e `worker` só sobem depois disso. Acompanhe até todos os serviços aparecerem como `running`/`healthy` antes de seguir para a próxima etapa:
 
 ```bash
-docker-compose ps
+docker compose ps
+# ou, para acompanhar em tempo real:
+docker compose logs -f
 ```
 
-### 6. Executar a Verificação de Saúde do Sistema
-O IFSentral possui um script automatizado de diagnóstico. Como o PHP roda apenas dentro dos containers (não é pré-requisito no host), execute-o via `docker-compose exec` para validar a conexão com o banco, integridade do schema e pastas:
+### 6. Estrutura de Segurança do Banco de Dados
+Instancie as tabelas de rate limit, logs de acesso e 2FA.
 
 ```bash
-docker-compose exec web php system-check.php
+docker compose exec web php setup-security-tables.php
 ```
 
-### 7. Configurar as Tabelas de Segurança (Execução Única)
-Após o primeiro deploy, crie as tabelas auxiliares usadas pelo rate limiting e pelas configurações de segurança da API. Este passo só precisa ser executado uma vez:
+### 7. Configuração e Autenticação MQTT
+Gere as credenciais MQTT dos dispositivos cadastrados no banco e reinicie o broker para carregá-las. Execute estritamente na ordem abaixo.
 
 ```bash
-docker-compose exec web php setup-security-tables.php
+docker compose exec web php src/mqtt/generate_mqtt_credentials.php
+docker compose exec web php src/mqtt/generate_mosquitto_passwd.php
+docker compose exec web php src/mqtt/generate_mosquitto_acl.php
+
+docker compose restart mosquitto
 ```
 
-### 8. Acessar a Plataforma
-Abra no navegador o endereço configurado em `APP_URL` no `.env` (ex: `https://ifsentral.seu-campus.edu.br` ou `https://<IP-do-servidor>`). Caso esteja usando o certificado autoassinado gerado no Passo 3, o navegador exibirá um aviso de segurança até que os certificados oficiais sejam instalados.
+`generate_mosquitto_passwd.php` já garante automaticamente que o usuário `admin` (usado pelo worker MQTT) exista no arquivo de senhas com a `MQTT_PASSWORD` atual do `.env` — não é necessário recriá-lo manualmente. O `docker compose restart mosquitto` continua sendo necessário para que o broker carregue as credenciais dos **dispositivos** recém-gerados (o Mosquitto só lê `passwords.txt`/`acl.acl` na própria inicialização).
 
----
-
-## 🔌 Configuração e Segurança do MQTT
-
-O broker Mosquitto utiliza autenticação baseada em credenciais por dispositivo e regras ACL (Access Control List).
-
-1. **Gerar Credenciais para Dispositivos:**
-   Sempre que um novo dispositivo for cadastrado na plataforma, suas credenciais MQTT devem ser geradas:
-   ```bash
-   php src/mqtt/generate_mqtt_credentials.php
-   ```
-2. **Gerar Arquivo de Senhas do Mosquitto:**
-   ```bash
-   php src/mqtt/generate_mosquitto_passwd.php
-   php src/mqtt/generate_mosquitto_acl.php
-   ```
-3. **Conexão criptografada (TLS):** o broker aceita conexões TLS na porta `8883`, usando os mesmos certificados do `setup-ssl.sh`. A porta `1883` (texto puro) continua disponível para não quebrar dispositivos já configurados, mas para qualquer device fora da rede local/confiável (ex: conectando pela internet), configure-o para usar `8883` em vez de `1883`. Como os certificados são autoassinados por padrão, o firmware do dispositivo precisa ser configurado para confiar nesse certificado específico (ou, em bibliotecas de teste, desabilitar a verificação — não recomendado em produção).
-
----
-
-## 📊 Manutenção e Monitoramento
-
-* **Logs do MQTT Subscriber:**
-  Os logs do worker que escuta os sensores em tempo real ficam salvos em:
-  ```bash
-  tail -f logs/mqtt_subscriber.log
-  ```
-* **Reiniciar os Serviços:**
-  Caso precise reiniciar a aplicação após atualizações:
-  ```bash
-  docker-compose restart
-  ```
-* **Backup do Banco de Dados:**
-  Recomenda-se configurar um cron job diário para backup do MySQL:
-  ```bash
-  docker exec -it ifsentral_db mysqldump -u ifsentral_user -p'sua_senha' ifsentral_bd > /opt/backups/ifsentral_$(date +%F).sql
-  ```
-
----
-
-## 🧪 Testes Automatizados
-
-O projeto tem uma suíte PHPUnit (unitária + integração com SQLite em memória, sem precisar de MySQL) cobrindo a lógica de autenticação, autorização e 2FA. Para rodar localmente (fora dos containers, com PHP e Composer instalados):
+### 8. Validação do Sistema
+Execute o script de diagnóstico para confirmar a integridade e a comunicação de todos os serviços.
 
 ```bash
-composer install
-composer test
+docker compose exec web php system-check.php
 ```
 
-Os testes ficam em `tests/Unit` e `tests/Integration` — ver `phpunit.xml` para a configuração. Isso valida lógica isolada (TOTP, CSRF, validação de payload, checagens de acesso do `AuthMiddleware`); não substitui testar o fluxo completo pela interface antes de publicar uma mudança em produção.
+### 9. Acessando a Aplicação
+O `docker-compose.yml` expõe HTTP na porta `${HOST_HTTP_PORT:-8080}` e HTTPS na porta `${HOST_HTTPS_PORT:-8443}` do host. O `.htaccess` da aplicação redireciona **toda** requisição HTTP para HTTPS automaticamente — portanto acesse sempre pela porta HTTPS:
 
----
+```
+https://localhost:8443
+```
 
-## 📞 Suporte e Contato
-Em caso de dúvidas técnicas na implantação, consulte os logs em `logs/` ou abra um chamado técnico com a equipe de desenvolvimento do IFSentral.
+Como a etapa 3 gera um certificado autoassinado (a menos que você tenha instalado um certificado válido em `/etc/ssl/`), o navegador exibirá um aviso de certificado não confiável na primeira visita — isso é esperado em ambiente local/desenvolvimento. Em produção, substitua os certificados em `/etc/ssl/certs/ifsentral-chain.crt` e `/etc/ssl/private/ifsentral.key` por certificados válidos (ex.: Let's Encrypt) antes de expor a aplicação publicamente.
+
+### 10. Agendamento de Tarefas (Cron) — opcional
+`src/mqtt/mqtt_health_check.php` foi escrito para o deploy legado sem Docker (gerencia o worker como processo em background via PID/`nohup` no próprio host). Sob Docker Compose isso não se aplica: o worker roda isolado no container `worker`, e é o próprio Docker (`restart: unless-stopped` em `docker-compose.yml`) quem já reinicia o container automaticamente se o processo cair — não é necessário (nem seguro) rodar este script via `docker compose exec web ...` para esse fim; fora do container `worker` ele agora só registra um log e não faz nada.
+
+Para acompanhar a saúde do worker sob Docker, prefira:
+
+```bash
+# Ver se o container está saudável e há quanto tempo está rodando:
+docker compose ps worker
+
+# Acompanhar a conexão com o broker em tempo real:
+docker compose logs -f worker
+```
+
+Se ainda assim quiser um alerta externo periódico (ex.: para notificar caso o container fique preso em restart loop), agende a checagem no host contra o próprio Docker, não contra o script PHP:
+
+```bash
+*/5 * * * * docker inspect ifsentral_worker --format '{{.State.Status}}' | grep -qv '^running$' && echo "IFSentral worker fora do ar" # substitua pelo canal de alerta desejado
+```
+
+## Procedimentos de Manutenção
+
+### Cadastro de Novos Dispositivos
+Após registrar um dispositivo via interface web, regere as chaves do broker.
+
+```bash
+docker compose exec web php src/mqtt/generate_mqtt_credentials.php
+docker compose exec web php src/mqtt/generate_mosquitto_passwd.php
+docker compose exec web php src/mqtt/generate_mosquitto_acl.php
+docker compose restart mosquitto
+```
+
+### Logs de Telemetria
+Monitore a injeção de dados via MQTT em tempo real.
+
+```bash
+docker compose logs -f worker
+```
+
+### Backup de Dados
+Comando para extração de dump do banco de dados (substitua a senha de acordo com o arquivo `.env`).
+
+```bash
+docker exec -i ifsentral_db mysqldump -u root -p'SENHA_ROOT' ifsentral_bd > /opt/backups/ifsentral_$(date +%F).sql
+```

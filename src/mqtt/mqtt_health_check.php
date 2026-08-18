@@ -16,13 +16,28 @@ function log_health($message, $level = 'INFO')
 {
     $timestamp = date('Y-m-d H:i:s');
     $log_dir = dirname(LOG_FILE);
-    
+
     if (!is_dir($log_dir)) {
         mkdir($log_dir, 0755, true);
     }
-    
+
     $log_line = "[$timestamp] [$level] $message" . PHP_EOL;
     file_put_contents(LOG_FILE, $log_line, FILE_APPEND);
+}
+
+// Sob Docker Compose (ver docker-compose.yml), o worker roda isolado no
+// container 'worker' (ROLE=worker), supervisionado pelo próprio Docker
+// (restart: unless-stopped) — não por PID/nohup neste host. Rodar este
+// script no container 'web' (ROLE=web, sem PID local) faria o bloco abaixo
+// concluir "worker não está rodando" e disparar via nohup uma SEGUNDA cópia
+// do subscriber dentro do container web, sem nenhuma supervisão: se essa
+// cópia cair, nada a reinicia, e ela nunca aparece em `docker compose ps`.
+// Sob Docker, portanto, este script só faz sentido rodando dentro do
+// próprio container worker (ROLE=worker); fora dele, é um no-op seguro.
+$role = getenv('ROLE');
+if ($role !== false && $role !== 'worker') {
+    log_health("ROLE=$role (não é 'worker') — pulando gerenciamento de processo, que é responsabilidade do Docker neste container.", 'INFO');
+    exit(0);
 }
 
 // 1. Verificar se PID existe

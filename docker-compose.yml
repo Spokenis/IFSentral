@@ -81,8 +81,13 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-rootpassword}"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 6
+      # Na primeira subida (volume vazio), o entrypoint oficial do MySQL importa
+      # src/db/ifsentral_bd.sql antes de aceitar conexões — isso pode levar
+      # bem mais que os 30s antigos. Um start_period curto demais faz o
+      # docker compose desistir e abortar web/worker com "dependency failed
+      # to start: container ifsentral_db is unhealthy" no meio da importação.
+      start_period: 180s
     restart: unless-stopped
 
   # 4. MQTT Broker (Mosquitto)
@@ -91,6 +96,12 @@ services:
     container_name: ifsentral_mqtt
     entrypoint: ["/usr/local/bin/mosquitto-entrypoint.sh"]
     command: []
+    environment:
+      # Sem isso, o bootstrap do mosquitto-entrypoint.sh cria o usuário admin
+      # padrão com a senha fixa de fallback em vez da MQTT_PASSWORD definida
+      # no .env, causando "not authorised" para o worker logo na primeira subida.
+      - MQTT_USERNAME=${MQTT_USERNAME:-admin}
+      - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
     ports:
       - "1883:1883"
       - "8883:8883"
@@ -107,7 +118,11 @@ services:
     healthcheck:
       # Checa 1883 e 8883: se o certificado estiver com problema, o listener
       # TLS falha ao subir mesmo com o broker "saudável" em 1883.
-      test: ["CMD-SHELL", "nc -z localhost 1883 && nc -z localhost 8883 || exit 1"]
+      # Usa 127.0.0.1 (não "localhost"): o mosquitto.conf só faz bind em
+      # IPv4 (0.0.0.0), e "localhost" resolve para ::1 primeiro neste
+      # container — o que faz o healthcheck falhar sempre, mesmo com o
+      # broker funcionando normalmente.
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 1883 && nc -z 127.0.0.1 8883 || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
