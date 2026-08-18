@@ -21,6 +21,11 @@ services:
       - MQTT_PORT=${MQTT_PORT:-1883}
       - MQTT_USERNAME=${MQTT_USERNAME:-admin}
       - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
+      # Porta HTTPS exposta no host (usada pelo .htaccess para montar o
+      # redirect HTTP->HTTPS com a porta correta; sem isso o redirect
+      # preserva a porta HTTP original, que só coincide com a HTTPS em
+      # produção com 80/443 padrão).
+      - HTTPS_PORT=${HOST_HTTPS_PORT:-8443}
     volumes:
       - ./logs:/var/www/html/logs
       - ./uploads:/var/www/html/uploads

@@ -33,10 +33,14 @@ if (file_exists(ROOT_DIR . '/src/config/config.php')) {
     echo "   $FAIL Arquivo config.php não encontrado\n";
 }
 
+// config.php procura primeiro src/config/.env e, na ausência dele, cai para
+// o .env da raiz (usado pelo deploy Docker documentado no README).
 if (file_exists(ROOT_DIR . '/src/config/.env')) {
-    echo "   $OK Arquivo .env encontrado\n";
+    echo "   $OK Arquivo .env encontrado (src/config/.env)\n";
+} elseif (file_exists(ROOT_DIR . '/.env')) {
+    echo "   $OK Arquivo .env encontrado (raiz do projeto)\n";
 } else {
-    echo "   $WARN Arquivo .env não encontrado (usando defaults)\n";
+    echo "   $WARN Nenhum arquivo .env encontrado (usando apenas variáveis de ambiente/defaults)\n";
 }
 
 // 2. VERIFICAR BANCO DE DADOS

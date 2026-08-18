@@ -10,12 +10,15 @@ if (!defined('DB_HOST')) {
     }
 }
 
-// Prioriza variáveis do arquivo .env se ele existir, senão usa getenv (Docker)
-$host = (isset($_ENV['DB_HOST'])) ? $_ENV['DB_HOST'] : (getenv('DB_HOST') ?: (defined('DB_HOST') ? DB_HOST : 'db'));
-$dbname = (isset($_ENV['DB_NAME'])) ? $_ENV['DB_NAME'] : (getenv('DB_NAME') ?: (defined('DB_NAME') ? DB_NAME : 'ifsentral_bd'));
-$user = (isset($_ENV['DB_USER'])) ? $_ENV['DB_USER'] : (getenv('DB_USER') ?: (defined('DB_USER') ? DB_USER : 'ifsentral_user'));
-$pass = (isset($_ENV['DB_PASS'])) ? $_ENV['DB_PASS'] : (getenv('DB_PASS') !== false ? getenv('DB_PASS') : (defined('DB_PASS') ? DB_PASS : ''));
-$env = (isset($_ENV['APP_ENV'])) ? $_ENV['APP_ENV'] : (getenv('APP_ENV') ?: (defined('APP_ENV') ? APP_ENV : 'development'));
+// Usa os valores já resolvidos por config.php (env(): getenv()/Docker Compose
+// tem prioridade sobre o arquivo .env). Reimplementar essa prioridade aqui
+// divergia da ordem real e fazia um src/config/.env desatualizado sobrepor
+// silenciosamente as credenciais injetadas pelo docker-compose.yml.
+$host = DB_HOST;
+$dbname = DB_NAME;
+$user = DB_USER;
+$pass = DB_PASS;
+$env = APP_ENV;
 
 try {
     $conn = new PDO(

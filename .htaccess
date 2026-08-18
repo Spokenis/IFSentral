@@ -6,9 +6,14 @@
 RewriteEngine On
 
 # Respect X-Forwarded-Proto (useful behind proxies/load-balancers)
+# Usa a porta HTTPS externa real (HTTPS_PORT, ver docker-compose.yml/
+# docker/apache/ifsentral-ssl.conf) em vez de reaproveitar a porta do
+# Host: original — HTTP e HTTPS podem estar mapeados a portas diferentes
+# no host (ex.: 8080/8443 em ambientes de teste local).
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
-RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTP_HOST} ^([^:]+)
+RewriteRule ^ https://%1:%{ENV:HTTPS_PORT}%{REQUEST_URI} [L,R=301]
 
 Options -Indexes
 
