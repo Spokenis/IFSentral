@@ -26,7 +26,7 @@ $default_config = [
     'SMTP_PASS' => '',
     'SMTP_ENCRYPTION' => 'ssl',
     'MAIL_FROM_ADDRESS' => 'suporte@ifsentral.online',
-    'MAIL_FROM_NAME' => 'IFSentral Smart Campus'
+    'MAIL_FROM_NAME' => 'IFSentral Lite Smart Campus'
 ];
 
 // Carrega arquivo .env se existir (prioriza src/config/.env, senão tenta o .env da raiz)

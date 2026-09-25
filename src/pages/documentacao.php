@@ -6,7 +6,7 @@ require '../auth/auth_check.php';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Documentação | IFSentral</title>
+  <title>Documentação | IFSentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -211,7 +211,7 @@ require '../auth/auth_check.php';
                 </div>
                 <h5>Configurando o Webhook no TTN</h5>
                 <ol>
-                  <li>No IFSentral, copie o <strong>ID do Dispositivo</strong> e a <strong>API Key</strong> do seu dispositivo.</li>
+                  <li>No IFSentral Lite, copie o <strong>ID do Dispositivo</strong> e a <strong>API Key</strong> do seu dispositivo.</li>
                   <li>No painel do TTN, adicione um Webhook JSON.</li>
                   <li>No campo <strong>Base URL</strong>, coloque a URL do seu servidor:
                     <pre><code>https://ifsentral.online/</code></pre>
@@ -237,14 +237,14 @@ require '../auth/auth_check.php';
                 <h5>REST API (HTTP)</h5>
                 <p>As rotas de envio e consulta de dados do seu dispositivo usam <code>X-Api-Key</code>:</p>
                 <pre><code>X-Api-Key: SUA_API_KEY_AQUI</code></pre>
-                <p>Os gráficos e estatísticas exibidos no painel do IFSentral usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
+                <p>Os gráficos e estatísticas exibidos no painel do IFSentral Lite usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
               </div>
             </div>
 
             <div class="card card-warning card-outline">
               <div class="card-header"><h3 class="card-title"><i class="fas fa-lock mr-1"></i> Como Obter Suas Credenciais</h3></div>
               <div class="card-body">
-                <h5>No Painel do IFSentral</h5>
+                <h5>No Painel do IFSentral Lite</h5>
                 <ol>
                   <li>Acesse <strong>Meus Projetos</strong></li>
                   <li>Clique no seu projeto</li>

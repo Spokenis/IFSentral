@@ -8,7 +8,7 @@
 define('ROOT_DIR', __DIR__);
 
 echo "\n" . str_repeat('=', 80) . "\n";
-echo "🔐 SETUP DE SEGURANÇA - IFSentral\n";
+echo "🔐 SETUP DE SEGURANÇA - IFSentral Lite\n";
 echo str_repeat('=', 80) . "\n\n";
 
 // Carrega conexão

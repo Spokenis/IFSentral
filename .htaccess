@@ -1,5 +1,5 @@
 ##########################################
-# IFSentral - Security headers and HTTPS
+# IFSentral Lite - Security headers and HTTPS
 ##########################################
 # Ensure mod_rewrite and mod_headers are enabled in Apache for these rules to work.
 

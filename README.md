@@ -1,8 +1,8 @@
-# IFSentral - Plataforma IoT Smart Campus
+# IFSentral Lite - Plataforma IoT Smart Campus
 
 Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real.
 
-Esta é a versão **simplificada** do IFSentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
+O IFSentral Lite é a versão **simplificada** do IFSentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
 
 ## Requisitos do servidor
 

@@ -1,6 +1,6 @@
 <?php
 /**
- * termos.php - Termos e Condições de Uso da Plataforma IFSentral
+ * termos.php - Termos e Condições de Uso da Plataforma IFSentral Lite
  */
 ?>
 <!DOCTYPE html>
@@ -8,7 +8,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Termos de Serviço | IFSentral</title>
+  <title>Termos de Serviço | IFSentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -46,7 +46,7 @@
     <div class="container">
       <a href="/login" class="navbar-brand">
         <span class="brand-text font-weight-bold" style="color: var(--ifsc-primary);">
-          <i class="fas fa-network-wired mr-2"></i>IFSentral
+          <i class="fas fa-network-wired mr-2"></i>IFSentral Lite
         </span>
       </a>
       <ul class="navbar-nav ml-auto">
@@ -68,16 +68,16 @@
           <p class="text-muted">Última atualização: 12 de agosto de 2026</p>
 
           <h5 class="text-success mt-4">1. Aceitação dos Termos</h5>
-          <p>Ao acessar e utilizar a plataforma <strong>IFSentral</strong>, você concorda expressamente em cumprir e estar vinculado aos presentes Termos de Serviço, bem como a todas as leis e regulamentos aplicáveis. Caso não concorde com qualquer parte destes termos, por favor, abstenha-se de utilizar nossos serviços.</p>
+          <p>Ao acessar e utilizar a plataforma <strong>IFSentral Lite</strong>, você concorda expressamente em cumprir e estar vinculado aos presentes Termos de Serviço, bem como a todas as leis e regulamentos aplicáveis. Caso não concorde com qualquer parte destes termos, por favor, abstenha-se de utilizar nossos serviços.</p>
 
           <h5 class="text-success mt-4">2. Descrição do Serviço</h5>
-          <p>O <strong>IFSentral</strong> é uma plataforma voltada para o gerenciamento de dispositivos IoT, telemetria, visualização de gráficos e automação acadêmica/institucional. Os serviços são fornecidos "no estado em que se encontram", podendo sofrer atualizações, melhorias ou indisponibilidades temporárias para manutenção.</p>
+          <p>O <strong>IFSentral Lite</strong> é uma plataforma voltada para o gerenciamento de dispositivos IoT, telemetria, visualização de gráficos e automação acadêmica/institucional. Os serviços são fornecidos "no estado em que se encontram", podendo sofrer atualizações, melhorias ou indisponibilidades temporárias para manutenção.</p>
 
           <h5 class="text-success mt-4">3. Cadastro e Conta de Usuário</h5>
           <p>Para utilizar determinadas funcionalidades da plataforma, o usuário deve criar uma conta fornecendo informações precisas, completas e atualizadas. O usuário é o único responsável por manter a confidencialidade de sua senha e por todas as atividades que ocorram em sua conta.</p>
 
           <h5 class="text-success mt-4">4. Uso Aceitável</h5>
-          <p>O usuário compromete-se a não utilizar o IFSentral para:</p>
+          <p>O usuário compromete-se a não utilizar o IFSentral Lite para:</p>
           <ul>
             <li>Transmitir ou armazenar conteúdos ilegais, maliciosos ou que violem direitos de terceiros;</li>
             <li>Tentar burlar mecanismos de segurança, rate limiting ou autenticação da API;</li>
@@ -108,7 +108,7 @@
     <div class="float-right d-none d-sm-inline">
       <b>Versão</b> 1.0.0
     </div>
-    <strong>Copyright &copy; 2026 IFSentral.</strong> Todos os direitos reservados.
+    <strong>Copyright &copy; 2026 IFSentral Lite.</strong> Todos os direitos reservados.
   </footer>
 
 </div>
