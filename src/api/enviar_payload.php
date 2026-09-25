@@ -1,7 +1,7 @@
 <?php
 /**
  * enviar_payload.php - API para enviar payloads de dispositivos
- * Refatorado para usar PayloadHandler (compartilhado com TTN e MQTT)
+ * Refatorado para usar PayloadHandler (compartilhado com TTN)
  * Agora com Rate Limiting configurável e Proteção DoS
  */
 

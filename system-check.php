@@ -19,7 +19,6 @@ $checks = [
     'config' => false,
     'db' => false,
     'schema' => false,
-    'mqtt' => false,
     'files' => false,
     'permissions' => false,
 ];
@@ -34,7 +33,7 @@ if (file_exists(ROOT_DIR . '/src/config/config.php')) {
 }
 
 // config.php procura primeiro src/config/.env e, na ausência dele, cai para
-// o .env da raiz (usado pelo deploy Docker documentado no README).
+// o .env da raiz do projeto.
 if (file_exists(ROOT_DIR . '/src/config/.env')) {
     echo "   $OK Arquivo .env encontrado (src/config/.env)\n";
 } elseif (file_exists(ROOT_DIR . '/.env')) {
@@ -65,67 +64,8 @@ try {
     echo "   $FAIL Erro ao conectar: " . $e->getMessage() . "\n";
 }
 
-// 3. VERIFICAR MQTT
-echo "\n4️⃣  VERIFICANDO MQTT...\n";
-if (file_exists(ROOT_DIR . '/src/config/mqtt.php')) {
-    echo "   $OK Configuração MQTT encontrada\n";
-
-    if (file_exists(ROOT_DIR . '/.mqtt_worker.pid')) {
-        // Deploy legado (sem Docker): worker roda como processo em background
-        // no mesmo host, gerenciado por deploy-production.sh / mqtt_health_check.php.
-        $pid = intval(file_get_contents(ROOT_DIR . '/.mqtt_worker.pid'));
-        if (posix_getpgid($pid) !== false) {
-            echo "   $OK MQTT Worker rodando com PID $pid\n";
-            $checks['mqtt'] = true;
-        } else {
-            echo "   $FAIL MQTT Worker não está rodando (PID: $pid)\n";
-        }
-    } else {
-        // Deploy Docker (padrão do README): o worker roda no container
-        // separado 'worker', não neste container 'web' — não existe PID
-        // local para checar. Os dois containers compartilham o volume
-        // ./logs, então inferimos a saúde pela última linha relevante que o
-        // worker gravou em mqtt_subscriber.log.
-        $worker_log = ROOT_DIR . '/logs/mqtt_subscriber.log';
-        if (file_exists($worker_log)) {
-            $lines = file($worker_log, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
-            $tail = array_slice($lines, -200);
-
-            $last_connected_at = null;
-            $last_error_at = null;
-            foreach ($tail as $i => $line) {
-                // Cobre tanto a conexão inicial quanto uma reconexão bem-sucedida
-                // após queda momentânea do broker (ex.: `docker compose restart
-                // mosquitto`) — o worker sempre loga um [ERROR] antes de tentar
-                // reconectar, então isso sozinho não indica falha atual.
-                if (
-                    str_contains($line, 'Conectado ao broker MQTT com sucesso')
-                    || str_contains($line, 'Reconectado ao broker com sucesso')
-                ) {
-                    $last_connected_at = $i;
-                } elseif (str_contains($line, '[ERROR]') || str_contains($line, '[FATAL]')) {
-                    $last_error_at = $i;
-                }
-            }
-
-            if ($last_connected_at !== null && ($last_error_at === null || $last_error_at < $last_connected_at)) {
-                echo "   $OK MQTT Worker conectado ao broker (container 'worker', via logs/mqtt_subscriber.log)\n";
-                $checks['mqtt'] = true;
-            } elseif ($last_error_at !== null) {
-                echo "   $FAIL MQTT Worker com erro recente em logs/mqtt_subscriber.log — veja: docker compose logs worker\n";
-            } else {
-                echo "   $WARN MQTT Worker não foi iniciado ainda (sem registro de conexão em logs/mqtt_subscriber.log)\n";
-            }
-        } else {
-            echo "   $WARN MQTT Worker não foi iniciado ainda (logs/mqtt_subscriber.log não existe)\n";
-        }
-    }
-} else {
-    echo "   $FAIL Configuração MQTT não encontrada\n";
-}
-
-// 4. VERIFICAR ESTRUTURA DE PASTAS
-echo "\n5️⃣  VERIFICANDO ESTRUTURA DE PASTAS...\n";
+// 3. VERIFICAR ESTRUTURA DE PASTAS
+echo "\n4️⃣  VERIFICANDO ESTRUTURA DE PASTAS...\n";
 $required_dirs = [
     'src/api',
     'src/auth',
@@ -133,7 +73,6 @@ $required_dirs = [
     'src/core',
     'src/db',
     'src/pages',
-    'src/mqtt',
     'logs',
     'uploads/profile',
 ];
@@ -151,8 +90,8 @@ foreach ($required_dirs as $dir) {
 }
 $checks['files'] = $all_dirs_exist;
 
-// 5. VERIFICAR PERMISSÕES
-echo "\n6️⃣  VERIFICANDO PERMISSÕES...\n";
+// 4. VERIFICAR PERMISSÕES
+echo "\n5️⃣  VERIFICANDO PERMISSÕES...\n";
 $writable_dirs = [
     'logs',
     'uploads',
@@ -171,7 +110,7 @@ foreach ($writable_dirs as $dir) {
 }
 $checks['permissions'] = $all_writable;
 
-// 6. RESUMO
+// 5. RESUMO
 echo "\n" . str_repeat('=', 80) . "\n";
 echo "📊 RESUMO DA VERIFICAÇÃO\n";
 echo str_repeat('=', 80) . "\n\n";
@@ -188,9 +127,6 @@ foreach ($checks as $check => $status) {
 echo "\n";
 if ($percentage === 100) {
     echo "🎉 SISTEMA 100% OPERACIONAL!\n\n";
-    echo "Próximos passos:\n";
-    echo "  1. Inicie o MQTT Worker: php src/mqtt/mqtt_subscriber.php\n";
-    echo "  2. Configure cron job: */5 * * * * cd " . ROOT_DIR . " && php src/mqtt/mqtt_health_check.php\n";
     exit(0);
 } else if ($percentage >= 80) {
     echo "⚠️  SISTEMA COM AVISOS ($percentage%)\n";

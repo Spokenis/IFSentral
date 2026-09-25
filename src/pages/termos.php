@@ -80,7 +80,7 @@
           <p>O usuário compromete-se a não utilizar o IFSentral para:</p>
           <ul>
             <li>Transmitir ou armazenar conteúdos ilegais, maliciosos ou que violem direitos de terceiros;</li>
-            <li>Tentar burlar mecanismos de segurança, rate limiting ou autenticação do broker MQTT;</li>
+            <li>Tentar burlar mecanismos de segurança, rate limiting ou autenticação da API;</li>
             <li>Sobrecarregar os servidores ou interferir no uso da plataforma por outros usuários.</li>
           </ul>
 

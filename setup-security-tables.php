@@ -62,19 +62,6 @@ $sqls = [
             FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
     ",
-    "mqtt_credentials" => "
-        CREATE TABLE IF NOT EXISTS mqtt_credentials (
-            id INT PRIMARY KEY AUTO_INCREMENT,
-            device_id INT UNSIGNED UNIQUE NOT NULL,
-            mqtt_username VARCHAR(100) UNIQUE NOT NULL,
-            mqtt_password_hash VARCHAR(255) NOT NULL,
-            enabled BOOLEAN DEFAULT 1,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-            FOREIGN KEY (device_id) REFERENCES devices(id) ON DELETE CASCADE,
-            INDEX idx_username (mqtt_username)
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci
-    ",
     "login_attempts" => "
         CREATE TABLE IF NOT EXISTS login_attempts (
             id BIGINT PRIMARY KEY AUTO_INCREMENT,
@@ -130,8 +117,6 @@ $default_settings = [
     'RATE_LIMIT_ENABLED' => '1',
     'RATE_LIMIT_REQUESTS_PER_MINUTE' => '60',
     'RATE_LIMIT_WINDOW_MINUTES' => '1',
-    'MQTT_AUTH_ENABLED' => '1',
-    'MQTT_ACL_ENABLED' => '1',
     'RATE_LIMIT_SOFT_LIMIT_PERCENT' => '80',
     'LOG_RATE_LIMIT_VIOLATIONS' => '1',
     'LOGIN_RATE_LIMIT_ENABLED' => '1',
@@ -162,7 +147,5 @@ echo "\n" . str_repeat('=', 80) . "\n";
 echo "✅ SETUP DE SEGURANÇA COMPLETO!\n";
 echo str_repeat('=', 80) . "\n";
 echo "\nPróximos passos:\n";
-echo "  1. Execute: php system-check.php\n";
-echo "  2. Inicie MQTT: php src/mqtt/mqtt_subscriber.php\n";
-echo "  3. Configure cron: */5 * * * * php src/mqtt/mqtt_health_check.php\n\n";
+echo "  1. Execute: php system-check.php\n\n";
 ?>

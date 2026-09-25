@@ -5,15 +5,14 @@
 
 RewriteEngine On
 
-# Respect X-Forwarded-Proto (useful behind proxies/load-balancers)
-# Usa a porta HTTPS externa real (HTTPS_PORT, ver docker-compose.yml/
-# docker/apache/ifsentral-ssl.conf) em vez de reaproveitar a porta do
-# Host: original — HTTP e HTTPS podem estar mapeados a portas diferentes
-# no host (ex.: 8080/8443 em ambientes de teste local).
+# Força HTTPS (respeita X-Forwarded-Proto atrás de proxy/load balancer).
+# Em hospedagem compartilhada o HTTPS já roda na porta 443 padrão, então
+# basta trocar o esquema — sem porta customizada como no ambiente Docker.
+# Se o seu provedor já força HTTPS antes de chegar no Apache (comum em
+# painéis com "Forçar HTTPS" ativado), pode comentar este bloco.
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
-RewriteCond %{HTTP_HOST} ^([^:]+)
-RewriteRule ^ https://%1:%{ENV:HTTPS_PORT}%{REQUEST_URI} [L,R=301]
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
 Options -Indexes
 
@@ -69,8 +68,6 @@ RewriteRule ^api/obter-projeto$ src/pages/obter_projeto.php [L,QSA]
 RewriteRule ^api/obter-chaves-dispositivo$ src/pages/obter_chaves_dispositivo.php [L,QSA]
 RewriteRule ^api/obter-dados-grafico$ src/pages/obter_dados_grafico.php [L,QSA]
 RewriteRule ^api/obter-info-dispositivo$ src/pages/obter_info_dispositivo.php [L,QSA]
-RewriteRule ^api/get-mqtt-credentials$ src/pages/get_mqtt_credentials.php [L,QSA]
-RewriteRule ^api/regenerate-mqtt-password$ src/pages/regenerate_mqtt_password.php [L,QSA]
 RewriteRule ^api/cadastrar-device$ src/pages/cadastrar_device.php [L,QSA]
 RewriteRule ^api/deletar-dispositivo$ src/pages/deletar_dispositivo.php [L,QSA]
 RewriteRule ^api/gerenciar-tags-dispositivo$ src/pages/gerenciar_tags_dispositivo.php [L,QSA]
@@ -110,7 +107,6 @@ RewriteRule ^api/obter-contagem-participantes$ src/api/obter_contagem_participan
 RewriteRule ^api/obter-csrf-token$ src/api/obter_csrf_token.php [L,QSA]
 RewriteRule ^api/obter-dados-grafico-avancado$ src/api/obter_dados_grafico_avancado.php [L,QSA]
 RewriteRule ^api/obter-dados-grafico-renderizado$ src/api/obter_dados_grafico_renderizado.php [L,QSA]
-RewriteRule ^api/obter-logs-mqtt$ src/api/obter_logs_mqtt.php [L,QSA]
 RewriteRule ^api/obter-notificacoes$ src/api/obter_notificacoes.php [L,QSA]
 RewriteRule ^api/obter-perfil-usuario$ src/api/obter_perfil_usuario.php [L,QSA]
 RewriteRule ^api/obter-stats-payloads$ src/api/obter_stats_payloads.php [L,QSA]

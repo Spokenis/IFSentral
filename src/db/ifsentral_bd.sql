@@ -46,8 +46,6 @@ INSERT INTO `api_settings` VALUES
 (1,'RATE_LIMIT_ENABLED','1','Habilitar rate limiting (1=sim, 0=não)',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
 (2,'RATE_LIMIT_REQUESTS_PER_MINUTE','60','Máximo de requisições HTTP por minuto por dispositivo',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
 (3,'RATE_LIMIT_WINDOW_MINUTES','1','Janela de tempo para contagem (em minutos)',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
-(4,'MQTT_AUTH_ENABLED','1','Habilitar autenticação MQTT (1=sim, 0=não)',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
-(5,'MQTT_ACL_ENABLED','1','Habilitar ACLs no MQTT (cada device só publica no seu tópico)',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
 (6,'RATE_LIMIT_SOFT_LIMIT_PERCENT','80','Percentual do limite para começar a alertar (0-100)',1,'2026-03-02 02:55:17','2026-03-02 02:55:17'),
 (7,'LOG_RATE_LIMIT_VIOLATIONS','1','Registrar violações de rate limit nos logs',1,'2026-03-02 02:55:17','2026-03-02 02:55:17');
 /*!40000 ALTER TABLE `api_settings` ENABLE KEYS */;
@@ -438,80 +436,6 @@ LOCK TABLES `invitations` WRITE;
 INSERT INTO `invitations` VALUES
 (1,5,5,2,'denisribeiro120@gmail.com',2,'pending','2026-02-18 22:39:02','2026-02-25 22:39:02',NULL,NULL);
 /*!40000 ALTER TABLE `invitations` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `mqtt_acl`
---
-
-DROP TABLE IF EXISTS `mqtt_acl`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `mqtt_acl` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned NOT NULL,
-  `allow_subscribe` tinyint(1) DEFAULT 0,
-  `allow_publish` tinyint(1) DEFAULT 1,
-  `topic_filter` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `unique_device_topic` (`device_id`,`topic_filter`),
-  KEY `idx_device` (`device_id`),
-  CONSTRAINT `mqtt_acl_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mqtt_acl`
---
-
-LOCK TABLES `mqtt_acl` WRITE;
-/*!40000 ALTER TABLE `mqtt_acl` DISABLE KEYS */;
-/*!40000 ALTER TABLE `mqtt_acl` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `mqtt_credentials`
---
-
-DROP TABLE IF EXISTS `mqtt_credentials`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `mqtt_credentials` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `device_id` int(10) unsigned NOT NULL,
-  `mqtt_username` varchar(100) NOT NULL,
-  `mqtt_password` varchar(255) DEFAULT NULL,
-  `mqtt_password_hash` varchar(255) NOT NULL,
-  `enabled` tinyint(1) DEFAULT 1,
-  `created_at` timestamp NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `device_id` (`device_id`),
-  UNIQUE KEY `mqtt_username` (`mqtt_username`),
-  KEY `idx_username` (`mqtt_username`),
-  CONSTRAINT `mqtt_credentials_ibfk_1` FOREIGN KEY (`device_id`) REFERENCES `devices` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `mqtt_credentials`
---
-
-LOCK TABLES `mqtt_credentials` WRITE;
-/*!40000 ALTER TABLE `mqtt_credentials` DISABLE KEYS */;
-INSERT INTO `mqtt_credentials` VALUES
-(1,2,'device_2','2ptg8jI_5T00TDlltCcraRv&','$7$101$1H2WsNz/z1zis8yg$kstdtxzjRJ9qPd6a2N5DqrB8THkfqWZF5p2bfs+0MoPs5oxbr/x9Hgx3F+sdMWFck5jV5pqMrCIf3GsO3yr+bg==',1,'2026-03-02 03:03:27','2026-03-03 01:08:13'),
-(2,3,'device_3','0S@LqqviAhPkV8r@w)V*jlD2','$7$101$mlQ+4L63I7nkUgTz$L1AJP33LgojbQLT2R+pQw744bHP78tdgshHFgXntUDOZTvcf327Ie1P5w1wziyAD6EyYCHZ4lMLC/1aCtiCfeg==',1,'2026-03-02 03:03:27','2026-03-03 01:08:13'),
-(3,4,'device_4','+Q&@iIyD9hVBWTU7+lZHb6w8','$7$101$E2enihV5tlLX1wDl$ElnahBxybolizzuzb9eApxbXd/i9KdvDhGvxuhIK726iSYCRUnFK7RxlDK8sXwii2hAmXHd+MrSy4PGde3msqQ==',1,'2026-03-02 03:03:27','2026-03-03 01:08:13'),
-(4,5,'device_5','+TxEr@YD_aVqU@S$5S#+c^Hz','$7$101$LH6R8Lk4pLyZ5qDM$SiAl110xZDxiNuZYrS2t9x/pnkzw3f/JpWFDjhTmjaTL+iETOek86WmAkHQmtcHVsYs9YWGiYoZb9A/rJms6HA==',1,'2026-03-02 03:03:27','2026-03-03 01:08:13'),
-(5,6,'device_6','LQp%5EE*EC&o*GjZq6WA5mS!','$7$101$LkmpH1H8lYTUuZHJ$vZnsGGxIrxisYRxuC7FhzXUAINZBvyeGochiq+4R4fDx0LzOTaKlYcsmn59RoX7ElxcvMQ/QCNPkzD5hSO83Zg==',1,'2026-03-02 03:03:27','2026-03-03 01:08:13'),
-(6,7,'device_7','f19775fdfd80bdcc343a08ad','$7$101$WyBWzdKbdcN6mw17$aJp1yUWZJbBgsoHwR2pKcl1nYdku8/qQh6AOU6GU92XhUYmEzYJ/MqiJ2M9zf3AtRYg0pU2PXS+RU2jMb2CoXg==',1,'2026-03-03 00:48:22','2026-03-03 01:08:13'),
-(7,8,'mqdev_3c4b7414b5bfc34a',NULL,'$2y$12$qzl0YZ1P7Qpj9ioZ5HMdPeI/.0OuZPqrepUYyZg/0gsmTGljyPUQ6',1,'2026-07-07 21:46:46','2026-07-08 02:48:22'),
-(8,9,'mqdev_77f62f5dc3a32573',NULL,'$7$101$oDWydhLytsOE2Ptk$jI+xRBUcS0qbW/bFzBRzMcv2r3Hgzq3XK7GcTkJApyLKKH4ag8s5B0KHcdTTFtrC+G2ipr+LIQbFh4080kQmJg==',1,'2026-07-08 02:42:46','2026-07-08 02:42:46'),
-(9,10,'mqdev_41e525b949db9581',NULL,'$2y$12$Ncy/3n1/tEeXVVeDD7Uglusx4MCKq6GekQwnazQjB4NdLZepUbSPa',1,'2026-07-08 02:46:41','2026-07-08 03:07:12'),
-(10,11,'mqdev_1d8a138ffbe8100d','4b6175bf7d9f68b164f5e010','$7$101$inGJR52Ikx7fBSEf$cDiVI1UFmWtidVN1tkG9rFukaPvbMjwhJzAW/asjR4iqIHzwqohXGDUesaknLG3l5NXoZPmXi5Ok8psHB52yhw==',1,'2026-07-08 16:27:28','2026-07-08 16:27:45');
-/*!40000 ALTER TABLE `mqtt_credentials` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --

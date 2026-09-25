@@ -65,9 +65,9 @@ try {
         exit;
     }
     
-    // Buscar dados do dispositivo (com api_key e MQTT credentials)
+    // Buscar dados do dispositivo (com api_key e status de atividade)
     $sql = "
-        SELECT 
+        SELECT
             d.id,
             d.name,
             d.description,
@@ -76,8 +76,6 @@ try {
             d.project_id,
             p.name AS project_name,
             u.username AS user_username,
-            mc.mqtt_username,
-            mc.enabled as mqtt_enabled,
             ms.last_seen,
             (ms.last_seen IS NOT NULL AND ms.last_seen > DATE_SUB(NOW(), INTERVAL 5 MINUTE)) AS is_online
         FROM
@@ -86,8 +84,6 @@ try {
             projects p ON d.project_id = p.id
         JOIN
             users u ON d.user_id = u.id
-        LEFT JOIN
-            mqtt_credentials mc ON d.id = mc.device_id AND mc.enabled = 1
         LEFT JOIN
             device_mqtt_status ms ON ms.device_id = d.id
         WHERE

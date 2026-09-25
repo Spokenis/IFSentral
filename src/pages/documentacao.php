@@ -204,7 +204,7 @@ require '../auth/auth_check.php';
               <div class="card-header"><h3 class="card-title"><i class="fas fa-broadcast-tower mr-1"></i> Integração: The Things Network (TTN)</h3></div>
               <div class="card-body">
                 <p>O Webhook do TTN envia um formato JSON complexo e possui limitações de URL (máx 64 caracteres). Para esta integração, utilize o nosso script "adaptador" chamado <code>/api/ttn-webhook</code>.</p>
-                <p>Os dados recebidos via TTN serão salvos com <code>source='ttn'</code>, permitindo diferenciar dados de diferentes fontes (HTTP, MQTT ou TTN).</p>
+                <p>Os dados recebidos via TTN serão salvos com <code>source='ttn'</code>, permitindo diferenciar dados de diferentes fontes (HTTP ou TTN).</p>
                 <div class="callout callout-warning">
                   <h5><i class="icon fas fa-exclamation-triangle"></i> Pré-requisito Obrigatório</h5>
                   <p>Seu dispositivo no TTN (LoRaWAN) **deve** ter um **Payload Formatter** (Uplink) ativado. Nosso script procura pelo campo <code>decoded_payload</code>.</p>
@@ -238,19 +238,6 @@ require '../auth/auth_check.php';
                 <p>As rotas de envio e consulta de dados do seu dispositivo usam <code>X-Api-Key</code>:</p>
                 <pre><code>X-Api-Key: SUA_API_KEY_AQUI</code></pre>
                 <p>Os gráficos e estatísticas exibidos no painel do IFSentral usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
-
-                <hr>
-                <h5>MQTT</h5>
-                <p>Para <strong>MQTT</strong>, a autenticação é feita através de <strong>username</strong> e <strong>password</strong>:</p>
-                <ul>
-                  <li><code>Username</code>: <code>mqdev_XXXXXX...</code> (baseado em sua API Key)</li>
-                  <li><code>Password</code>: Uma senha aleatória gerada automaticamente</li>
-                </ul>
-                <p>Você encontrará estas credenciais na página de cada dispositivo ("Informações de Acesso").</p>
-                <div class="callout callout-warning">
-                  <h5><i class="icon fas fa-key"></i> Proteja suas credenciais!</h5>
-                  <p>Armazene username e password em variáveis de ambiente ou arquivos protegidos. <strong>Nunca</strong> compartilhe com terceiros!</p>
-                </div>
               </div>
             </div>
 
@@ -262,352 +249,13 @@ require '../auth/auth_check.php';
                   <li>Acesse <strong>Meus Projetos</strong></li>
                   <li>Clique no seu projeto</li>
                   <li>Clique no dispositivo que deseja gerenciar</li>
-                  <li>Localize a seção <strong>"Informações de Acesso (API & MQTT)"</strong></li>
+                  <li>Localize a seção <strong>"Informações de Acesso (API)"</strong></li>
                 </ol>
 
                 <h5>Informações Disponíveis</h5>
                 <pre><code>📌 API REST
 ID do Dispositivo: 7
-Chave de API (X-Api-Key): a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...
-
-🔌 MQTT
-Username: mqdev_a1b2c3d4e5f6g7h8
-Password: x9y8z7w6v5u4t3s2r1q0p9o8
-
-💡 Host: broker externo informado pelo provedor
-💡 Porta: normalmente 8883 com TLS ou 1883 sem TLS
-💡 Protocolo: MQTT v3.1.1</code></pre>
-
-                <h5>Via API</h5>
-                <p>Você pode obter credenciais MQTT via API usando sua chave de API. Por padrão, a senha não é retornada por questões de segurança. Para incluir a senha na resposta, é necessário passar o parâmetro <code>?reveal=true</code> na URL:</p>
-                <pre><code>GET /api/get-mqtt-credentials?reveal=true
-
-Headers Requeridos:
-X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
-                
-                <div class="callout callout-warning">
-                  <h5><i class="icon fas fa-exclamation-triangle"></i> Segurança</h5>
-                  <p><strong>✅ Use a chave de API no header</strong> (X-Api-Key), não na URL.</p>
-                  <p><strong>❌ Não use device_id na URL</strong> (risco de enumeração).</p>
-                  <p>A API Key é única e não-sequencial, prevenindo ataques de enumeração de recursos.</p>
-                </div>
-                
-                <p><strong>Resposta (com ?reveal=true):</strong></p>
-                <pre><code>{
-  "mqtt_username": "mqdev_a1b2c3d4e5f6g7h8",
-  "mqtt_password": "x9y8z7w6v5u4t3s2r1q0p9o8",
-  "sync_status": "synchronized"
-}</code></pre>
-                <p><em>Nota: Se o parâmetro <code>?reveal=true</code> não for fornecido, a chave <code>mqtt_password</code> não será incluída no JSON retornado.</em></p>
-                
-                <p><strong>Exemplos de uso:</strong></p>
-                <pre><code><strong>cURL:</strong>
-curl -X GET "https://ifsentral.online/api/get-mqtt-credentials?reveal=true" \
-  -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
-
-<strong>JavaScript/Fetch:</strong>
-fetch('/api/get-mqtt-credentials?reveal=true', {
-  headers: {
-    'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'
-  }
-})
-.then(r => r.json())
-.then(data => console.log(data.mqtt_username, data.mqtt_password));
-
-<strong>Python:</strong>
-import requests
-response = requests.get(
-  'https://ifsentral.online/api/get-mqtt-credentials?reveal=true',
-  headers={'X-Api-Key': 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...'}
-)
-print(response.json())</code></pre>
-
-                <hr>
-                <h5>Se a senha não for encontrada (HTTP 424)</h5>
-                <p>Pode acontecer em dispositivos mais antigos. Nesse caso, gere uma senha nova (mesmo username) chamando <code>POST /api/regenerate-mqtt-password</code> com a mesma <code>X-Api-Key</code> — a senha nova já sincroniza com o broker na hora. Ela só aparece nessa resposta, uma vez; se perder, é só chamar de novo.</p>
-                <pre><code>curl -X POST "https://ifsentral.online/api/regenerate-mqtt-password" \
-  -H "X-Api-Key: a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6..."
-
-{
-  "mqtt_username": "mqdev_a1b2c3d4e5f6g7h8",
-  "mqtt_password": "b3f8a1c9d2e7f4a6b1c8d3e9",
-  "sync_status": "synchronized"
-}</code></pre>
-                <div class="callout callout-warning mb-0">
-                  <p class="mb-0">Regenerar invalida a senha antiga imediatamente — qualquer dispositivo/cliente ainda usando a senha anterior perde a conexão até ser reconfigurado com a nova.</p>
-                </div>
-              </div>
-            </div>
-
-            <div class="card card-danger card-outline">
-              <div class="card-header"><h3 class="card-title"><i class="fas fa-broadcast-tower mr-1"></i> Integração: MQTT (Novo!)</h3></div>
-              <div class="card-body">
-                <p><strong>MQTT</strong> é um protocolo leve e eficiente para comunicação em tempo real de dispositivos IoT. Funciona em <strong>paralelo</strong> com webhooks HTTP - você pode usar ambos!</p>
-                <div class="callout callout-info">
-                  <h5><i class="icon fas fa-info"></i> O que é MQTT?</h5>
-                  <p>MQTT é um protocolo <strong>Pub/Sub</strong> (Publisher/Subscriber) que consome muito menos banda que HTTP, ideal para dispositivos com conexão lenta ou bateria limitada.</p>
-                </div>
-                <h5>Estrutura de Tópicos</h5>
-                <p>Publique seus dados no tópico:</p>
-                <pre><code>mqtt/projects/{project_id}/devices/{device_id}</code></pre>
-                <p><strong>Exemplos válidos:</strong></p>
-                <pre><code>mqtt/projects/2/devices/5
-mqtt/projects/3/devices/10</code></pre>
-                
-                <h5>Payload Esperado</h5>
-                <p>Envie dados em formato JSON:</p>
-                <pre><code>{
-  "temperatura": 25.5,
-  "umidade": 60,
-  "pressão": 1013
-}</code></pre>
-                
-                <h5>Vantagens do MQTT vs HTTP</h5>
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Aspecto</th>
-                      <th>MQTT</th>
-                      <th>HTTP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Consumo de Banda</td>
-                      <td>✅ Muito baixo (~100 bytes)</td>
-                      <td>~1KB por requisição</td>
-                    </tr>
-                    <tr>
-                      <td>Latência</td>
-                      <td>✅ ~50-100ms</td>
-                      <td>~200-500ms</td>
-                    </tr>
-                    <tr>
-                      <td>Tempo Real</td>
-                      <td>✅ Sim (Pub/Sub)</td>
-                      <td>Não (Pull)</td>
-                    </tr>
-                    <tr>
-                      <td>Reconexão Auto</td>
-                      <td>✅ Sim</td>
-                      <td>Manual</td>
-                    </tr>
-                    <tr>
-                      <td>Setup</td>
-                      <td>Moderado</td>
-                      <td>✅ Simples</td>
-                    </tr>
-                  </tbody>
-                </table>
-
-                <hr>
-                <h5>Exemplos de Código</h5>
-                <div class="card card-danger card-tabs">
-                  <div class="card-header p-0 pt-1 nav-tabs-container">
-                    <ul class="nav nav-tabs" id="tabs-mqtt" role="tablist">
-                      <li class="nav-item"><a class="nav-link active" id="tabs-mqtt-js-tab" data-toggle="pill" href="#tabs-mqtt-js" role="tab">JavaScript (Node.js)</a></li>
-                      <li class="nav-item"><a class="nav-link" id="tabs-mqtt-python-tab" data-toggle="pill" href="#tabs-mqtt-python" role="tab">Python</a></li>
-                      <li class="nav-item"><a class="nav-link" id="tabs-mqtt-esp-tab" data-toggle="pill" href="#tabs-mqtt-esp" role="tab">C++ (ESP32/Arduino)</a></li>
-                    </ul>
-                  </div>
-                  <div class="card-body p-0">
-                    <div class="tab-content" id="tabs-mqtt-content">
-                      <div class="tab-pane fade show active" id="tabs-mqtt-js" role="tabpanel">
-<pre><code>// Requer: npm install mqtt
-const mqtt = require('mqtt');
-
-const BROKER_HOST = 'mqtts://broker.exemplo.com:8883';
-const PROJECT_ID = 2;
-const DEVICE_ID = 5;
-const TOPIC = `mqtt/projects/${PROJECT_ID}/devices/${DEVICE_ID}`;
-
-const client = mqtt.connect(BROKER_HOST);
-
-client.on('connect', () => {
-  console.log('Conectado ao broker MQTT');
-  
-  // Publicar dados
-  const payload = {
-    temperatura: 25.5,
-    umidade: 60,
-    pressão: 1013
-  };
-  
-  client.publish(TOPIC, JSON.stringify(payload), { qos: 1 });
-  console.log('Dados publicados:', payload);
-  
-  client.end();
-});
-
-client.on('error', (err) => {
-  console.error('Erro MQTT:', err);
-});</code></pre>
-                      </div>
-                      <div class="tab-pane fade" id="tabs-mqtt-python" role="tabpanel">
-<pre><code>#!/usr/bin/env python3
-# Requer: pip install paho-mqtt
-
-import paho.mqtt.client as mqtt
-import ssl
-import json
-import time
-
-BROKER_HOST = "broker.exemplo.com"
-BROKER_PORT = 8883
-PROJECT_ID = 2
-DEVICE_ID = 5
-TOPIC = f"mqtt/projects/{PROJECT_ID}/devices/{DEVICE_ID}"
-
-def on_connect(client, userdata, flags, rc):
-    if rc == 0:
-        print("✓ Conectado ao broker MQTT")
-    else:
-        print(f"✗ Erro na conexão (código {rc})")
-
-def on_publish(client, userdata, mid):
-    print(f"✓ Mensagem publicada")
-
-client = mqtt.Client()
-client.on_connect = on_connect
-client.on_publish = on_publish
-
-# IMPORTANTE: a porta 8883 é o listener TLS do broker — sem isso, o
-# connect() abaixo tenta uma conexão em texto puro na porta TLS e falha.
-# Por padrão o certificado é autoassinado (gerado pelo setup-ssl.sh), então
-# cert_reqs=CERT_NONE ignora a validação — troque por um cafile real em
-# produção assim que tiver um certificado emitido por uma CA confiável.
-client.tls_set(cert_reqs=ssl.CERT_NONE)
-client.tls_insecure_set(True)
-
-try:
-    client.connect(BROKER_HOST, BROKER_PORT, keepalive=60)
-    client.loop_start()
-
-    # Publicar dados
-    payload = {
-        "temperatura": 25.5,
-        "umidade": 60,
-        "pressão": 1013
-    }
-
-    client.publish(TOPIC, json.dumps(payload), qos=1)
-    print(f"Publicado em: {TOPIC}")
-
-    time.sleep(1)
-    client.loop_stop()
-    client.disconnect()
-
-except Exception as e:
-    print(f"Erro: {e}")
-
-# Alternativa sem TLS (rede local/confiável apenas):
-# BROKER_PORT = 1883
-# (remova as duas linhas client.tls_set()/tls_insecure_set() acima)</code></pre>
-                      </div>
-                      <div class="tab-pane fade" id="tabs-mqtt-esp" role="tabpanel">
-<pre><code>// Requer bibliotecas: PubSubClient.h, ArduinoJson.h
-#include &lt;WiFi.h&gt;
-#include &lt;WiFiClientSecure.h&gt; // TLS — necessário pra porta 8883
-#include &lt;PubSubClient.h&gt;
-#include &lt;ArduinoJson.h&gt;
-
-const char* ssid = "SEU_SSID";
-const char* password = "SUA_SENHA";
-const char* mqtt_broker = "broker.exemplo.com";  // Host do broker MQTT externo
-const int mqtt_port = 8883;
-
-const int PROJECT_ID = 2;
-const int DEVICE_ID = 5;
-char topic[100];
-
-// IMPORTANTE: WiFiClient (sem TLS) NÃO conecta na porta 8883 — o broker
-// espera handshake TLS nela. Use WiFiClientSecure. Por padrão o certificado
-// é autoassinado (setup-ssl.sh), então setInsecure() ignora a validação;
-// troque por setCACert() com o certificado real assim que tiver um.
-WiFiClientSecure espClient;
-PubSubClient client(espClient);
-
-void setup() {
-  Serial.begin(115200);
-  
-  // Conectar ao WiFi
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(1000);
-    Serial.println("Conectando ao WiFi...");
-  }
-  Serial.println("WiFi conectado");
-
-  espClient.setInsecure(); // Certificado autoassinado — ignora validação
-
-  // Configurar MQTT
-  snprintf(topic, sizeof(topic), "mqtt/projects/%d/devices/%d", PROJECT_ID, DEVICE_ID);
-  client.setServer(mqtt_broker, mqtt_port);
-}
-
-void reconnect() {
-  while (!client.connected()) {
-    if (client.connect("ESP32_Client")) {
-      Serial.println("Conectado ao broker MQTT");
-    } else {
-      delay(5000);
-    }
-  }
-}
-
-void enviarDados(float temp, float umid, float pres) {
-  if (!client.connected()) {
-    reconnect();
-  }
-  
-  DynamicJsonDocument doc(256);
-  doc["temperatura"] = temp;
-  doc["umidade"] = umid;
-  doc["pressão"] = pres;
-  
-  char payload[256];
-  serializeJson(doc, payload);
-  
-  client.publish(topic, payload);
-  Serial.printf("Publicado em %s: %s\n", topic, payload);
-}
-
-void loop() {
-  if (!client.connected()) {
-    reconnect();
-  }
-  client.loop();
-  
-  // Enviar dados a cada 10 segundos
-  static unsigned long lastSend = 0;
-  if (millis() - lastSend > 10000) {
-    float temp = readTemperature();  // Sua função
-    float umid = readHumidity();     // Sua função
-    float pres = readPressure();     // Sua função
-    
-    enviarDados(temp, umid, pres);
-    lastSend = millis();
-  }
-}</code></pre>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <hr>
-                <h5>Como Usar MQTT</h5>
-                <p>Escolha a linguagem que seu dispositivo usa:</p>
-                <ol>
-                  <li>Identifique seu <strong>Project ID</strong> e <strong>Device ID</strong> no painel do IFSentral.</li>
-                  <li>Pegue o <strong>endereço do broker MQTT</strong> com o administrador — texto puro em <code>mqtt://seu.servidor.com:1883</code>, ou TLS (recomendado fora da rede local) em <code>mqtts://seu.servidor.com:8883</code>.</li>
-                  <li>Use um dos exemplos acima para conectar e publicar dados.</li>
-                  <li>Os dados serão salvos automaticamente em seu dashboard!</li>
-                </ol>
-
-                <div class="callout callout-warning">
-                  <h5><i class="icon fas fa-exclamation-triangle"></i> Nota Importante</h5>
-                  <p>O servidor MQTT deve estar ativo. Se sua conexão falhar, contate o administrador do sistema.</p>
-                </div>
+Chave de API (X-Api-Key): a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
               </div>
             </div>
 
@@ -617,7 +265,7 @@ void loop() {
                 <p>Este endpoint é usado para salvar um novo conjunto de leituras (payload) do seu dispositivo no banco de dados.</p>
                 <div class="callout callout-info">
                   <h5><i class="icon fas fa-info"></i> Novo: Identificação de Origem</h5>
-                  <p>Cada payload agora é marcado com sua origem: <code>http</code> (este endpoint), <code>mqtt</code>, ou <code>ttn</code>. Isso permite rastrear facilmente de onde vieram seus dados!</p>
+                  <p>Cada payload agora é marcado com sua origem: <code>http</code> (este endpoint) ou <code>ttn</code>. Isso permite rastrear facilmente de onde vieram seus dados!</p>
                 </div>
 
                 <div class="callout callout-warning">
@@ -868,13 +516,13 @@ void buscarDados() {
                 <p>Para proteger a plataforma, há um limite de requisições por dispositivo:</p>
                 <div class="callout callout-info">
                   <h5><i class="icon fas fa-info"></i> Limite Padrão</h5>
-                  <p><strong>60 requisições por minuto</strong> por dispositivo (para HTTP e MQTT combinados)</p>
+                  <p><strong>60 requisições por minuto</strong> por dispositivo</p>
                 </div>
 
                 <h5>Como Funciona</h5>
                 <ul>
                   <li>Cada dispositivo tem sua própria cota de 60 req/min</li>
-                  <li>Aplica-se apenas ao <strong>envio</strong> de dados (<code>/api/enviar-payload</code>, <code>/api/ttn-webhook</code> e publicações MQTT) — endpoints de <strong>leitura</strong> como <code>/api/buscar-payloads</code> não têm rate limit por enquanto</li>
+                  <li>Aplica-se apenas ao <strong>envio</strong> de dados (<code>/api/enviar-payload</code> e <code>/api/ttn-webhook</code>) — endpoints de <strong>leitura</strong> como <code>/api/buscar-payloads</code> não têm rate limit por enquanto</li>
                   <li>O contador reseta a cada minuto</li>
                   <li>Admins podem aumentar o limite por dispositivo</li>
                 </ul>
@@ -943,25 +591,6 @@ void buscarDados() {
                   <li>Contate o administrador se persistir</li>
                 </ol>
 
-                <h5>❌ MQTT: Connection refused</h5>
-                <p><strong>Causa</strong>: Broker MQTT não está rodando ou endereço incorreto</p>
-                <p><strong>Solução</strong>:</p>
-                <ol>
-                  <li>Verifique o endereço do broker (host/IP)</li>
-                  <li>Verifique a porta (geralmente 1883)</li>
-                  <li>Teste conectividade: <code>ping seu-broker.com</code></li>
-                  <li>Contate admin se o broker está down</li>
-                </ol>
-
-                <h5>❌ MQTT: Authentication failed</h5>
-                <p><strong>Causa</strong>: Username ou password incorretos</p>
-                <p><strong>Solução</strong>:</p>
-                <ol>
-                  <li>Copie novamente credenciais da página do dispositivo</li>
-                  <li>Verifique espaços em branco</li>
-                  <li>Username começa com <code>mqdev_</code></li>
-                </ol>
-
                 <h5>❌ JSON Inválido</h5>
                 <p><strong>Causa</strong>: Seu JSON não é válido</p>
                 <p><strong>Verificar</strong>:</p>
@@ -978,14 +607,12 @@ void buscarDados() {
               <div class="card-body">
                 <h5>Para Usuários Novos</h5>
                 <ul>
-                  <li><a href="/api/get-mqtt-credentials" target="_blank">🔑 Credenciais MQTT do dispositivo</a></li>
                   <li><a href="/api/obter-chaves-dispositivo" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
                   <li><a href="/documentacao" target="_blank">📘 Esta documentação da API</a></li>
                 </ul>
 
                 <h5>Documentação Técnica</h5>
                 <ul>
-                  <li><a href="https://mqtt.org/" target="_blank">MQTT.org - Protocolo MQTT</a></li>
                   <li><a href="https://www.json.org/" target="_blank">JSON.org - Especificação JSON</a></li>
                   <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">MDN - HTTP Status Codes</a></li>
                 </ul>
@@ -993,7 +620,6 @@ void buscarDados() {
                 <h5>Ferramentas Úteis</h5>
                 <ul>
                   <li><a href="https://www.postman.com/" target="_blank">Postman</a> - Testar APIs</li>
-                  <li><a href="https://www.mosquitto.org/" target="_blank">Mosquitto</a> - Cliente MQTT CLI</li>
                   <li><a href="https://jsonlint.com/" target="_blank">JSONLint</a> - Validar JSON</li>
                 </ul>
 

@@ -1,7 +1,7 @@
 <?php
 /**
  * PayloadHandler.php - Lógica compartilhada para salvar payloads
- * Usado tanto por webhooks HTTP quanto por MQTT subscriber
+ * Usado pelos webhooks HTTP (envio direto e TTN)
  */
 
 namespace App\Core;
@@ -20,7 +20,7 @@ class PayloadHandler
      * * @param int $device_id ID do dispositivo
      * @param string $api_key Chave de API do dispositivo
      * @param array|object $payload_data Dados do payload
-     * @param string $source Fonte do payload ('http', 'mqtt', 'ttn')
+     * @param string $source Fonte do payload ('http', 'ttn')
      * * @return array ['success' => bool, 'message' => string, 'id' => int|null]
      */
     public function savePayload($device_id, $api_key, $payload_data, $source = 'http')

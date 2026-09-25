@@ -1,6 +1,5 @@
 {
     "require": {
-        "php-mqtt/client": "^2.3",
         "phpmailer/phpmailer": "^7.1"
     },
     "require-dev": {

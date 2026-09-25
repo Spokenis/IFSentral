@@ -1,7 +1,7 @@
 <?php
 /**
  * ttn_webhook.php - Webhook para receber dados do The Things Network
- * Refatorado para usar PayloadHandler (compartilhado com MQTT)
+ * Usa PayloadHandler (compartilhado com o endpoint HTTP de envio de payloads)
  */
 
 require_once '../config/config.php';
@@ -102,9 +102,9 @@ try {
     // Usa PayloadHandler para salvar (com validação e autenticação integrada)
     $handler = new PayloadHandler($conn);
 
-    // Mesma validação de estrutura aplicada em enviar_payload.php (HTTP) e no
-    // subscriber MQTT — faltava aqui, então payloads vindos do TTN escapavam
-    // dos limites de profundidade/tamanho/nº de chaves.
+    // Mesma validação de estrutura aplicada em enviar_payload.php (HTTP) —
+    // faltava aqui, então payloads vindos do TTN escapavam dos limites de
+    // profundidade/tamanho/nº de chaves.
     $validation = $handler->validatePayload($payload_real, $device_id);
     if (!$validation['valid']) {
         http_response_code(400);

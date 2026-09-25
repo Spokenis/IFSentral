@@ -14,43 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 // Agora sabemos quem é o usuário logado
 require '../config/db.php';
 require '../auth/auth_check.php'; // $username_logado e $_SESSION['user_id'] estão disponíveis
-require '../core/MosquittoSync.php';
 require '../core/Csrf.php';
 
 use App\Core\Csrf;
-
-// Função para gerar credenciais MQTT
-function generateMQTTCredentials($conn, $device_id, $api_key) {
-    // Username baseado num hash da API key (não expõe ID sequencial nem os
-    // caracteres crus da chave — usernames MQTT aparecem em logs do broker,
-    // ACL e $SYS topics, então usar a chave direto vazaria parte dela)
-    $key_hash = substr(hash('sha256', $api_key), 0, 16);
-    $username = "mqdev_" . $key_hash;
-    $password = bin2hex(random_bytes(12)); // 24 caracteres
-    
-    // Hash PBKDF2 para Mosquitto
-    $salt = random_bytes(12);
-    $hash = hash_pbkdf2('sha512', $password, $salt, 101, 64, true);
-    $salt_b64 = base64_encode($salt);
-    $hash_b64 = base64_encode($hash);
-    $password_hash = sprintf('$7$%d$%s$%s', 101, $salt_b64, $hash_b64);
-    
-    // Insere credenciais no banco. mqtt_password (texto puro) é gravado aqui
-    // também — sem isso, get_mqtt_credentials.php nunca encontra a senha
-    // pronta pra devolver e cai no fallback frágil de ler arquivo de backup,
-    // até acabar caindo no 424 "senha não encontrada" pra todo device novo.
-    $stmt = $conn->prepare(
-        "INSERT INTO mqtt_credentials (device_id, mqtt_username, mqtt_password, mqtt_password_hash, enabled)
-         VALUES (?, ?, ?, ?, 1)"
-    );
-    $stmt->execute([$device_id, $username, $password, $password_hash]);
-    
-    return [
-        'username' => $username,
-        'password' => $password,
-        'hash' => $password_hash
-    ];
-}
 
 if ($_SERVER['REQUEST_METHOD'] != 'POST') {
     http_response_code(405);
@@ -107,45 +73,12 @@ try {
     ]);
     
     $device_id = $conn->lastInsertId();
-    
-    // Gera credenciais MQTT automaticamente
-    try {
-        $mqtt_creds = generateMQTTCredentials($conn, $device_id, $api_key);
-        
-        // Salva senha em arquivo de backup
-        $backup_file = __DIR__ . '/../../mqtt_credentials_auto.txt';
-        $backup_entry = sprintf(
-            "[%s] Device #%d - %s\nUsername: %s\nPassword: %s\n\n",
-            date('Y-m-d H:i:s'),
-            $device_id,
-            $data->name,
-            $mqtt_creds['username'],
-            $mqtt_creds['password']
-        );
-        file_put_contents($backup_file, $backup_entry, FILE_APPEND);
-        chmod($backup_file, 0600);
-        
-        // Sincroniza automaticamente com Mosquitto (sem downtime)
-        $sync = new MosquittoSync($conn, true); // true = modo silencioso
-        $sync_result = $sync->sync();
-        
-        $mqtt_info = [
-            'username' => $mqtt_creds['username'],
-            'password' => $mqtt_creds['password'],
-            'sync_status' => $sync_result['success'] ? 'synchronized' : 'pending',
-            'note' => $sync_result['success'] ? 'Credenciais MQTT prontas para uso!' : 'Credenciais geradas. Sincronização pendente.'
-        ];
-    } catch (Exception $e) {
-        // Se falhar, não bloqueia criação do device
-        $mqtt_info = ['error' => 'Falha ao gerar credenciais MQTT: ' . $e->getMessage()];
-    }
 
     http_response_code(201); // Created
     echo json_encode([
         'message' => 'Dispositivo cadastrado com sucesso!',
         'insertedId' => $device_id,
         'api_key' => $api_key, // Retorna a chave gerada
-        'mqtt' => $mqtt_info
     ]);
 
 } catch (PDOException $e) {

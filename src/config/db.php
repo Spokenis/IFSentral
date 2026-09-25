@@ -10,10 +10,10 @@ if (!defined('DB_HOST')) {
     }
 }
 
-// Usa os valores já resolvidos por config.php (env(): getenv()/Docker Compose
-// tem prioridade sobre o arquivo .env). Reimplementar essa prioridade aqui
-// divergia da ordem real e fazia um src/config/.env desatualizado sobrepor
-// silenciosamente as credenciais injetadas pelo docker-compose.yml.
+// Usa os valores já resolvidos por config.php (env(): variável de ambiente
+// do sistema tem prioridade sobre o arquivo .env). Reimplementar essa
+// prioridade aqui divergia da ordem real e fazia um src/config/.env
+// desatualizado sobrepor silenciosamente credenciais já definidas no SO.
 $host = DB_HOST;
 $dbname = DB_NAME;
 $user = DB_USER;

@@ -201,39 +201,17 @@ try {
 
             <div class="card card-secondary">
               <div class="card-header">
-                <h3 class="card-title">Informações de Acesso (API & MQTT)</h3>
+                <h3 class="card-title">Informações de Acesso (API)</h3>
               </div>
               <div class="card-body">
                 <p>Use estes dados na sua documentação ou dispositivo (ESP, TTN, etc).</p>
-                
+
                 <div class="mb-3">
                   <h5>📌 API REST</h5>
                   <div class="api-info-box">
                     <strong>ID do Dispositivo: </strong> <kbd id="api-info-id">Carregando...</kbd><br>
                     <strong class="mt-2 d-block">Chave de API (X-Api-Key): </strong> <kbd id="api-info-key">Carregando...</kbd>
                   </div>
-                </div>
-                
-                <div class="mb-3">
-                  <h5>🔌 MQTT</h5>
-                  <div class="api-info-box">
-                    <strong>Username: </strong> <kbd id="mqtt-username">Carregando...</kbd><br>
-                    <strong class="mt-2 d-block">Password: </strong>
-                    <div class="mt-2">
-                      <kbd id="mqtt-password" style="word-break: break-all;">Carregando...</kbd>
-                      <button type="button" class="btn btn-sm btn-outline-secondary ml-2" id="btn-toggle-mqtt-pwd" title="Mostrar/Ocultar">
-                        <i class="fas fa-eye"></i>
-                      </button>
-                      <button type="button" class="btn btn-sm btn-outline-secondary ml-1" id="btn-copy-mqtt-pwd" title="Copiar para área de transferência">
-                        <i class="fas fa-copy"></i>
-                      </button>
-                    </div>
-                  </div>
-                  <small class="text-muted d-block mt-2">
-                    💡 <strong>Host:</strong> localhost (ou seu IP do servidor)<br>
-                    💡 <strong>Porta:</strong> 1883 (texto puro) ou <strong>8883 (TLS, recomendado fora da rede local)</strong><br>
-                    💡 <strong>Protocolo:</strong> MQTT v3.1.1
-                  </small>
                 </div>
               </div>
             </div>
@@ -334,11 +312,7 @@ try {
     const payloadsContainer = document.getElementById('payloads-container');
     const apiInfoId = document.getElementById('api-info-id');
     const apiInfoKey = document.getElementById('api-info-key');
-    const mqttUsername = document.getElementById('mqtt-username');
-    const mqttPassword = document.getElementById('mqtt-password');
-    const btnToggleMqttPwd = document.getElementById('btn-toggle-mqtt-pwd');
-    const btnCopyMqttPwd = document.getElementById('btn-copy-mqtt-pwd');
-    
+
     // --- Elementos DOM (Filtros) ---
     const formFiltros = document.getElementById('form-filtros');
     const filterLimit = document.getElementById('filter-limit');
@@ -347,7 +321,6 @@ try {
 
     // --- APIs ---
     const API_OBTER_DISPOSITIVO = '/api/obter-info-dispositivo';
-    const API_MQTT_CREDENTIALS = '/api/get-mqtt-credentials';
     const API_ENVIAR = '/api/enviar-payload';
     const API_BUSCAR = '/api/buscar-payloads';
     const API_DELETAR_DISPOSITIVO = '/api/deletar-dispositivo';
@@ -383,112 +356,16 @@ try {
             }
 
             DEVICE_API_KEY = device.api_key;
-            
+
             apiInfoId.textContent = device.id;
             apiInfoKey.textContent = device.api_key;
-            
-            await carregarCredenciaisMQTT();
+
             await carregarPayloads();
 
         } catch (error) {
             statusMsgGet.innerHTML = `<span style="color: red;">${error.message}</span>`;
-            enviarButton.disabled = true; 
+            enviarButton.disabled = true;
         }
-    }
-
-    // Função 1.5: Carrega credenciais MQTT (Apenas dados não-sensíveis no load)
-    async function carregarCredenciaisMQTT() {
-        try {
-            const response = await fetch(API_MQTT_CREDENTIALS, {
-                credentials: 'include',
-                headers: { 'X-Api-Key': DEVICE_API_KEY }
-            });
-            const mqtt_creds = await safeJson(response);
-            
-            if (!mqtt_creds || !mqtt_creds.mqtt_username) {
-                mqttUsername.textContent = 'Não configurado';
-                mqttPassword.textContent = 'N/A';
-                btnToggleMqttPwd.disabled = true;
-                btnCopyMqttPwd.disabled = true;
-                return;
-            }
-            
-            mqttUsername.textContent = mqtt_creds.mqtt_username;
-            mqttPassword.textContent = '••••••••••••••••';
-            mqttPassword.dataset.visible = 'false';
-            
-        } catch (error) {
-            console.warn('Não foi possível carregar credenciais MQTT:', error.message);
-            mqttUsername.textContent = 'Não disponível';
-            mqttPassword.textContent = 'N/A';
-        }
-    }
-
-    // Função auxiliar para buscar a senha sob demanda
-    async function fetchMqttPassword() {
-        const response = await fetch(`${API_MQTT_CREDENTIALS}?reveal=true`, {
-            credentials: 'include',
-            headers: { 'X-Api-Key': DEVICE_API_KEY }
-        });
-        const data = await safeJson(response);
-        return data.mqtt_password ?? '';
-    }
-
-    // Event Listener: Mostrar/Ocultar a senha temporariamente
-    if (btnToggleMqttPwd) {
-        btnToggleMqttPwd.addEventListener('click', async () => {
-            const isVisible = mqttPassword.dataset.visible === 'true';
-            
-            if (isVisible) {
-                mqttPassword.textContent = '••••••••••••••••';
-                mqttPassword.dataset.visible = 'false';
-                btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye"></i>';
-            } else {
-                btnToggleMqttPwd.disabled = true;
-                try {
-                    const password = await fetchMqttPassword();
-                    if (password) {
-                        mqttPassword.textContent = password;
-                        mqttPassword.dataset.visible = 'true';
-                        btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                        
-                        setTimeout(() => {
-                            if (mqttPassword.dataset.visible === 'true') {
-                                mqttPassword.textContent = '••••••••••••••••';
-                                mqttPassword.dataset.visible = 'false';
-                                btnToggleMqttPwd.innerHTML = '<i class="fas fa-eye"></i>';
-                            }
-                        }, 15000);
-                    }
-                } catch (e) {
-                    console.error('Erro ao recuperar credencial:', e);
-                } finally {
-                    btnToggleMqttPwd.disabled = false;
-                }
-            }
-        });
-    }
-
-    // Event Listener: Copiar senha MQTT
-    if (btnCopyMqttPwd) {
-        btnCopyMqttPwd.addEventListener('click', async () => {
-            btnCopyMqttPwd.disabled = true;
-            try {
-                const password = await fetchMqttPassword();
-                if (!password) return;
-                
-                await navigator.clipboard.writeText(password);
-                const originalHTML = btnCopyMqttPwd.innerHTML;
-                btnCopyMqttPwd.innerHTML = '<i class="fas fa-check"></i> Copiado!';
-                setTimeout(() => {
-                    btnCopyMqttPwd.innerHTML = originalHTML;
-                    btnCopyMqttPwd.disabled = false;
-                }, 2000);
-            } catch (err) {
-                alert('Erro ao copiar: ' + err);
-                btnCopyMqttPwd.disabled = false;
-            }
-        });
     }
 
     // Função 2: Carrega a lista de payloads recebidos

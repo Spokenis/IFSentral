@@ -6,7 +6,6 @@ require_once '../config/config.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
 require_once '../core/Csrf.php';
-require_once '../core/MosquittoSync.php';
 
 use App\Core\Csrf;
 
@@ -71,19 +70,7 @@ try {
     $del = $conn->prepare("UPDATE devices SET deletedAt = NOW() WHERE id = ?");
     $del->execute([$device_id]);
 
-    // Desativa credenciais MQTT associadas (o dispositivo não deve mais poder publicar)
-    $disable = $conn->prepare("UPDATE mqtt_credentials SET enabled = 0 WHERE device_id = ?");
-    $disable->execute([$device_id]);
-
     $conn->commit();
-
-    // Sincroniza o Mosquitto para que a credencial desativada pare de valer imediatamente
-    try {
-        $sync = new MosquittoSync($conn, true);
-        $sync->sync();
-    } catch (Exception $e) {
-        // Não bloqueia a exclusão se a sincronização falhar
-    }
 
     echo json_encode([
         'success' => true,

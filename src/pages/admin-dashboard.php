@@ -220,46 +220,12 @@ try {
                       <i class="fas fa-chevron-right text-muted"></i>
                     </a>
                   </li>
-                  <li class="list-group-item">
-                    <a href="#mqtt-logs-section" class="d-flex justify-content-between align-items-center text-dark">
-                      <span><i class="fas fa-server mr-2"></i> Logs do MQTT</span>
-                      <i class="fas fa-chevron-down text-muted"></i>
-                    </a>
-                  </li>
                 </ul>
               </div>
             </div>
           </div>
 
         </div>
-        </div>
-
-        <!-- Seção: Visualizador de Logs MQTT -->
-        <div class="row mt-4" id="mqtt-logs-section">
-          <div class="col-12">
-            <div class="card card-dark">
-              <div class="card-header d-flex justify-content-between align-items-center">
-                <h3 class="card-title m-0"><i class="fas fa-terminal mr-2"></i> Monitor de Logs MQTT</h3>
-                <div class="card-tools ml-auto">
-                  <select id="logLimit" class="custom-select custom-select-sm d-inline-block mr-2" style="width: auto;">
-                    <option value="50">50 linhas</option>
-                    <option value="100" selected>100 linhas</option>
-                    <option value="500">500 linhas</option>
-                  </select>
-                  <button id="btnRefreshLogs" class="btn btn-sm btn-primary">
-                    <i class="fas fa-sync-alt"></i> Atualizar
-                  </button>
-                </div>
-              </div>
-              <div class="card-body p-0 bg-dark">
-                <!-- Scroll e tipografia Mono para imitar o console -->
-                <pre id="mqttLogConsole" style="height: 400px; overflow-y: auto; color: #00ff00; background-color: #121212; padding: 15px; margin: 0; font-family: 'Courier New', Courier, monospace; font-size: 14px; white-space: pre-wrap;"></pre>
-              </div>
-              <div class="card-footer bg-dark border-top border-secondary text-right p-2">
-                <small class="text-muted" id="logStatus">Carregando...</small>
-              </div>
-            </div>
-          </div>
         </div>
 
       </div>
@@ -269,101 +235,8 @@ try {
 
 </div>
 
-
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-
-<script>
-$(document).ready(function() {
-  const logConsole = $('#mqttLogConsole');
-  const logStatus = $('#logStatus');
-  let autoRefreshInterval = null;
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '<')
-      .replace(/>/g, '>')
-      .replace(/"/g, '"')
-      .replace(/'/g, '&#039;');
-  }
-
-  function loadMqttLogs() {
-    const limit = $('#logLimit').val();
-    logStatus.text('Atualizando...');
-
-    $.ajax({
-      url: '/api/obter-logs-mqtt?limit=' + limit,
-      type: 'GET',
-      dataType: 'json',
-      success: function(response) {
-        if (response.error && !response.success) {
-           logConsole.html('<span class="text-danger">Erro: ' + escapeHtml(response.error) + '</span>');
-           logStatus.text('Erro ao carregar.');
-           return;
-        }
-
-        logConsole.empty();
-
-        if (response.logs && response.logs.length > 0) {
-          let htmlOutput = '';
-          response.logs.forEach(function(line) {
-            const safeLine = escapeHtml(line);
-            // Realce de sintaxe básico
-            if (line.includes('[ERROR]') || line.includes('[FATAL]') || line.includes('Erro')) {
-              htmlOutput += '<span class="text-danger">' + safeLine + '</span>\n';
-            } else if (line.includes('[WARN]') || line.includes('AVISO')) {
-              htmlOutput += '<span class="text-warning">' + safeLine + '</span>\n';
-            } else if (line.includes('[INFO]')) {
-              htmlOutput += '<span class="text-info">' + safeLine + '</span>\n';
-            } else if (line.includes('[DEBUG]')) {
-              htmlOutput += '<span style="color: #aaaaaa;">' + safeLine + '</span>\n';
-            } else {
-              htmlOutput += safeLine + '\n';
-            }
-          });
-
-          logConsole.html(htmlOutput);
-
-          // Scroll automático
-          logConsole.scrollTop(logConsole[0].scrollHeight);
-          logStatus.text('Últimas ' + response.logs.length + ' linhas exibidas de ' + response.total_lines + ' no total. Atualizado em: ' + new Date().toLocaleTimeString());
-        } else {
-          logConsole.html('<span class="text-muted">Nenhum log registrado ainda.</span>');
-          logStatus.text('Sem dados.');
-        }
-      },
-      error: function(xhr) {
-        let errorMsg = 'Erro na requisição.';
-        if(xhr.responseJSON && xhr.responseJSON.error) {
-            errorMsg = xhr.responseJSON.error;
-        }
-        logConsole.html('<span class="text-danger">' + escapeHtml(errorMsg) + '</span>');
-        logStatus.text('Falha na conexão.');
-      }
-    });
-  }
-
-  // Event Listeners
-  $('#btnRefreshLogs').click(function() {
-    loadMqttLogs();
-  });
-
-  $('#logLimit').change(function() {
-    loadMqttLogs();
-  });
-
-  // Carrega inicialmente
-  loadMqttLogs();
-
-  // Atualização automática a cada 5 segundos
-  autoRefreshInterval = setInterval(loadMqttLogs, 5000);
-});
-</script>
 </body>
 </html>
-
-
-

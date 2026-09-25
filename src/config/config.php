@@ -1,12 +1,14 @@
 <?php
 /**
  * config.php - Carrega variáveis de ambiente
- * Suporte nativo para Docker Compose (getenv/OS) e arquivo .env
+ * Lê de getenv()/$_SERVER (se o host as expuser) ou do arquivo .env
  */
 
-// Define valores padrão compatíveis com o Docker Compose
+// Valores padrão usados quando não há .env nem variável de ambiente definida.
+// Edite src/config/.env (copie de .env.example) com as credenciais reais do
+// servidor — não é necessário alterar os valores abaixo.
 $default_config = [
-    'DB_HOST' => 'db',
+    'DB_HOST' => 'localhost',
     'DB_NAME' => 'ifsentral_bd',
     'DB_USER' => 'ifsentral_user',
     'DB_PASS' => 'secretpassword',
@@ -57,17 +59,17 @@ if (file_exists($env_file)) {
 
 /**
  * Função para obter configuração
- * Prioridade: getenv() (Docker/OS) -> $_SERVER -> $_ENV (.env) -> Padrão
+ * Prioridade: getenv() (variável de ambiente do SO) -> $_SERVER -> $_ENV (.env) -> Padrão
  */
 function env($key, $default = null) {
     global $default_config;
-    
-    // 1. Variáveis de ambiente nativas (injetadas pelo Docker Compose)
+
+    // 1. Variáveis de ambiente nativas do sistema/Apache (SetEnv, painel de hospedagem, etc.)
     $sys_val = getenv($key);
     if ($sys_val !== false) {
         return $sys_val;
     }
-    
+
     // 2. Variáveis de servidor do Apache/PHP
     if (isset($_SERVER[$key])) {
         return $_SERVER[$key];
@@ -129,7 +131,6 @@ function setupSecureCORS() {
         '/api/enviar-payload', '/src/api/enviar_payload.php',
         '/api/buscar-payloads', '/src/api/buscar_payloads.php',
         '/api/ttn-webhook', '/src/api/ttn_webhook.php',
-        '/api/get-mqtt-credentials', '/src/pages/get_mqtt_credentials.php',
     ];
 
     $isPublicApi = false;
