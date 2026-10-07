@@ -143,7 +143,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                     <div class="row">
                                         <div class="col-md-4 text-center">
                                             <div class="mb-3">
-                                                <img id="preview-foto" src="/assets/img/default-avatar.svg" 
+                                                <img id="preview-foto" src="assets/img/default-avatar.svg" 
                                                      alt="Foto de Perfil" 
                                                      class="img-fluid rounded-circle" 
                                                      style="width: 150px; height: 150px; object-fit: cover; border: 3px solid var(--ifsc-primary);">
@@ -339,19 +339,19 @@ require_once __DIR__ . '/../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
-<script src="/assets/js/profile-picture-helper.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 
 <script>
-    const API_OBTER_PERFIL = '/api/obter-perfil-usuario';
-    const API_ATUALIZAR_PERFIL = '/api/atualizar-perfil';
-    const API_ATUALIZAR_SENHA = '/api/atualizar-senha';
-    const API_UPLOAD_FOTO = '/api/upload-foto-perfil';
-    const API_DELETAR_FOTO = '/api/deletar-foto-perfil';
-    const API_2FA_STATUS = '/api/2fa-status';
-    const API_2FA_INICIAR = '/api/2fa-iniciar-configuracao';
-    const API_2FA_CONFIRMAR = '/api/2fa-confirmar-configuracao';
-    const API_2FA_DESATIVAR = '/api/2fa-desativar';
+    const API_OBTER_PERFIL = 'api/obter-perfil-usuario';
+    const API_ATUALIZAR_PERFIL = 'api/atualizar-perfil';
+    const API_ATUALIZAR_SENHA = 'api/atualizar-senha';
+    const API_UPLOAD_FOTO = 'api/upload-foto-perfil';
+    const API_DELETAR_FOTO = 'api/deletar-foto-perfil';
+    const API_2FA_STATUS = 'api/2fa-status';
+    const API_2FA_INICIAR = 'api/2fa-iniciar-configuracao';
+    const API_2FA_CONFIRMAR = 'api/2fa-confirmar-configuracao';
+    const API_2FA_DESATIVAR = 'api/2fa-desativar';
     
     const formPerfil = document.getElementById('form-perfil');
     const inputName = document.getElementById('input-name');
@@ -413,10 +413,10 @@ require_once __DIR__ . '/../auth/auth_check.php';
             inputUsername.value = user.username || '';
             
             if (user.profile_picture) {
-                previewFoto.src = '/' + user.profile_picture;
+                previewFoto.src = user.profile_picture;
                 btnDeletarFoto.disabled = false;
             } else {
-                previewFoto.src = '/assets/img/default-avatar.svg';
+                previewFoto.src = 'assets/img/default-avatar.svg';
                 btnDeletarFoto.disabled = true;
             }
             

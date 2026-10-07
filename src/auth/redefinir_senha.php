@@ -25,7 +25,7 @@ function renderizarErro($titulo, $mensagem) {
             <div class='icone'>❌</div>
             <h1>{$titulo}</h1>
             <p>{$mensagem}</p>
-            <a href='/esqueci-senha' class='btn'>Solicitar novo link</a>
+            <a href='esqueci-senha' class='btn'>Solicitar novo link</a>
         </div>
     </body>
     </html>";
@@ -82,7 +82,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="/"><b>IF</b>Sentral</a>
+    <a href="./"><b>IF</b>Sentral</a>
   </div>
   <div class="card card-outline card-primary">
     <div class="card-body login-card-body">
@@ -103,7 +103,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
       </form>
 
       <p class="mb-0 mt-3">
-        <a href="/login" class="text-center">Voltar ao login</a>
+        <a href="login" class="text-center">Voltar ao login</a>
       </p>
     </div>
   </div>
@@ -129,7 +129,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
     resetButton.disabled = true;
 
     try {
-      const response = await fetch('/api/redefinir-senha', {
+      const response = await fetch('api/redefinir-senha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -146,7 +146,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
       }
 
       statusMsg.innerHTML = '<span style="color: green;">Senha redefinida com sucesso! Redirecionando para o login...</span>';
-      setTimeout(function () { window.location.href = '/login'; }, 2000);
+      setTimeout(function () { window.location.href = 'login'; }, 2000);
 
     } catch (error) {
       statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;

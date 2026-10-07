@@ -5,6 +5,12 @@
  * Execute uma única vez: php setup-security-tables.php
  */
 
+// Script de manutenção: só roda pela linha de comando, nunca pelo navegador
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit;
+}
+
 define('ROOT_DIR', __DIR__);
 
 echo "\n" . str_repeat('=', 80) . "\n";

@@ -48,7 +48,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="/"><b>IF</b>Sentral</a>
+    <a href="./"><b>IF</b>Sentral</a>
   </div>
   <div class="card card-outline card-primary">
     <div class="card-body login-card-body">
@@ -107,10 +107,10 @@
       </form>
 
       <p class="mb-1" id="esqueci-senha-link">
-        <a href="/esqueci-senha">Esqueci minha senha</a>
+        <a href="esqueci-senha">Esqueci minha senha</a>
       </p>
       <p class="mb-0" id="criar-conta-link">
-        <a href="/registrar" class="text-center">Criar uma nova conta</a>
+        <a href="registrar" class="text-center">Criar uma nova conta</a>
       </p>
     </div>
   </div>
@@ -124,7 +124,7 @@
     const loginForm = document.getElementById('login-form');
     const statusMsg = document.getElementById('login-status-msg');
     const loginButton = document.getElementById('login-button');
-    const API_URL = '/api/login';
+    const API_URL = 'api/login';
 
     const twofaForm = document.getElementById('twofa-form');
     const twofaStatusMsg = document.getElementById('twofa-status-msg');
@@ -133,7 +133,7 @@
     const twofaVoltarLink = document.getElementById('twofa-voltar');
     const esqueciSenhaLink = document.getElementById('esqueci-senha-link');
     const criarContaLink = document.getElementById('criar-conta-link');
-    const API_URL_2FA = '/api/verificar-2fa';
+    const API_URL_2FA = 'api/verificar-2fa';
 
     function mostrarEtapa2FA() {
         loginForm.style.display = 'none';
@@ -198,7 +198,7 @@
 
             // Redireciona para a página de "Meus Projetos" após o login
             // (a mesma que estava no 'action' original do seu formulário)
-            window.location.href = '/meus-projetos';
+            window.location.href = 'meus-projetos';
 
         } catch (error) {
             statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
@@ -228,7 +228,7 @@
             }
 
             twofaStatusMsg.innerHTML = `<span style="color: green;">${resultado.message} Redirecionando...</span>`;
-            window.location.href = '/meus-projetos';
+            window.location.href = 'meus-projetos';
 
         } catch (error) {
             twofaStatusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;

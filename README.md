@@ -6,16 +6,28 @@ O IFSentral Lite é a versão **simplificada** do IFSentral, feita para rodar em
 
 ## Requisitos do servidor
 
-* Apache com `mod_rewrite` e `mod_headers` habilitados
-* PHP 8.x com as extensões `pdo_mysql`, `mbstring`, `json`, `openssl`
+* Apache com PHP 8.x e as extensões `pdo_mysql`, `mbstring`, `json`, `openssl`
 * MySQL/MariaDB (pode ser o banco já oferecido pelo provedor)
 * Acesso ao phpMyAdmin (ou similar) para importar o schema
+
+Nada mais é obrigatório. O site se adapta sozinho ao servidor:
+
+| Situação do servidor | Como o site se comporta |
+| --- | --- |
+| Domínio/VirtualHost próprio | Abre em `http://dominio/` |
+| Subpasta (ex.: `/var/www/html/site1/`) | Abre em `http://servidor/site1/` — nenhum caminho para ajustar |
+| `.htaccess` respeitado e `mod_rewrite` ativo | URLs limpas: `/login`, `/meus-projetos`, `/api/...` |
+| `.htaccess` ignorado (`AllowOverride None`) | Mesmas páginas em `/index.php/login`, `/index.php/api/...` |
+| Com HTTPS | Cookie de sessão seguro e HSTS ligados automaticamente |
+| Só HTTP | Funciona normalmente (o redirect para HTTPS é opcional, ver `FORCE_HTTPS`) |
 
 ## Instalação
 
 ### 1. Enviar os arquivos
 
-Copie todo o conteúdo desta pasta (`IFSentral/`) para a raiz do domínio no servidor — normalmente `public_html/` (Hostinger) ou `/var/www/html/` (Apache próprio). Por FTP/SFTP ou pelo gerenciador de arquivos do painel.
+Copie o conteúdo desta pasta (`IFSentral/`) para o diretório do site no servidor — por exemplo `/var/www/html/site1/` ou `public_html/`. O `index.php` fica direto nesse diretório; é ele que atende todas as páginas.
+
+**Não envie** o que não é necessário para o site rodar: `.git/`, `tests/`, `phpunit.xml`, `*.md`. A pasta `vendor/` precisa ir junto (ou rode `composer install --no-dev` no servidor).
 
 ### 2. Criar o banco de dados
 
@@ -25,35 +37,36 @@ No phpMyAdmin do servidor, crie um banco de dados (ex.: `ifsentral_bd`) e um usu
 src/db/ifsentral_bd.sql
 ```
 
-Esse arquivo já cria todas as tabelas necessárias (usuários, projetos, dispositivos, payloads, rate limiting, 2FA etc.).
+Esse arquivo já cria todas as tabelas necessárias (usuários, projetos, dispositivos, payloads, rate limiting, 2FA etc.). Depois de importar, apague o `.sql` do servidor.
 
 ### 3. Configurar as credenciais
 
-Copie o arquivo de exemplo e edite com os dados reais do seu banco/e-mail:
+Copie o arquivo de exemplo e edite com os dados reais do seu banco:
 
 ```bash
-cp src/config/.env.example src/config/.env
+cp src/config/env.example.php src/config/env.php
 ```
 
-Edite `src/config/.env` e preencha pelo menos:
+Preencha pelo menos:
 
 * `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS` — credenciais do banco criado na etapa 2
-* `APP_URL` e `ALLOWED_ORIGINS` — o domínio real onde o site vai rodar
-* `SMTP_*` — opcional; sem isso, defina `ENABLE_EMAIL_FEATURES=false` para liberar o cadastro de contas sem confirmação por e-mail
+* `ENABLE_EMAIL_FEATURES` — `false` libera o cadastro de contas sem confirmação por e-mail; para usar `true`, preencha também os campos `SMTP_*`
+* `APP_URL` — opcional; endereço público do site (com a subpasta, se houver), usado nos links enviados por e-mail
+* `FORCE_HTTPS` — mude para `true` somente se o servidor tiver HTTPS
 
-O arquivo `.env` nunca deve ser commitado (já está no `.gitignore`).
+O formato antigo `src/config/.env` continua funcionando, mas prefira o `env.php`: se o servidor ignorar o `.htaccess`, um `.env` dentro da pasta do site pode ser baixado por qualquer pessoa, e um arquivo PHP não. Nenhum dos dois deve ser commitado (já estão no `.gitignore`).
 
 ### 4. Ajustar permissões
 
-Garanta que o Apache/PHP consiga escrever nestas pastas:
+O Apache/PHP precisa conseguir escrever em `uploads/` (fotos de perfil) e em `logs/` (criada automaticamente no primeiro aviso de rate limiting):
 
 ```bash
-chmod -R 755 logs uploads
+mkdir -p logs && chmod -R 755 logs uploads
 ```
 
 ### 5. Tabelas de segurança e validação
 
-Rode uma vez (por SSH, se disponível, ou copie o conteúdo para um script acessível via navegador temporariamente):
+Rode uma vez, por SSH (estes dois scripts só funcionam pela linha de comando):
 
 ```bash
 php setup-security-tables.php
@@ -64,18 +77,20 @@ php system-check.php
 
 ### 6. Acessar a aplicação
 
-Abra `https://seudominio.com/` no navegador. O `.htaccess` já cuida das URLs limpas (`/login`, `/meus-projetos`, `/api/...` etc.) — nada precisa ser configurado manualmente no Apache além de `mod_rewrite` e `mod_headers` estarem ativos.
+Abra o endereço do site no navegador (`http://servidor/site1/`, `https://seudominio.com/` etc.). Se o servidor não aplicar o `.htaccess`, você será levado automaticamente para `.../index.php/` — é o comportamento esperado, e tudo funciona da mesma forma.
 
-Se o seu provedor já força HTTPS automaticamente (comum em painéis com essa opção), você pode remover o bloco de redirect HTTPS no topo do `.htaccess` para evitar redirecionamentos duplicados.
+### Rotas
+
+As rotas públicas ficam em `src/config/routes.php` (URL => arquivo). Os links dentro das páginas são sempre **relativos** (`href="login"`, `fetch('api/...')`, sem `/` no início) — é isso que permite instalar em subpasta. Em redirects no PHP, use `app_url('rota')`.
 
 ## Como os dispositivos enviam dados
 
 Sem broker MQTT, os dispositivos (ESP32, sensores, etc.) enviam telemetria por dois caminhos HTTP:
 
-* **`POST /api/enviar-payload`** — endpoint padrão, autenticado por `X-Api-Key` (chave gerada ao cadastrar o dispositivo)
-* **`POST /api/ttn-webhook?device_id=ID`** — webhook para integrações via The Things Network (LoRaWAN)
+* **`POST api/enviar-payload`** — endpoint padrão, autenticado por `X-Api-Key` (chave gerada ao cadastrar o dispositivo)
+* **`POST api/ttn-webhook?device_id=ID`** — webhook para integrações via The Things Network (LoRaWAN)
 
-Detalhes de payload, rate limiting e exemplos de código estão em `/documentacao` dentro da própria aplicação.
+Os caminhos são relativos ao endereço do site (com `index.php/` na frente quando não há URLs limpas). A página **Documentação** dentro da aplicação mostra a URL completa já pronta para copiar, além de detalhes de payload, rate limiting e exemplos de código.
 
 ## Manutenção
 

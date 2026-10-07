@@ -18,7 +18,7 @@ if ($identifier) {
 }
 
 if ($profile_logado !== 'Admin') {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 ?>
@@ -140,11 +140,11 @@ if ($profile_logado !== 'Admin') {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
 
 <script>
-  const API_SOLICITACOES_PERFIL = '/api/solicitacoes-perfil';
-  const API_ADMIN_USUARIOS = '/api/admin-usuarios';
+  const API_SOLICITACOES_PERFIL = 'api/solicitacoes-perfil';
+  const API_ADMIN_USUARIOS = 'api/admin-usuarios';
   const CURRENT_ADMIN_ID = <?php echo $admin_id; ?>;
 
   function escapeHtml(str) {

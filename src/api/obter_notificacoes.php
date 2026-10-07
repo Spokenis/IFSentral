@@ -58,7 +58,7 @@ try {
         $items[] = [
             'type' => 'convite',
             'title' => 'Convite para o projeto "' . $row['project_name'] . '"',
-            'link' => '/perfil',
+            'link' => 'perfil',
             'created_at' => $row['created_at'],
         ];
     }
@@ -80,7 +80,7 @@ try {
         $items[] = [
             'type' => 'solicitacao_participacao',
             'title' => ($row['requester_name'] ?? 'Alguém') . ' quer participar de "' . $row['project_name'] . '"',
-            'link' => '/projeto?id=' . $row['project_id'],
+            'link' => 'projeto?id=' . $row['project_id'],
             'created_at' => $row['createdAt'],
         ];
     }
@@ -98,7 +98,7 @@ try {
             $items[] = [
                 'type' => 'solicitacao_perfil',
                 'title' => ($row['requester_name'] ?? 'Alguém') . ' solicitou privilégios de Moderador',
-                'link' => '/admin/usuarios',
+                'link' => 'admin-usuarios',
                 'created_at' => $row['createdAt'],
             ];
         }

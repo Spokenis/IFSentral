@@ -67,3 +67,4 @@ test-*.php
 *-test.php
 mqtt_credentials_auto.txt
 src/config/.env
+src/config/env.php

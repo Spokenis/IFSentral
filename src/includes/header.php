@@ -26,18 +26,18 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
 
   <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
     <div class="container">
-      <a href="/" class="navbar-brand">
+      <a href="./" class="navbar-brand">
         <span class="brand-text font-weight-bold">IFSentral Lite</span>
       </a>
       <div class="collapse navbar-collapse order-3" id="navbarCollapse">
         <ul class="navbar-nav">
-          <li class="nav-item"><a href="/meus-projetos" class="nav-link">Meus Projetos</a></li>
-          <li class="nav-item"><a href="/explorar-projetos" class="nav-link">Explorar Projetos</a></li>
-          <li class="nav-item"><a href="/documentacao" class="nav-link">Documentação</a></li>
+          <li class="nav-item"><a href="meus-projetos" class="nav-link">Meus Projetos</a></li>
+          <li class="nav-item"><a href="explorar-projetos" class="nav-link">Explorar Projetos</a></li>
+          <li class="nav-item"><a href="documentacao" class="nav-link">Documentação</a></li>
 
           <?php if ($profile_logado === 'Admin'): ?>
           <li class="nav-item">
-            <a href="/admin" class="nav-link font-weight-bold text-danger">Administração</a>
+            <a href="admin" class="nav-link font-weight-bold text-danger">Administração</a>
           </li>
           <?php endif; ?>
         </ul>
@@ -65,11 +65,11 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
             </span>
           </a>
           <div class="dropdown-menu dropdown-menu-right">
-            <a href="/perfil" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
-            <a href="/meus-dispositivos" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
-            <a href="/configuracoes" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
+            <a href="perfil" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>
+            <a href="meus-dispositivos" class="dropdown-item"><i class="fas fa-microchip mr-2"></i> Meus Sensores</a>
+            <a href="configuracoes" class="dropdown-item"><i class="fas fa-cog mr-2"></i> Configurações</a>
             <div class="dropdown-divider"></div>
-            <a href="/api/logout" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
+            <a href="api/logout" class="dropdown-item"><i class="fas fa-sign-out-alt mr-2 text-danger"></i> Sair</a>
           </div>
         </li>
       </ul>
@@ -135,7 +135,7 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
   }
 
   function carregarNotificacoes(){
-    fetch('/api/obter-notificacoes', { credentials: 'include' })
+    fetch('api/obter-notificacoes', { credentials: 'include' })
       .then(function(r){ return r.ok ? r.json() : null; })
       .then(function(data){ if (data) renderNotificacoes(data); })
       .catch(function(){ /* falha silenciosa: não interrompe a navegação da página */ });

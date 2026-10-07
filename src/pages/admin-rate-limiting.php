@@ -15,7 +15,7 @@ if ($identifier) {
 }
 
 if ($profile_logado !== 'Admin') {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 

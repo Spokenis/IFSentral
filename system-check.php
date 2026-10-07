@@ -5,6 +5,12 @@
  * Execute: php system-check.php
  */
 
+// Script de manutenção: só roda pela linha de comando, nunca pelo navegador
+if (PHP_SAPI !== 'cli') {
+    http_response_code(403);
+    exit;
+}
+
 define('ROOT_DIR', __DIR__);
 
 $OK = '✅';
@@ -32,14 +38,16 @@ if (file_exists(ROOT_DIR . '/src/config/config.php')) {
     echo "   $FAIL Arquivo config.php não encontrado\n";
 }
 
-// config.php procura primeiro src/config/.env e, na ausência dele, cai para
-// o .env da raiz do projeto.
-if (file_exists(ROOT_DIR . '/src/config/.env')) {
+// config.php lê src/config/env.php e src/config/.env (o env.php tem
+// prioridade); na ausência do .env de src/config, cai para o da raiz.
+if (file_exists(ROOT_DIR . '/src/config/env.php')) {
+    echo "   $OK Arquivo env.php encontrado (src/config/env.php)\n";
+} elseif (file_exists(ROOT_DIR . '/src/config/.env')) {
     echo "   $OK Arquivo .env encontrado (src/config/.env)\n";
 } elseif (file_exists(ROOT_DIR . '/.env')) {
     echo "   $OK Arquivo .env encontrado (raiz do projeto)\n";
 } else {
-    echo "   $WARN Nenhum arquivo .env encontrado (usando apenas variáveis de ambiente/defaults)\n";
+    echo "   $WARN Nenhum arquivo env.php/.env encontrado (usando apenas variáveis de ambiente/defaults)\n";
 }
 
 // 2. VERIFICAR BANCO DE DADOS

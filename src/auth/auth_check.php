@@ -1,6 +1,8 @@
 <?php
 // auth_check.php
 
+require_once __DIR__ . '/../core/Url.php';
+
 // Inicia a sessão para verificar os dados
 if (session_status() == PHP_SESSION_NONE) {
     session_start();
@@ -29,7 +31,7 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         echo json_encode(['error' => 'Não autenticado. Faça login primeiro.']);
         exit;
     } else {
-        header('Location: /');
+        header('Location: ' . app_url());
         exit;
     }
 }

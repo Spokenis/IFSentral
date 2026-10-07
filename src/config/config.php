@@ -1,21 +1,25 @@
 <?php
 /**
  * config.php - Carrega variáveis de ambiente
- * Lê de getenv()/$_SERVER (se o host as expuser) ou do arquivo .env
+ * Lê de getenv()/$_SERVER (se o host as expuser), de env.php ou do arquivo .env
  */
 
-// Valores padrão usados quando não há .env nem variável de ambiente definida.
-// Edite src/config/.env (copie de .env.example) com as credenciais reais do
-// servidor — não é necessário alterar os valores abaixo.
+require_once __DIR__ . '/../core/Url.php';
+
+// Valores padrão usados quando não há env.php/.env nem variável de ambiente
+// definida. Edite src/config/env.php (copie de env.example.php) com as
+// credenciais reais do servidor — não é necessário alterar os valores abaixo.
 $default_config = [
     'DB_HOST' => 'localhost',
     'DB_NAME' => 'ifsentral_bd',
     'DB_USER' => 'ifsentral_user',
     'DB_PASS' => 'secretpassword',
     'APP_ENV' => 'production',
-    'APP_URL' => 'https://ifsentral.online',
-    'ALLOWED_ORIGINS' => 'https://ifsentral.online',
-    'SESSION_SECURE' => false,
+    // Vazio = usa o endereço da própria requisição (ver app_absolute_url())
+    'APP_URL' => '',
+    'ALLOWED_ORIGINS' => '',
+    // Redireciona HTTP -> HTTPS. Só ative se o servidor tiver certificado.
+    'FORCE_HTTPS' => false,
     'SESSION_HTTPONLY' => true,
     'SESSION_SAMESITE' => 'Lax',
     
@@ -57,9 +61,21 @@ if (file_exists($env_file)) {
     }
 }
 
+// env.php (opcional, tem prioridade sobre o .env): mesmo conteúdo, mas num
+// arquivo PHP. Ao contrário do .env, ele nunca é entregue como texto pelo
+// servidor web — é a opção segura quando o .htaccess não é respeitado.
+if (file_exists(__DIR__ . '/env.php')) {
+    $php_env = require __DIR__ . '/env.php';
+    if (is_array($php_env)) {
+        foreach ($php_env as $key => $value) {
+            $_ENV[$key] = $value;
+        }
+    }
+}
+
 /**
  * Função para obter configuração
- * Prioridade: getenv() (variável de ambiente do SO) -> $_SERVER -> $_ENV (.env) -> Padrão
+ * Prioridade: getenv() (variável de ambiente do SO) -> $_SERVER -> $_ENV (env.php/.env) -> Padrão
  */
 function env($key, $default = null) {
     global $default_config;
@@ -75,7 +91,7 @@ function env($key, $default = null) {
         return $_SERVER[$key];
     }
     
-    // 3. Variáveis carregadas do arquivo .env
+    // 3. Variáveis carregadas de env.php ou do arquivo .env
     if (isset($_ENV[$key])) {
         return $_ENV[$key];
     }
@@ -107,17 +123,26 @@ define('SMTP_ENCRYPTION', env('SMTP_ENCRYPTION'));
 define('MAIL_FROM_ADDRESS', env('MAIL_FROM_ADDRESS'));
 define('MAIL_FROM_NAME', env('MAIL_FROM_NAME'));
 
-// Força SESSION_SECURE=true automaticamente em produção
-$session_secure = filter_var(env('SESSION_SECURE'), FILTER_VALIDATE_BOOLEAN);
-if (env('APP_ENV') === 'production') {
-    $session_secure = true;
-    if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
-        error_log('[AVISO] APP_ENV=production mas HTTPS não está ativo. Ative HTTPS para que SESSION_SECURE funcione corretamente.');
-    }
-}
-define('SESSION_SECURE', $session_secure);
+define('FORCE_HTTPS', filter_var(env('FORCE_HTTPS'), FILTER_VALIDATE_BOOLEAN));
+
+// O cookie de sessão só leva a flag Secure quando a requisição é HTTPS: com
+// a flag ligada em um servidor só HTTP o navegador descarta o cookie e o
+// login nunca se mantém.
+define('SESSION_SECURE', is_https_request());
 define('SESSION_HTTPONLY', filter_var(env('SESSION_HTTPONLY'), FILTER_VALIDATE_BOOLEAN));
 define('SESSION_SAMESITE', env('SESSION_SAMESITE'));
+
+// Nome e caminho próprios para o cookie de sessão: em uma subpasta
+// (/site1/) o servidor pode hospedar outros sites PHP no mesmo domínio, e
+// com o PHPSESSID padrão em "/" as sessões se misturariam entre eles.
+// Definido via ini para valer também nos session_start() diretos.
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    ini_set('session.name', 'IFSENTRALSESSID');
+    ini_set('session.cookie_path', app_base_path() . '/');
+    ini_set('session.cookie_secure', SESSION_SECURE ? '1' : '0');
+    ini_set('session.cookie_httponly', SESSION_HTTPONLY ? '1' : '0');
+    ini_set('session.cookie_samesite', SESSION_SAMESITE);
+}
 
 /**
  * Função para configurar CORS seguro
@@ -147,7 +172,7 @@ function setupSecureCORS() {
         $allowedOrigins = explode(',', ALLOWED_ORIGINS);
         $requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
         
-        if (in_array($requestOrigin, $allowedOrigins)) {
+        if ($requestOrigin !== '' && in_array($requestOrigin, $allowedOrigins)) {
             header("Access-Control-Allow-Origin: " . $requestOrigin);
             header("Vary: Origin");
         }
@@ -170,6 +195,7 @@ function setupSecureSession($lifetime = 0) {
     if (session_status() == PHP_SESSION_NONE) {
         session_set_cookie_params([
             'lifetime' => intval($lifetime),
+            'path' => app_base_path() . '/',
             'secure' => SESSION_SECURE,
             'httponly' => SESSION_HTTPONLY,
             'samesite' => SESSION_SAMESITE

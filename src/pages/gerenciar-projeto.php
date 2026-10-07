@@ -3,7 +3,7 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 $project_id_from_url = intval($_GET['id']);
@@ -20,13 +20,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: /meus-projetos');
+        header('Location: ' . app_url('meus-projetos'));
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 
@@ -36,11 +36,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: /meus-projetos');
+        header('Location: ' . app_url('meus-projetos'));
         exit;
     }
 } catch (Exception $e) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 ?>
@@ -246,7 +246,7 @@ try {
           <div class="col-sm-6">
             <h1 id="project-title" style="display: inline-block; margin-right: 15px;">Carregando projeto...</h1>
             <span id="project-tags-container"></span> 
-            <p class="text-muted">Retornando de <a href="/meus-projetos">Meus Projetos</a></p>
+            <p class="text-muted">Retornando de <a href="meus-projetos">Meus Projetos</a></p>
           </div>
         </div>
       </div>
@@ -446,7 +446,7 @@ try {
                   <div class="card-header">
                     <h3 class="card-title"><i class="fas fa-microchip mr-2"></i>Dispositivos do Projeto</h3>
                     <div class="card-tools">
-                      <a href="/novo-dispositivo?project_id=<?php echo $project_id_from_url; ?>" class="btn btn-primary btn-sm">
+                      <a href="novo-dispositivo?project_id=<?php echo $project_id_from_url; ?>" class="btn btn-primary btn-sm">
                         <i class="fas fa-plus"></i> Novo Dispositivo
                       </a>
                     </div>
@@ -665,8 +665,8 @@ try {
 <script>
     const PROJECT_ID = <?php echo $project_id_from_url; ?>;
 </script>
-<script src="/assets/js/fetch-helpers.js"></script>
-<script src="/assets/js/profile-picture-helper.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -680,28 +680,28 @@ try {
   $(function () {
     
     // --- URLs das APIs ---
-    const API_PROJETOS = '/api/listar-projetos';
-    const API_DEVICES = '/api/listar-devices';
-    const API_PARTICIPANTES_COUNT = `/api/obter-contagem-participantes?project_id=${PROJECT_ID}`;
-    const API_STATS_PAYLOADS = `/api/obter-stats-payloads?project_id=${PROJECT_ID}`;
-    const API_GRAFICO_DADOS = '/api/obter-dados-grafico';
-    const API_LISTAR_GRAFICOS = `/api/listar-graficos?project_id=${PROJECT_ID}`;
-    const API_OBTER_CHAVES = '/api/obter-chaves-dispositivo';
-    const API_LISTAR_MEMBROS = `/api/listar-participantes?project_id=${PROJECT_ID}`;
-    const API_DELETAR_GRAFICO = '/api/deletar-grafico';
-    const API_SALVAR_GRAFICO_FORM = '/api/salvar-grafico-avancado';
-    const API_OBTER_DADOS_GRAFICO = '/api/obter-dados-grafico-renderizado';
-    const API_ALTERAR_VISIBILIDADE_GRAFICO = '/api/alterar-visibilidade-grafico';
-    const API_ALTERAR_VISIBILIDADE_PROJETO = '/api/alterar-visibilidade-projeto';
-    const API_DEVICES_FORM = '/api/listar-devices';
-    const API_ENVIAR_CONVITE = '/api/enviar-convite';
-    const API_DELETAR_PROJETO = '/api/deletar-projeto';
-    const API_EXPORTAR_DADOS = '/api/exportar-dados-projeto';
-    const API_LISTAR_SOLICITACOES = `/api/listar-solicitacoes-participacao?project_id=${PROJECT_ID}`;
-    const API_RESPONDER_SOLICITACAO = '/api/responder-solicitacao-participacao';
-    const API_SAIR_PROJETO = '/api/sair-projeto';
-    const API_EXPULSAR_PARTICIPANTE = '/api/expulsar-participante';
-    const API_PROMOVER_GERENTE = '/api/promover-gerente';
+    const API_PROJETOS = 'api/listar-projetos';
+    const API_DEVICES = 'api/listar-devices';
+    const API_PARTICIPANTES_COUNT = `api/obter-contagem-participantes?project_id=${PROJECT_ID}`;
+    const API_STATS_PAYLOADS = `api/obter-stats-payloads?project_id=${PROJECT_ID}`;
+    const API_GRAFICO_DADOS = 'api/obter-dados-grafico';
+    const API_LISTAR_GRAFICOS = `api/listar-graficos?project_id=${PROJECT_ID}`;
+    const API_OBTER_CHAVES = 'api/obter-chaves-dispositivo';
+    const API_LISTAR_MEMBROS = `api/listar-participantes?project_id=${PROJECT_ID}`;
+    const API_DELETAR_GRAFICO = 'api/deletar-grafico';
+    const API_SALVAR_GRAFICO_FORM = 'api/salvar-grafico-avancado';
+    const API_OBTER_DADOS_GRAFICO = 'api/obter-dados-grafico-renderizado';
+    const API_ALTERAR_VISIBILIDADE_GRAFICO = 'api/alterar-visibilidade-grafico';
+    const API_ALTERAR_VISIBILIDADE_PROJETO = 'api/alterar-visibilidade-projeto';
+    const API_DEVICES_FORM = 'api/listar-devices';
+    const API_ENVIAR_CONVITE = 'api/enviar-convite';
+    const API_DELETAR_PROJETO = 'api/deletar-projeto';
+    const API_EXPORTAR_DADOS = 'api/exportar-dados-projeto';
+    const API_LISTAR_SOLICITACOES = `api/listar-solicitacoes-participacao?project_id=${PROJECT_ID}`;
+    const API_RESPONDER_SOLICITACAO = 'api/responder-solicitacao-participacao';
+    const API_SAIR_PROJETO = 'api/sair-projeto';
+    const API_EXPULSAR_PARTICIPANTE = 'api/expulsar-participante';
+    const API_PROMOVER_GERENTE = 'api/promover-gerente';
     
     // --- Referências DOM (Principais) ---
     const projectTitleEl = document.getElementById('project-title');
@@ -759,7 +759,7 @@ try {
     async function carregarDadosPrincipais() {
         try {
             // Obter informações do projeto específico
-            const responseProject = await fetch(`/api/obter-projeto?id=${PROJECT_ID}`, { credentials: 'include' });
+            const responseProject = await fetch(`api/obter-projeto?id=${PROJECT_ID}`, { credentials: 'include' });
             const project = await safeJson(responseProject);
 
             projectTitleEl.textContent = project.name;
@@ -811,7 +811,7 @@ try {
                         <td>${escapeHtml(device.user_username)}</td>
                         <td><code>${device.id}</code></td>
                         <td>
-                            <a href="/dispositivo?id=${device.id}&project_id=${PROJECT_ID}" class="btn btn-sm btn-info"><i class="fas fa-cog mr-1"></i>Gerenciar</a> 
+                            <a href="dispositivo?id=${device.id}&project_id=${PROJECT_ID}" class="btn btn-sm btn-info"><i class="fas fa-cog mr-1"></i>Gerenciar</a> 
                             <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash mr-1"></i>Remover</a>
                         </td>
                     `;
@@ -1064,7 +1064,7 @@ try {
                 // Usar foto real se disponível, senão usar placeholder com iniciais
                 let avatar;
                 if (membro.profile_picture) {
-                    avatar = `<img src="/${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
+                    avatar = `<img src="${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
                 } else {
                     avatar = `<img src="https://placehold.co/128x128/007BFF/FFFFFF?text=${escapeHtml(iniciais)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3">`;
                 }
@@ -1202,7 +1202,7 @@ try {
             if (result.success) {
                 sairStatus.innerHTML = '<div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i>' + result.message + '</div>';
                 setTimeout(() => {
-                    window.location.href = '/meus-projetos';
+                    window.location.href = 'meus-projetos';
                 }, 2000);
             } else {
                 sairStatus.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle mr-2"></i>${result.error || result.message}</div>`;
@@ -1392,7 +1392,7 @@ try {
             deleteStatusEl.innerHTML = '<div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-2"></i>Projeto excluído com sucesso! Redirecionando...</div>';
             
             setTimeout(() => {
-                window.location.href = '/meus-projetos';
+                window.location.href = 'meus-projetos';
             }, 2000);
 
         } catch (error) {

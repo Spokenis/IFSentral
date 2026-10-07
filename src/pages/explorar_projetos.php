@@ -104,10 +104,10 @@ require '../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
 
 <script>
-    const API_URL_LISTAR = '/api/listar-projetos-publicos';
+    const API_URL_LISTAR = 'api/listar-projetos-publicos';
     const container = document.getElementById('project-list-container');
     const statusMsg = document.getElementById('status-msg');
     const searchInput = document.getElementById('search-input');
@@ -176,7 +176,7 @@ require '../auth/auth_check.php';
 
         const botao = isLotado
             ? '<a href="#" class="btn btn-secondary btn-sm disabled">Solicitar Participação</a>'
-            : `<a href="/ver-projeto?id=${proj.id}" class="btn btn-primary btn-sm">Saber Mais</a>`;
+            : `<a href="ver-projeto?id=${proj.id}" class="btn btn-primary btn-sm">Saber Mais</a>`;
 
         return `
         <div class="col-md-6 col-lg-4 mb-4">
@@ -277,6 +277,6 @@ require '../auth/auth_check.php';
         irParaPagina(paginaAtual + 1);
     });
 </script>
-<script src="/assets/js/profile-picture-helper.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

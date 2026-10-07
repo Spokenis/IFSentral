@@ -66,7 +66,7 @@ require '../auth/auth_check.php';
           <div class="card-header">
             <h3 class="card-title">Projetos que você participa</h3>
             <div class="card-tools">
-              <a href="/novo-projeto" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Novo Projeto</a>
+              <a href="novo-projeto" class="btn btn-primary"><i class="fas fa-plus"></i> Criar Novo Projeto</a>
             </div>
           </div>
           <div class="card-body table-responsive p-0">
@@ -97,10 +97,10 @@ require '../auth/auth_check.php';
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
 
 <script>
-    const API_URL_LISTAR = '/api/listar-projetos';
+    const API_URL_LISTAR = 'api/listar-projetos';
     const tbody = document.getElementById('projetos-lista-tbody');
     const statusMsg = document.getElementById('status-msg');
 
@@ -150,9 +150,9 @@ require '../auth/auth_check.php';
                 // (mas ainda pode ver os dados)
                 const acoes = `
                     ${proj.user_role_name === 'Gerente' 
-                        ? `<a href="/projeto?id=${proj.id}" class="btn btn-primary btn-sm">Gerenciar</a>` 
+                        ? `<a href="projeto?id=${proj.id}" class="btn btn-primary btn-sm">Gerenciar</a>` 
                         : ''}
-                    <a href="/projeto?id=${proj.id}" class="btn btn-secondary btn-sm">Ver Dados</a>
+                    <a href="projeto?id=${proj.id}" class="btn btn-secondary btn-sm">Ver Dados</a>
                 `;
                 
                 // Preenche a linha com os dados REAIS da API
@@ -172,6 +172,6 @@ require '../auth/auth_check.php';
 
     document.addEventListener('DOMContentLoaded', carregarProjetos);
 </script>
-<script src="/assets/js/profile-picture-helper.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

@@ -214,7 +214,7 @@ require '../auth/auth_check.php';
                   <li>No IFSentral Lite, copie o <strong>ID do Dispositivo</strong> e a <strong>API Key</strong> do seu dispositivo.</li>
                   <li>No painel do TTN, adicione um Webhook JSON.</li>
                   <li>No campo <strong>Base URL</strong>, coloque a URL do seu servidor:
-                    <pre><code>https://ifsentral.online/</code></pre>
+                    <pre><code><?php echo htmlspecialchars(app_absolute_url()); ?></code></pre>
                   </li>
                   <li>Marque a caixa <strong>Uplink message</strong>.</li>
                   <li>No campo <strong>Uplink message path</strong>, coloque **apenas** o caminho do endpoint e o `device_id`:
@@ -314,7 +314,7 @@ X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
                   <div class="card-body p-0">
                     <div class="tab-content" id="tabs-enviar-content">
                       <div class="tab-pane fade show active" id="tabs-enviar-js" role="tabpanel">
-<pre><code>const API_URL = 'https://ifsentral.online/api/enviar-payload';
+<pre><code>const API_URL = '<?php echo htmlspecialchars(app_absolute_url('api/enviar-payload')); ?>';
 const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
 const DEVICE_ID = 1;
 
@@ -345,7 +345,7 @@ enviarDados(25.5, 60);</code></pre>
                       </div>
                       <div class="tab-pane fade" id="tabs-enviar-php" role="tabpanel">
 <pre><code>&lt;?php
-$apiUrl = 'https://ifsentral.online/api/enviar-payload';
+$apiUrl = '<?php echo htmlspecialchars(app_absolute_url('api/enviar-payload')); ?>';
 $apiKey = 'SUA_CHAVE_DE_API_AQUI';
 $deviceId = 1;
 $data = [
@@ -383,7 +383,7 @@ echo "Resposta: " . $response;
 #include &lt;WiFiClientSecure.h&gt; // Para HTTPS
 #include &lt;ArduinoJson.h&gt;
 
-const char* serverName = "https://ifsentral.online/api/enviar-payload";
+const char* serverName = "<?php echo htmlspecialchars(app_absolute_url('api/enviar-payload')); ?>";
 const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
 const int deviceId = 1;
 
@@ -460,7 +460,7 @@ void enviarDados(float temp, float umid) {
                     <div class="tab-content" id="tabs-buscar-content">
                       <div class="tab-pane fade show active" id="tabs-buscar-js" role="tabpanel">
 <pre><code>// Exemplo buscando os últimos 25
-const API_URL = 'https://ifsentral.online/api/buscar-payloads';
+const API_URL = '<?php echo htmlspecialchars(app_absolute_url('api/buscar-payloads')); ?>';
 const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
 const DEVICE_ID = 1;
 
@@ -486,13 +486,13 @@ $queryParams = http_build_query([
     'startDate' => '2025-11-01',
     'endDate' => '2025-11-05'
 ]);
-$apiUrl = 'https://ifsentral.online/api/buscar-payloads?' . $queryParams;
+$apiUrl = '<?php echo htmlspecialchars(app_absolute_url('api/buscar-payloads')); ?>?' . $queryParams;
 // ... (resto do código PHP)
 ?&gt;</code></pre>
                       </div>
                       <div class="tab-pane fade" id="tabs-buscar-esp" role="tabpanel">
 <pre><code>// Exemplo buscando os últimos 25
-const char* serverName = "https://ifsentral.online/api/buscar-payloads";
+const char* serverName = "<?php echo htmlspecialchars(app_absolute_url('api/buscar-payloads')); ?>";
 const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
 const int deviceId = 1;
 
@@ -607,8 +607,8 @@ void buscarDados() {
               <div class="card-body">
                 <h5>Para Usuários Novos</h5>
                 <ul>
-                  <li><a href="/api/obter-chaves-dispositivo" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
-                  <li><a href="/documentacao" target="_blank">📘 Esta documentação da API</a></li>
+                  <li><a href="api/obter-chaves-dispositivo" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
+                  <li><a href="documentacao" target="_blank">📘 Esta documentação da API</a></li>
                 </ul>
 
                 <h5>Documentação Técnica</h5>
@@ -646,8 +646,8 @@ void buscarDados() {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
-<script src="/assets/js/profile-picture-helper.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 
 </body>
 </html>

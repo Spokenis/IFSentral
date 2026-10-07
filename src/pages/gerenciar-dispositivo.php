@@ -3,7 +3,7 @@ require '../auth/auth_check.php';
 require '../config/db.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id']) || !isset($_GET['project_id']) || !is_numeric($_GET['project_id'])) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 $device_id_from_url = intval($_GET['id']);
@@ -21,13 +21,13 @@ if (!$user_id && isset($_SESSION['email'])) {
             $user_id = $user_data['id'];
         }
     } catch (Exception $e) {
-        header('Location: /meus-projetos');
+        header('Location: ' . app_url('meus-projetos'));
         exit;
     }
 }
 
 if (!$user_id) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 
@@ -37,11 +37,11 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id_from_url, $user_id]);
     if ($stmt->rowCount() == 0) {
-        header('Location: /meus-projetos');
+        header('Location: ' . app_url('meus-projetos'));
         exit;
     }
 } catch (Exception $e) {
-    header('Location: /meus-projetos');
+    header('Location: ' . app_url('meus-projetos'));
     exit;
 }
 ?>
@@ -151,7 +151,7 @@ try {
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1 id="device-title">Carregando Dispositivo... <span id="device-status-badge"></span></h1>
-            <p class="text-muted">Retornando para <a href="/projeto?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
+            <p class="text-muted">Retornando para <a href="projeto?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
           </div>
           <div class="col-sm-6 text-right">
             <button type="button" class="btn btn-outline-danger" id="btn-excluir-dispositivo">
@@ -299,7 +299,7 @@ try {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
-<script src="/assets/js/fetch-helpers.js"></script>
+<script src="assets/js/fetch-helpers.js"></script>
 
 <script>
     // --- Elementos DOM (Principais) ---
@@ -320,13 +320,13 @@ try {
     const filterEnd = document.getElementById('filter-end');
 
     // --- APIs ---
-    const API_OBTER_DISPOSITIVO = '/api/obter-info-dispositivo';
-    const API_ENVIAR = '/api/enviar-payload';
-    const API_BUSCAR = '/api/buscar-payloads';
-    const API_DELETAR_DISPOSITIVO = '/api/deletar-dispositivo';
-    const API_TAGS_DISPOSITIVO = '/api/gerenciar-tags-dispositivo';
-    const API_TAGS_URL = '/api/listar-tags';
-    const API_MAPEAMENTOS = '/api/gerenciar-mapeamentos-dispositivo';
+    const API_OBTER_DISPOSITIVO = 'api/obter-info-dispositivo';
+    const API_ENVIAR = 'api/enviar-payload';
+    const API_BUSCAR = 'api/buscar-payloads';
+    const API_DELETAR_DISPOSITIVO = 'api/deletar-dispositivo';
+    const API_TAGS_DISPOSITIVO = 'api/gerenciar-tags-dispositivo';
+    const API_TAGS_URL = 'api/listar-tags';
+    const API_MAPEAMENTOS = 'api/gerenciar-mapeamentos-dispositivo';
 
     let mapeamentos = []; // cache local: [{id, json_key, value_read, description}]
 
@@ -646,7 +646,7 @@ try {
             const resultado = await safeJson(response);
 
             alert(resultado.message);
-            window.location.href = `/projeto?id=${PROJECT_ID}`;
+            window.location.href = `projeto?id=${PROJECT_ID}`;
 
         } catch (error) {
             alert('Erro ao excluir dispositivo: ' + error.message);

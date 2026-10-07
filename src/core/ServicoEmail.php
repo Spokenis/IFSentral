@@ -30,8 +30,7 @@ class ServicoEmail {
     }
 
     public function enviarEmailConvite($paraEmail, $nomeProjeto, $nomeRemetente) {
-        $baseUrl = rtrim(APP_URL, '/');
-        $linkSistema = $baseUrl . "/login";
+        $linkSistema = app_absolute_url('login');
         
         $assunto = "Convite para participar do projeto: {$nomeProjeto}";
         $corpo = "
@@ -45,8 +44,7 @@ class ServicoEmail {
     }
 
     public function enviarEmailConfirmacao($paraEmail, $paraNome, $token) {
-        $baseUrl = str_replace('/', '', APP_URL);
-        $linkVerificacao = $baseUrl . "/verificar-email?token=" . $token;
+        $linkVerificacao = app_absolute_url('verificar-email?token=' . $token);
         
         $assunto = "Confirme seu cadastro no IFSentral Lite - Smart Campus";
         $corpo = "
@@ -63,8 +61,7 @@ class ServicoEmail {
     }
 
     public function enviarEmailRedefinicaoSenha($paraEmail, $paraNome, $token) {
-        $baseUrl = rtrim(APP_URL, '/');
-        $linkRedefinicao = $baseUrl . "/redefinir-senha?token=" . $token;
+        $linkRedefinicao = app_absolute_url('redefinir-senha?token=' . $token);
 
         $assunto = "Redefinição de senha - IFSentral Lite";
         $corpo = "
