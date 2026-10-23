@@ -18,7 +18,7 @@ $FAIL = '❌';
 $WARN = '⚠️';
 
 echo "\n" . str_repeat('=', 80) . "\n";
-echo "🔍 VERIFICAÇÃO DO SISTEMA - IFSentral Lite\n";
+echo "🔍 VERIFICAÇÃO DO SISTEMA - IFSCSentral Lite\n";
 echo str_repeat('=', 80) . "\n\n";
 
 $checks = [

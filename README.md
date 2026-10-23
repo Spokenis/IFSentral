@@ -1,8 +1,8 @@
-# IFSentral Lite - Plataforma IoT Smart Campus
+# IFSCSentral Lite - Plataforma IoT Smart Campus
 
 Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real.
 
-O IFSentral Lite é a versão **simplificada** do IFSentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
+O IFSCSentral Lite é a versão **simplificada** do IFSCSentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
 
 ## Requisitos do servidor
 
@@ -25,7 +25,7 @@ Nada mais é obrigatório. O site se adapta sozinho ao servidor:
 
 ### 1. Enviar os arquivos
 
-Copie o conteúdo desta pasta (`IFSentral/`) para o diretório do site no servidor — por exemplo `/var/www/html/site1/` ou `public_html/`. O `index.php` fica direto nesse diretório; é ele que atende todas as páginas.
+Copie o conteúdo desta pasta (`IFSCSentral/`) para o diretório do site no servidor — por exemplo `/var/www/html/site1/` ou `public_html/`. O `index.php` fica direto nesse diretório; é ele que atende todas as páginas.
 
 **Não envie** o que não é necessário para o site rodar: `.git/`, `tests/`, `phpunit.xml`, `*.md`. A pasta `vendor/` precisa ir junto (ou rode `composer install --no-dev` no servidor).
 

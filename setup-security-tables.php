@@ -14,7 +14,7 @@ if (PHP_SAPI !== 'cli') {
 define('ROOT_DIR', __DIR__);
 
 echo "\n" . str_repeat('=', 80) . "\n";
-echo "🔐 SETUP DE SEGURANÇA - IFSentral Lite\n";
+echo "🔐 SETUP DE SEGURANÇA - IFSCSentral Lite\n";
 echo str_repeat('=', 80) . "\n\n";
 
 // Carrega conexão

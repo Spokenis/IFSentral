@@ -35,7 +35,7 @@ class ServicoEmail {
         $assunto = "Convite para participar do projeto: {$nomeProjeto}";
         $corpo = "
             <h2>Você foi convidado!</h2>
-            <p>O usuário <b>{$nomeRemetente}</b> convidou você para participar do projeto <b>{$nomeProjeto}</b> no IFSentral Lite - Smart Campus.</p>
+            <p>O usuário <b>{$nomeRemetente}</b> convidou você para participar do projeto <b>{$nomeProjeto}</b> no IFSCSentral Lite - Smart Campus.</p>
             <p>Para aceitar, acesse o sistema, faça login (ou crie sua conta usando este e-mail) e verifique seus convites pendentes.</p>
             <p><a href='{$linkSistema}' style='padding: 10px 15px; background-color: #1B7D3D; color: white; text-decoration: none; border-radius: 5px;'>Acessar o Sistema</a></p>
         ";
@@ -46,9 +46,9 @@ class ServicoEmail {
     public function enviarEmailConfirmacao($paraEmail, $paraNome, $token) {
         $linkVerificacao = app_absolute_url('verificar-email?token=' . $token);
         
-        $assunto = "Confirme seu cadastro no IFSentral Lite - Smart Campus";
+        $assunto = "Confirme seu cadastro no IFSCSentral Lite - Smart Campus";
         $corpo = "
-            <h2>Bem-vindo ao IFSentral Lite, {$paraNome}!</h2>
+            <h2>Bem-vindo ao IFSCSentral Lite, {$paraNome}!</h2>
             <p>Para concluir seu cadastro e ativar sua conta, por favor, clique no link abaixo:</p>
             <p><a href='{$linkVerificacao}' style='padding: 10px 15px; background-color: #1B7D3D; color: white; text-decoration: none; border-radius: 5px;'>Confirmar meu E-mail</a></p>
             <br>
@@ -63,11 +63,11 @@ class ServicoEmail {
     public function enviarEmailRedefinicaoSenha($paraEmail, $paraNome, $token) {
         $linkRedefinicao = app_absolute_url('redefinir-senha?token=' . $token);
 
-        $assunto = "Redefinição de senha - IFSentral Lite";
+        $assunto = "Redefinição de senha - IFSCSentral Lite";
         $corpo = "
             <h2>Redefinição de senha</h2>
             <p>Olá, {$paraNome}.</p>
-            <p>Recebemos uma solicitação para redefinir a senha da sua conta no IFSentral Lite. Clique no botão abaixo para escolher uma nova senha:</p>
+            <p>Recebemos uma solicitação para redefinir a senha da sua conta no IFSCSentral Lite. Clique no botão abaixo para escolher uma nova senha:</p>
             <p><a href='{$linkRedefinicao}' style='padding: 10px 15px; background-color: #1B7D3D; color: white; text-decoration: none; border-radius: 5px;'>Redefinir minha senha</a></p>
             <br>
             <p>Ou copie e cole este link no seu navegador:</p>

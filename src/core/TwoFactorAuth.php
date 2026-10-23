@@ -23,7 +23,7 @@ class TwoFactorAuth
     /**
      * Monta a URI otpauth:// para configuração manual ou geração de QR code
      */
-    public static function getOtpAuthUri($secret, $accountEmail, $issuer = 'IFSentral Lite')
+    public static function getOtpAuthUri($secret, $accountEmail, $issuer = 'IFSCSentral Lite')
     {
         $label = rawurlencode($issuer . ':' . $accountEmail);
         $params = http_build_query([
