@@ -61,7 +61,7 @@ if (!empty($project['project_tags'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?php echo htmlspecialchars($project['name']); ?> | IFSentral</title>
+  <title><?php echo htmlspecialchars($project['name']); ?> | IFSCSentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -424,15 +424,26 @@ $(function() {
             let labels = [];
             
             // Se é gráfico multi-device/avançado
+            // A API devolve os pontos já extraídos em datasets[].data ({x, y});
+            // o formato antigo (payloads brutos) fica como alternativa.
+            const hasPointData = datasetsInfo.some(ds => Array.isArray(ds.data));
+            const xValues = hasPointData
+                ? [...new Set(datasetsInfo.flatMap(ds => (ds.data || []).map(pt => pt.x)))].sort()
+                : [];
+            const formatX = (x) => new Date(String(x).replace(' ', 'T')).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
             if (datasetsInfo && datasetsInfo.length > 0) {
-                labels = payloads.map(p => new Date(p.timestamp).toLocaleDateString('pt-BR'));
+                labels = hasPointData
+                    ? xValues.map(formatX)
+                    : payloads.map(p => new Date(p.timestamp).toLocaleDateString('pt-BR'));
                 
                 datasetsInfo.forEach((ds, index) => {
                     const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
                     const color = ds.color || colors[index % colors.length];
                     
                     // Extrair valores para este dataset
-                    const values = payloads.map(p => {
+                    const pointMap = new Map((ds.data || []).map(pt => [pt.x, pt.y]));
+                    const values = hasPointData ? xValues.map(x => pointMap.has(x) ? pointMap.get(x) : null) : payloads.map(p => {
                         try {
                             const json = typeof p.payload === 'string' ? JSON.parse(p.payload) : p.payload;
                             return json[ds.variable_name] || null;

@@ -49,7 +49,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gerenciar Projeto | IFSentral</title>
+  <title>Gerenciar Projeto | IFSCSentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -1066,7 +1066,7 @@ try {
                 if (membro.profile_picture) {
                     avatar = `<img src="/${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
                 } else {
-                    avatar = `<img src="https://placehold.co/128x128/007BFF/FFFFFF?text=${escapeHtml(iniciais)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3">`;
+                    avatar = `<div class="img-circle img-size-50 mr-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; background-color: #007BFF; color: #FFFFFF; font-weight: 600; flex-shrink: 0;" title="${escapeHtml(membro.user_name)}">${escapeHtml(iniciais)}</div>`;
                 }
                 
                 // Gerar menu de ações
@@ -2341,7 +2341,9 @@ try {
     });
     
     // Event Listener para guardar dados do projeto atualizado
-    document.getElementById('project-tabs').addEventListener('shown.bs.tab', function(e) {
+    // O Bootstrap 4 dispara shown.bs.tab só como evento jQuery, que um
+    // addEventListener nativo não recebe.
+    $('#project-tabs').on('shown.bs.tab', function(e) {
       if (e.target.id === 'tab-solicitacoes-tab') {
         carregarSolicitacoes('pendente');
       }

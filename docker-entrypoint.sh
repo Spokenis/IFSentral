@@ -84,7 +84,7 @@ EOF
     echo "[ENTRYPOINT] Credenciais MQTT configuradas!"
 }
 
-echo "[ENTRYPOINT] Inicializando container IFSentral..."
+echo "[ENTRYPOINT] Inicializando container IFSCSentral..."
 
 if [[ "$ROLE" == "worker" ]]; then
     wait_for_mysql

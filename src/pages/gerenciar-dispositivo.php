@@ -50,7 +50,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gerenciar Dispositivo | IFSentral</title>
+  <title>Gerenciar Dispositivo | IFSCSentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -95,6 +95,7 @@ try {
     .api-info-box kbd {
         font-size: 1em;
         font-weight: 700;
+        color: #212529;
         background-color: #fff;
         padding: 2px 5px;
         border-radius: 3px;
@@ -150,7 +151,7 @@ try {
       <div class="container">
         <div class="row mb-2">
           <div class="col-sm-6">
-            <h1 id="device-title">Carregando Dispositivo... <span id="device-status-badge"></span></h1>
+            <h1><span id="device-title">Carregando Dispositivo...</span> <span id="device-status-badge"></span></h1>
             <p class="text-muted">Retornando para <a href="/projeto?id=<?php echo $project_id_from_url; ?>">Gerenciar Projeto</a></p>
           </div>
           <div class="col-sm-6 text-right">

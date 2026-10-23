@@ -12,7 +12,7 @@ $FAIL = '❌';
 $WARN = '⚠️';
 
 echo "\n" . str_repeat('=', 80) . "\n";
-echo "🔍 VERIFICAÇÃO DO SISTEMA - IFSentral\n";
+echo "🔍 VERIFICAÇÃO DO SISTEMA - IFSCSentral\n";
 echo str_repeat('=', 80) . "\n\n";
 
 $checks = [

@@ -15,7 +15,7 @@ if [ ! -f /etc/ssl/certs/ifsentral-chain.crt ] || [ ! -f /etc/ssl/private/ifsent
     sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout /etc/ssl/private/ifsentral.key \
         -out /etc/ssl/certs/ifsentral-chain.crt \
-        -subj "/C=BR/ST=Distrito Federal/L=Brasilia/O=IFSentral/CN=ifsentral.online"
+        -subj "/C=BR/ST=Distrito Federal/L=Brasilia/O=IFSCSentral/CN=ifsentral.online"
     echo "✅ Certificados auto-assinados gerados com sucesso."
 else
     echo "✅ Certificados SSL já existem no host."

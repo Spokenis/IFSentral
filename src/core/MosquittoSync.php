@@ -234,6 +234,14 @@ class MosquittoSync {
      * Recarrega Mosquitto sem downtime
      */
     private function reloadMosquitto() {
+        // No Docker não há systemctl: o contêiner mosquitto vigia os arquivos
+        // do volume mqtt_config e envia SIGHUP ao broker quando eles mudam
+        // (ver mosquitto-entrypoint.sh).
+        if (getenv('ROLE') !== false || file_exists('/.dockerenv')) {
+            $this->log("✅ Arquivos atualizados; o contêiner mosquitto recarrega o broker automaticamente");
+            return ['success' => true, 'message' => 'Recarga automática pelo contêiner mosquitto'];
+        }
+
         // 'reload' preserva conexões existentes (sem downtime)
         exec("systemctl reload mosquitto 2>&1", $output, $code);
         

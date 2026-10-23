@@ -1,4 +1,4 @@
-# IFSentral - Plataforma IoT Smart Campus
+# IFSCSentral - Plataforma IoT Smart Campus
 
 Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real. Documentação técnica para implantação.
 
@@ -126,7 +126,7 @@ docker compose logs -f worker
 Se ainda assim quiser um alerta externo periódico (ex.: para notificar caso o container fique preso em restart loop), agende a checagem no host contra o próprio Docker, não contra o script PHP:
 
 ```bash
-*/5 * * * * docker inspect ifsentral_worker --format '{{.State.Status}}' | grep -qv '^running$' && echo "IFSentral worker fora do ar" # substitua pelo canal de alerta desejado
+*/5 * * * * docker inspect ifsentral_worker --format '{{.State.Status}}' | grep -qv '^running$' && echo "IFSCSentral worker fora do ar" # substitua pelo canal de alerta desejado
 ```
 
 ## Procedimentos de Manutenção
