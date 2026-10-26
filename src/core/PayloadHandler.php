@@ -23,7 +23,14 @@ class PayloadHandler
      * @param string $source Fonte do payload ('http', 'mqtt', 'ttn')
      * * @return array ['success' => bool, 'message' => string, 'id' => int|null]
      */
-    public function savePayload($device_id, $api_key, $payload_data, $source = 'http')
+    /**
+     * @param float|null  $received_at Momento (Unix, com fração) em que o dado foi recebido na
+     *                                 origem — usado quando o dado chega atrasado (ex.: recuperado
+     *                                 do Storage do TTN); null = agora
+     * @param string|null $external_id Identificador do dado na origem; o mesmo identificador não é
+     *                                 gravado duas vezes para o mesmo dispositivo
+     */
+    public function savePayload($device_id, $api_key, $payload_data, $source = 'http', $received_at = null, $external_id = null)
     {
         try {
             if (!is_numeric($device_id)) {
@@ -67,18 +74,46 @@ class PayloadHandler
                 ];
             }
 
-            // Salva no banco
-            $sql = "INSERT INTO device_payloads (device_id, payload, source) VALUES (?, ?, ?)";
+            // Salva no banco. FROM_UNIXTIME converte para o fuso da sessão do MySQL,
+            // o mesmo usado pelo DEFAULT current_timestamp de created_at.
+            // external_id só entra quando informado: assim, num banco que ainda não
+            // recebeu a migração da integração TTN, o envio comum continua funcionando.
+            $columns = ['device_id', 'payload', 'source'];
+            $values = ['?', '?', '?'];
+            $params = [$device_id, $payload_string, $source];
+            if ($external_id !== null) {
+                $columns[] = 'external_id';
+                $values[] = '?';
+                $params[] = $external_id;
+            }
+            if ($received_at !== null) {
+                $columns[] = 'created_at';
+                $values[] = 'FROM_UNIXTIME(?)';
+                $params[] = $received_at;
+            }
+            $sql = "INSERT INTO device_payloads (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([
-                $device_id,
-                $payload_string,
-                $source
-            ]);
+            try {
+                $stmt->execute($params);
+            } catch (\PDOException $e) {
+                // Mesmo dado da origem já gravado (chave única device_id + external_id)
+                if ($external_id !== null && $e->getCode() == '23000') {
+                    return [
+                        'success' => true,
+                        'duplicate' => true,
+                        'message' => 'Payload já gravado anteriormente',
+                        'id' => null,
+                        'device_id' => $device_id,
+                        'project_id' => $device['project_id'],
+                        'source' => $source
+                    ];
+                }
+                throw $e;
+            }
 
             $last_id = $this->conn->lastInsertId();
 
-            $this->atualizarStatusDispositivo($device_id, $payload_data);
+            $this->atualizarStatusDispositivo($device_id, $payload_data, $received_at);
 
             return [
                 'success' => true,
@@ -90,9 +125,11 @@ class PayloadHandler
             ];
 
         } catch (\PDOException $e) {
+            // A mensagem vai para a resposta da API: o detalhe do banco fica só no log
+            error_log('PayloadHandler::savePayload: ' . $e->getMessage());
             return [
                 'success' => false,
-                'message' => 'Erro ao salvar payload: ' . $e->getMessage(),
+                'message' => 'Erro ao salvar payload',
                 'id' => null
             ];
         }
@@ -104,7 +141,7 @@ class PayloadHandler
      * com base na atualidade de last_seen — não há flip automático pra
      * offline aqui, então não depende de nenhum cron/job em background.
      */
-    private function atualizarStatusDispositivo($device_id, $payload_data)
+    private function atualizarStatusDispositivo($device_id, $payload_data, $received_at = null)
     {
         try {
             $payload_array = (array) $payload_data;
@@ -116,16 +153,20 @@ class PayloadHandler
                 }
             }
 
+            // Um dado recuperado atrasado não pode fazer o dispositivo parecer
+            // online agora: last_seen fica com o horário mais recente já visto.
+            $seen = $received_at === null ? "NOW()" : "FROM_UNIXTIME(?)";
             $sql = "
                 INSERT INTO device_mqtt_status (device_id, last_seen, is_online, signal_strength)
-                VALUES (?, NOW(), 1, ?)
+                VALUES (?, $seen, 1, ?)
                 ON DUPLICATE KEY UPDATE
-                    last_seen = NOW(),
+                    last_seen = GREATEST(COALESCE(last_seen, VALUES(last_seen)), VALUES(last_seen)),
                     is_online = 1,
                     signal_strength = COALESCE(VALUES(signal_strength), signal_strength)
             ";
+            $params = $received_at === null ? [$device_id, $signal] : [$device_id, $received_at, $signal];
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([$device_id, $signal]);
+            $stmt->execute($params);
         } catch (\PDOException $e) {
             // Não bloqueia o salvamento do payload se a atualização de status falhar
         }

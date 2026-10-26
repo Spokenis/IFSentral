@@ -72,6 +72,7 @@ try {
             d.name,
             d.description,
             d.api_key,
+            d.ttn_device_id,
             d.createdAt,
             d.project_id,
             p.name AS project_name,

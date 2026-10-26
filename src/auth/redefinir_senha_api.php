@@ -40,6 +40,12 @@ if (strlen($data->new_password) < 6) {
     exit;
 }
 
+if (strlen($data->new_password) > 72) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Nova senha deve ter no máximo 72 caracteres.']);
+    exit;
+}
+
 if ($data->new_password !== $data->confirm_password) {
     http_response_code(400);
     echo json_encode(['error' => 'As senhas não coincidem.']);

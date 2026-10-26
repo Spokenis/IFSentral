@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
 
   # 1. Web Server (PHP/Apache)
@@ -46,6 +44,9 @@ services:
   worker:
     build: .
     container_name: ifsentral_worker
+    # Hostname fixo = ID MQTT fixo (ver MQTT_CLIENT_ID em src/config/mqtt.php):
+    # o worker retoma a mesma sessão no broker mesmo se o contêiner for recriado.
+    hostname: ifsentral-worker
     environment:
       - ROLE=worker
       - DB_HOST=${DB_HOST:-db}
@@ -68,7 +69,27 @@ services:
     restart: unless-stopped
     command: ["docker-entrypoint.sh"]
 
-  # 3. Database Server (MySQL)
+  # 3. Ponte com o The Things Network (MQTT do TTN + Storage Integration -> banco)
+  # Só faz algo para projetos com a integração TTN configurada.
+  ttn-bridge:
+    build: .
+    container_name: ifsentral_ttn_bridge
+    hostname: ifsentral-ttn-bridge
+    environment:
+      - ROLE=ttn-bridge
+      - DB_HOST=${DB_HOST:-db}
+      - DB_NAME=${DB_NAME:-ifsentral_bd}
+      - DB_USER=${DB_USER:-ifsentral_user}
+      - DB_PASS=${DB_PASS:-secretpassword}
+    volumes:
+      - /etc/ifsentral:/etc/ifsentral:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    command: ["docker-entrypoint.sh"]
+
+  # 4. Database Server (MySQL)
   db:
     image: mysql:8.0
     container_name: ifsentral_db
@@ -95,7 +116,7 @@ services:
       start_period: 180s
     restart: unless-stopped
 
-  # 4. MQTT Broker (Mosquitto)
+  # 5. MQTT Broker (Mosquitto)
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: ifsentral_mqtt

@@ -2,6 +2,7 @@
 // deletar_grafico.php
 
 require_once '../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 setupSecureCORS();
 require_once '../core/Csrf.php';
 
@@ -84,7 +85,6 @@ try {
     }
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro no banco: ' . $e->getMessage()]);
+    api_error_response('Erro no banco', $e, 500);
 }
 ?>

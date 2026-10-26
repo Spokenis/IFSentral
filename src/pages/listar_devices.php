@@ -2,6 +2,7 @@
 // listar_devices.php (Atualizado)
 
 require_once '../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 setupSecureCORS();
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -46,7 +47,6 @@ try {
     echo json_encode($results);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar dispositivos: ' . $e->getMessage()]);
+    api_error_response('Erro ao buscar dispositivos', $e, 500);
 }
 ?>

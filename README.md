@@ -1,4 +1,4 @@
-# IFSCSentral - Plataforma IoT Smart Campus
+# IFSCentral - Plataforma IoT Smart Campus
 
 Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real. Documentação técnica para implantação.
 
@@ -94,14 +94,28 @@ docker compose restart mosquitto
 
 `generate_mosquitto_passwd.php` já garante automaticamente que o usuário `admin` (usado pelo worker MQTT) exista no arquivo de senhas com a `MQTT_PASSWORD` atual do `.env` — não é necessário recriá-lo manualmente. O `docker compose restart mosquitto` continua sendo necessário para que o broker carregue as credenciais dos **dispositivos** recém-gerados (o Mosquitto só lê `passwords.txt`/`acl.acl` na própria inicialização).
 
-### 8. Validação do Sistema
+### 8. Integração com o The Things Network (opcional)
+
+O contêiner `ttn-bridge` conecta, por TLS (porta 8883), ao MQTT do TTN de cada projeto que tiver a integração configurada (aba **Configurações** do projeto → cartão **The Things Network**) e grava os uplinks em tempo real. A cada 5 minutos ele também busca na Storage Integration (HTTPS, porta 443) o que chegou enquanto a conexão esteve fora. Só é preciso que o servidor acesse a internet — o TTN não precisa alcançar o servidor.
+
+```bash
+sudo docker compose logs -f ttn-bridge
+```
+
+**Banco criado antes de 26/10/2026:** aplique a migração uma vez:
+
+```bash
+sudo docker compose exec -T db sh -c 'mysql -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" "$MYSQL_DATABASE"' < src/db/migracoes/2026-10-26_integracao_ttn.sql
+```
+
+### 9. Validação do Sistema
 Execute o script de diagnóstico para confirmar a integridade e a comunicação de todos os serviços.
 
 ```bash
 docker compose exec web php system-check.php
 ```
 
-### 9. Acessando a Aplicação
+### 10. Acessando a Aplicação
 O `docker-compose.yml` expõe HTTP na porta `${HOST_HTTP_PORT:-8080}` e HTTPS na porta `${HOST_HTTPS_PORT:-8443}` do host. O `.htaccess` da aplicação redireciona **toda** requisição HTTP para HTTPS automaticamente — portanto acesse sempre pela porta HTTPS:
 
 ```
@@ -110,7 +124,7 @@ https://localhost:8443
 
 Como a etapa 3 gera um certificado autoassinado (a menos que você tenha instalado um certificado válido em `/etc/ssl/`), o navegador exibirá um aviso de certificado não confiável na primeira visita — isso é esperado em ambiente local/desenvolvimento. Em produção, substitua os certificados em `/etc/ssl/certs/ifsentral-chain.crt` e `/etc/ssl/private/ifsentral.key` por certificados válidos (ex.: Let's Encrypt) antes de expor a aplicação publicamente.
 
-### 10. Agendamento de Tarefas (Cron) — opcional
+### 11. Agendamento de Tarefas (Cron) — opcional
 `src/mqtt/mqtt_health_check.php` foi escrito para o deploy legado sem Docker (gerencia o worker como processo em background via PID/`nohup` no próprio host). Sob Docker Compose isso não se aplica: o worker roda isolado no container `worker`, e é o próprio Docker (`restart: unless-stopped` em `docker-compose.yml`) quem já reinicia o container automaticamente se o processo cair — não é necessário (nem seguro) rodar este script via `docker compose exec web ...` para esse fim; fora do container `worker` ele agora só registra um log e não faz nada.
 
 Para acompanhar a saúde do worker sob Docker, prefira:
@@ -126,7 +140,7 @@ docker compose logs -f worker
 Se ainda assim quiser um alerta externo periódico (ex.: para notificar caso o container fique preso em restart loop), agende a checagem no host contra o próprio Docker, não contra o script PHP:
 
 ```bash
-*/5 * * * * docker inspect ifsentral_worker --format '{{.State.Status}}' | grep -qv '^running$' && echo "IFSCSentral worker fora do ar" # substitua pelo canal de alerta desejado
+*/5 * * * * docker inspect ifsentral_worker --format '{{.State.Status}}' | grep -qv '^running$' && echo "IFSCentral worker fora do ar" # substitua pelo canal de alerta desejado
 ```
 
 ## Procedimentos de Manutenção

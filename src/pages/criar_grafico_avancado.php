@@ -49,7 +49,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Criar Gráfico Avançado | IFSCSentral</title>
+  <title>Criar Gráfico Avançado | IFSCentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -174,14 +174,14 @@ try {
                   <!-- Nome e Tipo -->
                   <div class="form-group">
                     <label for="chart-name">Nome do Gráfico:</label>
-                    <input type="text" id="chart-name" class="form-control" placeholder="Ex: Temperatura vs Umidade" required>
+                    <input type="text" id="chart-name" maxlength="100" class="form-control" placeholder="Ex: Temperatura vs Umidade" required>
                   </div>
                   
                   <div class="form-group">
                     <label for="chart-type">Tipo de Gráfico:</label>
                     <select id="chart-type" class="form-control" required>
-                      <option value="linha">Linha</option>
-                      <option value="barra">Barra</option>
+                      <option value="line">Linha</option>
+                      <option value="bar">Barra</option>
                       <option value="area">Área</option>
                       <option value="scatter">Dispersão</option>
                     </select>
@@ -300,6 +300,7 @@ try {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/input-limits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
@@ -501,13 +502,15 @@ function atualizarPreview() {
   };
   
   const chartType = $('#chart-type').val() || 'line';
+  // Área e dispersão são desenhadas como linha (o eixo X é temporal)
+  const chartJsType = ['area', 'scatter'].includes(chartType) ? 'line' : chartType;
   
   if (chartPreview) {
     chartPreview.destroy();
   }
   
   chartPreview = new Chart(document.getElementById('previewChart'), {
-    type: chartType,
+    type: chartJsType,
     data: chartData,
     options: {
       responsive: true,

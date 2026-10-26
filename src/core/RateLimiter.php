@@ -160,18 +160,27 @@ class RateLimiter
         $maxAttempts = intval($this->settings['LOGIN_RATE_LIMIT_MAX_ATTEMPTS'] ?? 5);
         $windowMinutes = intval($this->settings['LOGIN_RATE_LIMIT_WINDOW_MINUTES'] ?? 15);
 
+        // O limite por IP é mais alto que o por conta: num laboratório ou rede do
+        // câmpus, muitos usuários saem pelo mesmo IP (NAT), e contar as falhas de
+        // todos juntos bloquearia quem digitou a própria senha certa.
+        $maxAttemptsPerIp = $maxAttempts * 4;
+
         try {
-            $sql = "SELECT COUNT(*) as count FROM login_attempts
+            $sql = "SELECT
+                        COALESCE(SUM(identifier = ?), 0) AS by_identifier,
+                        COALESCE(SUM(ip_address = ?), 0) AS by_ip
+                    FROM login_attempts
                     WHERE success = 0
                       AND created_at > DATE_SUB(NOW(), INTERVAL ? MINUTE)
                       AND (identifier = ? OR ip_address = ?)";
             $stmt = $this->conn->prepare($sql);
-            $stmt->execute([$windowMinutes, $identifier, $ip_address]);
+            $stmt->execute([$identifier, $ip_address, $windowMinutes, $identifier, $ip_address]);
             $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-            $attempts = intval($row['count']);
+            $attempts = intval($row['by_identifier']);
+            $attemptsByIp = intval($row['by_ip']);
 
             return [
-                'allowed' => $attempts < $maxAttempts,
+                'allowed' => $attempts < $maxAttempts && $attemptsByIp < $maxAttemptsPerIp,
                 'attempts' => $attempts,
                 'max_attempts' => $maxAttempts,
             ];

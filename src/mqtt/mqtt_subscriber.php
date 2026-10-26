@@ -27,6 +27,8 @@ require_once SRC_DIR . '/core/RateLimiter.php';
 
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
+use PhpMqtt\Client\Repositories\MemoryRepository;
+use PhpMqtt\Client\Subscription;
 use App\Core\PayloadHandler;
 use App\Core\RateLimiter;
 
@@ -126,8 +128,9 @@ try {
         ->setUsername(MQTT_USERNAME)
         ->setPassword(MQTT_PASSWORD);
 
-    // CRÍTICO: Cria ID de cliente único para permitir múltiplas instâncias
-    $unique_client_id = MQTT_CLIENT_ID . '_' . getmypid() . '_' . uniqid();
+    // Um ID por instância (hostname do contêiner) permite várias instâncias e
+    // mantém o mesmo ID entre reinícios — ver MQTT_CLIENT_ID em config/mqtt.php
+    $unique_client_id = MQTT_CLIENT_ID;
 
     // Last Will and Testament: se este worker cair sem se desconectar
     // corretamente (crash, rede, OOM-kill), o broker publica esta mensagem
@@ -148,8 +151,101 @@ try {
         ->setLastWillQualityOfService(1)
         ->setRetainLastWill(true);
 
+    // Nome do grupo de balanceamento (Shared Subscription)
+    $worker_group = 'cluster_db';
+
+    // Tratamento de cada mensagem recebida.
+    // CRÍTICO: Passagem por referência (&$conn, &$rateLimiter)
+    $onMessage = function (
+        string $real_topic,
+        string $message,
+        bool $retained
+    ) use (&$conn, &$rateLimiter) {
+        mqtt_log("Mensagem recebida no tópico: $real_topic", 'DEBUG');
+
+        $parts = explode('/', $real_topic);
+
+        if (count($parts) >= 5 && $parts[0] === 'mqtt' && $parts[1] === 'projects' && $parts[3] === 'devices') {
+            $project_id = intval($parts[2]);
+            $device_id = intval($parts[4]);
+
+            $payload_data = json_decode($message, true);
+
+            if ($payload_data === null && json_last_error() !== JSON_ERROR_NONE) {
+                mqtt_log("Erro ao fazer parse do JSON no tópico $real_topic: " . json_last_error_msg(), 'ERROR');
+                return;
+            }
+
+            if ($payload_data === null) {
+                $payload_data = ['value' => $message];
+            }
+
+            // --- PROTEÇÃO DO BANCO DE DADOS ---
+            // Verifica a vitalidade e reconecta se necessário antes de qualquer transação
+            ensureDbConnection($conn);
+
+            // Se a conexão foi recriada, precisamos atualizar o limitador com a nova instância
+            $rateLimiter = new RateLimiter($conn);
+            // ----------------------------------
+
+            $apiKeySql = "SELECT api_key FROM devices WHERE id = ? AND project_id = ?";
+            try {
+                $apiKeyStmt = $conn->prepare($apiKeySql);
+                $apiKeyStmt->execute([$device_id, $project_id]);
+
+                if ($apiKeyStmt->rowCount() > 0) {
+                    $device = $apiKeyStmt->fetch(\PDO::FETCH_ASSOC);
+                    $api_key = $device['api_key'];
+
+                    $rateCheck = $rateLimiter->checkLimit($device_id, 'mqtt', 'mqtt_local');
+
+                    if (!$rateCheck['allowed']) {
+                        mqtt_log("Rate limit excedido - Device: $device_id, Requests: {$rateCheck['requests']}, Limit: {$rateCheck['limit']}", 'WARN');
+                        return; 
+                    }
+
+                    // Passamos a conexão garantida para o handler
+                    $handler = new PayloadHandler($conn);
+
+                    // Mesma validação de estrutura (profundidade/tamanho/nº de chaves)
+                    // já aplicada no caminho HTTP em enviar_payload.php — sem isso,
+                    // payloads MQTT passavam sem nenhum limite de tamanho/complexidade.
+                    $validation = $handler->validatePayload($payload_data, $device_id);
+                    if (!$validation['valid']) {
+                        mqtt_log("Payload MQTT rejeitado (inválido) - Device: $device_id: " . implode('; ', $validation['errors']), 'WARN');
+                        return;
+                    }
+
+                    $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt');
+
+                    if ($result['success']) {
+                        mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id", 'INFO');
+                    } else {
+                        mqtt_log("Erro ao salvar payload: {$result['message']}", 'ERROR');
+                    }
+                } else {
+                    mqtt_log("Dispositivo não encontrado - Device ID: $device_id, Project ID: $project_id", 'WARN');
+                }
+            } catch (\Exception $e) {
+                mqtt_log("Exceção ao processar payload: " . $e->getMessage(), 'ERROR');
+            }
+        } else {
+            mqtt_log("Formato de tópico inválido: $real_topic", 'WARN');
+        }
+    };
+
+    // A sessão é persistente: ao reconectar, o broker entrega logo após o
+    // CONNACK as mensagens que guardou enquanto o worker estava fora. A
+    // biblioteca só ativa uma assinatura quando chega o SUBACK, e descarta
+    // (já confirmando ao broker) o que chega antes — por isso as assinaturas
+    // são registradas no repositório antes de conectar.
+    $repository = new MemoryRepository();
+    foreach (MQTT_TOPICS as $topic) {
+        $repository->addSubscription(new Subscription('$share/' . $worker_group . '/' . $topic, 1, $onMessage));
+    }
+
     // Cria cliente MQTT
-    $client = new MqttClient(MQTT_HOST, MQTT_PORT, $unique_client_id);
+    $client = new MqttClient(MQTT_HOST, MQTT_PORT, $unique_client_id, MqttClient::MQTT_3_1, $repository);
 
     // Callback para mensagens recebidas
     $client->registerLoopEventHandler(function (MqttClient $client, $elapsed) {
@@ -161,93 +257,13 @@ try {
     mqtt_log('Conectado ao broker MQTT com sucesso (ID: ' . $unique_client_id . ')', 'INFO');
     publishWorkerOnlineStatus($client, $lwt_topic, $unique_client_id);
 
-    // Nome do grupo de balanceamento (Shared Subscription)
-    $worker_group = 'cluster_db';
-
     // Subscreve tópicos
     foreach (MQTT_TOPICS as $topic) {
         
         // Adiciona o prefixo de assinatura compartilhada do Mosquitto
         $shared_topic = '$share/' . $worker_group . '/' . $topic;
         
-        // CRÍTICO: Passagem por referência (&$conn, &$rateLimiter)
-        $client->subscribe($shared_topic, function (
-            string $real_topic,
-            string $message,
-            bool $retained
-        ) use (&$conn, &$rateLimiter) {
-            mqtt_log("Mensagem recebida no tópico: $real_topic", 'DEBUG');
-            
-            $parts = explode('/', $real_topic);
-            
-            if (count($parts) >= 5 && $parts[0] === 'mqtt' && $parts[1] === 'projects' && $parts[3] === 'devices') {
-                $project_id = intval($parts[2]);
-                $device_id = intval($parts[4]);
-                
-                $payload_data = json_decode($message, true);
-                
-                if ($payload_data === null && json_last_error() !== JSON_ERROR_NONE) {
-                    mqtt_log("Erro ao fazer parse do JSON no tópico $real_topic: " . json_last_error_msg(), 'ERROR');
-                    return;
-                }
-                
-                if ($payload_data === null) {
-                    $payload_data = ['value' => $message];
-                }
-                
-                // --- PROTEÇÃO DO BANCO DE DADOS ---
-                // Verifica a vitalidade e reconecta se necessário antes de qualquer transação
-                ensureDbConnection($conn);
-                
-                // Se a conexão foi recriada, precisamos atualizar o limitador com a nova instância
-                $rateLimiter = new RateLimiter($conn);
-                // ----------------------------------
-                
-                $apiKeySql = "SELECT api_key FROM devices WHERE id = ? AND project_id = ?";
-                try {
-                    $apiKeyStmt = $conn->prepare($apiKeySql);
-                    $apiKeyStmt->execute([$device_id, $project_id]);
-                    
-                    if ($apiKeyStmt->rowCount() > 0) {
-                        $device = $apiKeyStmt->fetch(\PDO::FETCH_ASSOC);
-                        $api_key = $device['api_key'];
-                        
-                        $rateCheck = $rateLimiter->checkLimit($device_id, 'mqtt', 'mqtt_local');
-                        
-                        if (!$rateCheck['allowed']) {
-                            mqtt_log("Rate limit excedido - Device: $device_id, Requests: {$rateCheck['requests']}, Limit: {$rateCheck['limit']}", 'WARN');
-                            return; 
-                        }
-                        
-                        // Passamos a conexão garantida para o handler
-                        $handler = new PayloadHandler($conn);
-
-                        // Mesma validação de estrutura (profundidade/tamanho/nº de chaves)
-                        // já aplicada no caminho HTTP em enviar_payload.php — sem isso,
-                        // payloads MQTT passavam sem nenhum limite de tamanho/complexidade.
-                        $validation = $handler->validatePayload($payload_data, $device_id);
-                        if (!$validation['valid']) {
-                            mqtt_log("Payload MQTT rejeitado (inválido) - Device: $device_id: " . implode('; ', $validation['errors']), 'WARN');
-                            return;
-                        }
-
-                        $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt');
-
-                        if ($result['success']) {
-                            mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id", 'INFO');
-                        } else {
-                            mqtt_log("Erro ao salvar payload: {$result['message']}", 'ERROR');
-                        }
-                    } else {
-                        mqtt_log("Dispositivo não encontrado - Device ID: $device_id, Project ID: $project_id", 'WARN');
-                    }
-                } catch (\Exception $e) {
-                    mqtt_log("Exceção ao processar payload: " . $e->getMessage(), 'ERROR');
-                }
-            } else {
-                mqtt_log("Formato de tópico inválido: $real_topic", 'WARN');
-            }
-        }, 1);  // QoS 1
+        $client->subscribe($shared_topic, $onMessage, 1);  // QoS 1
     }
 
     mqtt_log('Subscrito aos tópicos com sucesso', 'INFO');

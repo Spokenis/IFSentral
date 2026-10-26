@@ -64,7 +64,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Redefinir Senha | IFSCSentral</title>
+  <title>Redefinir Senha | IFSCentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -91,11 +91,11 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
       <form id="reset-form">
         <input type="hidden" id="token" value="<?php echo $tokenSeguro; ?>">
         <div class="input-group mb-3">
-          <input type="password" class="form-control" placeholder="Nova senha" id="new_password" minlength="6" required>
+          <input type="password" class="form-control" placeholder="Nova senha" id="new_password" maxlength="72" minlength="6" required>
           <div class="input-group-append"><div class="input-group-text"><span class="fas fa-lock"></span></div></div>
         </div>
         <div class="input-group mb-3">
-          <input type="password" class="form-control" placeholder="Confirme a nova senha" id="confirm_password" minlength="6" required>
+          <input type="password" class="form-control" placeholder="Confirme a nova senha" id="confirm_password" maxlength="72" minlength="6" required>
           <div class="input-group-append"><div class="input-group-text"><span class="fas fa-lock"></span></div></div>
         </div>
         <button type="submit" class="btn btn-primary btn-block" id="reset-button">Redefinir senha</button>
@@ -109,6 +109,7 @@ $tokenSeguro = htmlspecialchars($tokenPuro, ENT_QUOTES, 'UTF-8');
   </div>
 </div>
 
+<script src="/assets/js/input-limits.js"></script>
 <script>
   const form = document.getElementById('reset-form');
   const statusMsg = document.getElementById('status-msg');

@@ -84,13 +84,19 @@ EOF
     echo "[ENTRYPOINT] Credenciais MQTT configuradas!"
 }
 
-echo "[ENTRYPOINT] Inicializando container IFSCSentral..."
+echo "[ENTRYPOINT] Inicializando container IFSCentral..."
 
 if [[ "$ROLE" == "worker" ]]; then
     wait_for_mysql
     generate_mqtt_credentials
     echo "[ENTRYPOINT] Iniciando worker MQTT..."
     exec php /var/www/html/src/mqtt/mqtt_subscriber.php
+fi
+
+if [[ "$ROLE" == "ttn-bridge" ]]; then
+    wait_for_mysql
+    echo "[ENTRYPOINT] Iniciando ponte com o The Things Network..."
+    exec php /var/www/html/src/mqtt/ttn_bridge.php
 fi
 
 if [[ "$ROLE" == "web" ]]; then

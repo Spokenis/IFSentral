@@ -63,6 +63,13 @@ class SchemaValidator
         // Verificar colunas críticas
         $this->validateColumns();
 
+        // Integração com o TTN (src/db/migracoes/2026-10-26_integracao_ttn.sql)
+        if (!$this->tableExists('ttn_applications')
+            || ($this->tableExists('devices') && !$this->columnExists('devices', 'ttn_device_id'))
+            || ($this->tableExists('device_payloads') && !$this->columnExists('device_payloads', 'external_id'))) {
+            $this->errors[] = "Integração TTN ausente no banco: importe src/db/migracoes/2026-10-26_integracao_ttn.sql";
+        }
+
         return [
             'valid' => count($this->errors) === 0,
             'errors' => $this->errors,

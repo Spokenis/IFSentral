@@ -1,5 +1,5 @@
 ##########################################
-# IFSCSentral - Security headers and HTTPS
+# IFSCentral - Security headers and HTTPS
 ##########################################
 # Ensure mod_rewrite and mod_headers are enabled in Apache for these rules to work.
 
@@ -91,6 +91,7 @@ RewriteRule ^api/alterar-visibilidade-grafico$ src/api/alterar_visibilidade_graf
 RewriteRule ^api/alterar-visibilidade-projeto$ src/api/alterar_visibilidade_projeto.php [L,QSA]
 RewriteRule ^api/atualizar-grafico-avancado$ src/api/atualizar_grafico_avancado.php [L,QSA]
 RewriteRule ^api/atualizar-perfil$ src/api/atualizar_perfil.php [L,QSA]
+RewriteRule ^api/atualizar-projeto$ src/api/atualizar_projeto.php [L,QSA]
 RewriteRule ^api/atualizar-senha$ src/api/atualizar_senha.php [L,QSA]
 RewriteRule ^api/buscar-payloads$ src/api/buscar_payloads.php [L,QSA]
 RewriteRule ^api/deletar-foto-perfil$ src/api/deletar_foto_perfil.php [L,QSA]
@@ -121,6 +122,9 @@ RewriteRule ^api/sair-projeto$ src/api/sair_projeto.php [L,QSA]
 RewriteRule ^api/salvar-grafico-avancado$ src/api/salvar_grafico_avancado.php [L,QSA]
 RewriteRule ^api/solicitacoes-perfil$ src/api/solicitacoes_perfil.php [L,QSA]
 RewriteRule ^api/ttn-webhook$ src/api/ttn_webhook.php [L,QSA]
+RewriteRule ^api/ttn-configuracao$ src/api/ttn_configuracao.php [L,QSA]
+RewriteRule ^api/ttn-dispositivo$ src/api/ttn_dispositivo.php [L,QSA]
+RewriteRule ^api/ttn-sincronizar$ src/api/ttn_sincronizar.php [L,QSA]
 RewriteRule ^api/upload-foto-perfil$ src/api/upload_foto_perfil.php [L,QSA]
 
 <IfModule mod_headers.c>

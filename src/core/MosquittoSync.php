@@ -108,18 +108,14 @@ class MosquittoSync {
             $content .= "{$cred['mqtt_username']}:{$cred['mqtt_password_hash']}\n";
         }
         
-        // Adiciona admin (se existir)
-        $adminStmt = $this->conn->prepare("
-            SELECT mqtt_username, mqtt_password_hash 
-            FROM mqtt_credentials 
-            WHERE mqtt_username = 'admin' AND enabled = 1
-        ");
-        $adminStmt->execute();
-        $admin = $adminStmt->fetch(\PDO::FETCH_ASSOC);
-        
-        if ($admin) {
-            $content .= "\n# Admin user\n{$admin['mqtt_username']}:{$admin['mqtt_password_hash']}\n";
-        }
+        // Usuário admin do worker: vem do ambiente (MQTT_USERNAME/MQTT_PASSWORD),
+        // não da tabela mqtt_credentials. Sem ele, cada sincronização derrubava
+        // o worker, que só voltava quando o contêiner reiniciava e o entrypoint
+        // regravava o admin (mesma regra de generate_mosquitto_passwd.php).
+        $admin_salt = random_bytes(12);
+        $admin_hash_raw = hash_pbkdf2('sha512', $this->adminPassword(), $admin_salt, 101, 64, true);
+        $admin_hash = sprintf('$7$%d$%s$%s', 101, base64_encode($admin_salt), base64_encode($admin_hash_raw));
+        $content .= "\n# Admin user\n{$this->adminUsername()}:{$admin_hash}\n";
         
         return $content;
     }
@@ -144,20 +140,19 @@ class MosquittoSync {
             $content .= "\n";
         }
         
-        // Admin com acesso total
-        $adminStmt = $this->conn->prepare("
-            SELECT mqtt_username 
-            FROM mqtt_credentials 
-            WHERE mqtt_username = 'admin' AND enabled = 1
-        ");
-        $adminStmt->execute();
-        
-        if ($adminStmt->rowCount() > 0) {
-            $content .= "user admin\n";
-            $content .= "topic readwrite #\n\n";
-        }
+        // Admin com acesso total (usuário do worker)
+        $content .= "user {$this->adminUsername()}\n";
+        $content .= "topic readwrite #\n\n";
         
         return $content;
+    }
+
+    private function adminUsername() {
+        return env('MQTT_USERNAME', 'admin');
+    }
+
+    private function adminPassword() {
+        return env('MQTT_PASSWORD', 'ifsentral_admin_2024');
     }
     
     /**

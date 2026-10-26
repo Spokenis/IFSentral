@@ -50,7 +50,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gerenciar Dispositivo | IFSCSentral</title>
+  <title>Gerenciar Dispositivo | IFSCentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -177,7 +177,7 @@ try {
                   <p>Envie um payload JSON para este dispositivo. Isso é útil para testes.</p>
                   <div class="form-group">
                     <label for="manual-payload">Payload (JSON Válido):</label>
-                    <textarea id="manual-payload" class="form-control" rows="5" required>{"temperatura": 25.0, "status": "teste"}</textarea>
+                    <textarea id="manual-payload" maxlength="2048" class="form-control" rows="5" required>{"temperatura": 25.0, "status": "teste"}</textarea>
                   </div>
                   <div id="status-msg-post"></div>
                 </div>
@@ -213,6 +213,16 @@ try {
                     <strong>ID do Dispositivo: </strong> <kbd id="api-info-id">Carregando...</kbd><br>
                     <strong class="mt-2 d-block">Chave de API (X-Api-Key): </strong> <kbd id="api-info-key">Carregando...</kbd>
                   </div>
+                </div>
+
+                <div class="mb-3">
+                  <h5>📡 The Things Network</h5>
+                  <form id="form-ttn-dispositivo" class="form-inline">
+                    <label class="sr-only" for="ttn-device-id">ID do dispositivo no TTN</label>
+                    <input type="text" id="ttn-device-id" class="form-control form-control-sm mr-2 mb-1" maxlength="36" placeholder="ID do end device no TTN" autocomplete="off">
+                    <button type="submit" class="btn btn-sm btn-outline-info mb-1">Salvar</button>
+                  </form>
+                  <small class="text-muted d-block" id="ttn-device-msg">Os uplinks deste end device, na aplicação do TTN configurada no projeto, chegam neste dispositivo.</small>
                 </div>
                 
                 <div class="mb-3">
@@ -250,15 +260,15 @@ try {
                 <form id="form-mapeamento" class="form-row align-items-end">
                   <div class="col-md-3 mb-2">
                     <label class="small mb-1">Campo (json_key)</label>
-                    <input type="text" class="form-control form-control-sm" id="map-json-key" placeholder="status" required>
+                    <input type="text" class="form-control form-control-sm" id="map-json-key" maxlength="100" placeholder="status" required>
                   </div>
                   <div class="col-md-3 mb-2">
                     <label class="small mb-1">Valor bruto</label>
-                    <input type="text" class="form-control form-control-sm" id="map-value-read" placeholder="1" required>
+                    <input type="text" class="form-control form-control-sm" id="map-value-read" maxlength="100" placeholder="1" required>
                   </div>
                   <div class="col-md-4 mb-2">
                     <label class="small mb-1">Descrição</label>
-                    <input type="text" class="form-control form-control-sm" id="map-description" placeholder="Ligado" required>
+                    <input type="text" class="form-control form-control-sm" id="map-description" maxlength="200" placeholder="Ligado" required>
                   </div>
                   <div class="col-md-2 mb-2">
                     <button type="submit" class="btn btn-primary btn-sm btn-block">Adicionar</button>
@@ -320,6 +330,7 @@ try {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/input-limits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
@@ -355,6 +366,7 @@ try {
     const API_TAGS_DISPOSITIVO = '/api/gerenciar-tags-dispositivo';
     const API_TAGS_URL = '/api/listar-tags';
     const API_MAPEAMENTOS = '/api/gerenciar-mapeamentos-dispositivo';
+    const API_TTN_DISPOSITIVO = '/api/ttn-dispositivo';
 
     let mapeamentos = []; // cache local: [{id, json_key, value_read, description}]
 
@@ -387,6 +399,7 @@ try {
             
             apiInfoId.textContent = device.id;
             apiInfoKey.textContent = device.api_key;
+            document.getElementById('ttn-device-id').value = device.ttn_device_id || '';
             
             await carregarCredenciaisMQTT();
             await carregarPayloads();
@@ -651,6 +664,28 @@ try {
         }
     }
 
+    document.getElementById('form-ttn-dispositivo').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const msgEl = document.getElementById('ttn-device-msg');
+        msgEl.innerHTML = 'Salvando...';
+
+        try {
+            const response = await fetch(API_TTN_DISPOSITIVO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    device_id: DEVICE_ID,
+                    ttn_device_id: document.getElementById('ttn-device-id').value.trim()
+                })
+            });
+            const resultado = await safeJson(response);
+            msgEl.innerHTML = `<span class="text-success">${escapeHtml(resultado.message)}</span>`;
+        } catch (error) {
+            msgEl.innerHTML = `<span class="text-danger">${escapeHtml(error.message)}</span>`;
+        }
+    });
+
     document.getElementById('form-mapeamento').addEventListener('submit', async function(event) {
         event.preventDefault();
         const statusEl = document.getElementById('mapeamento-status');
@@ -711,7 +746,9 @@ try {
             theme: 'bootstrap4',
             placeholder: 'Ex: temperatura, ESP32, externo...',
             tags: true,
-            data: tagsExistentesFormatadas
+            data: tagsExistentesFormatadas,
+            maximumInputLength: 50,
+            language: { inputTooLong: (args) => `Máximo de ${args.maximum} caracteres por tag.` }
         });
 
         try {

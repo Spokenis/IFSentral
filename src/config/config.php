@@ -24,7 +24,7 @@ $default_config = [
     'SMTP_PASS' => '',
     'SMTP_ENCRYPTION' => 'ssl',
     'MAIL_FROM_ADDRESS' => 'suporte@ifsentral.online',
-    'MAIL_FROM_NAME' => 'IFSCSentral Smart Campus'
+    'MAIL_FROM_NAME' => 'IFSCentral Smart Campus'
 ];
 
 // Carrega arquivo .env se existir (prioriza src/config/.env, senão tenta o .env da raiz)
@@ -92,6 +92,13 @@ define('DB_NAME', env('DB_NAME'));
 define('DB_USER', env('DB_USER'));
 define('DB_PASS', env('DB_PASS'));
 define('APP_ENV', env('APP_ENV'));
+
+// Em produção os erros do PHP vão só para o log: exibidos, eles vazam caminhos
+// do servidor e, por saírem antes do http_response_code(), corrompem o JSON e
+// fazem uma falha responder 200. A imagem Docker não traz php.ini, então o
+// padrão do PHP (display_errors=STDOUT) valeria sem esta linha.
+ini_set('display_errors', APP_ENV === 'production' ? '0' : '1');
+ini_set('log_errors', '1');
 define('APP_URL', env('APP_URL'));
 define('ALLOWED_ORIGINS', env('ALLOWED_ORIGINS'));
 

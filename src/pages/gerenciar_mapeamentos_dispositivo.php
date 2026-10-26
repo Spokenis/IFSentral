@@ -82,6 +82,18 @@ if ($method == 'POST') {
         exit;
     }
 
+    // Limites das colunas da tabela `state_mappings`
+    if (mb_strlen(trim($data->json_key)) > 100 || mb_strlen(trim((string)$data->value_read)) > 100) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Campo e valor bruto devem ter no máximo 100 caracteres.']);
+        exit;
+    }
+    if (mb_strlen(trim($data->description)) > 200) {
+        http_response_code(400);
+        echo json_encode(['error' => 'A descrição deve ter no máximo 200 caracteres.']);
+        exit;
+    }
+
     $device_id = intval($data->device_id);
 
     try {

@@ -110,6 +110,29 @@ try {
         echo json_encode(['error' => 'Você já é membro deste projeto.']);
         exit;
     }
+
+    // Respeita o limite de participantes, como em responder_solicitacao_participacao.php
+    $projectStmt = $conn->prepare("SELECT maxUsers FROM projects WHERE id = ? AND deletedAt IS NULL");
+    $projectStmt->execute([$invitation['project_id']]);
+    $project = $projectStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$project) {
+        $conn->rollBack();
+        http_response_code(404);
+        echo json_encode(['error' => 'Projeto não encontrado.']);
+        exit;
+    }
+
+    if ($project['maxUsers']) {
+        $countStmt = $conn->prepare("SELECT COUNT(*) FROM users_projects WHERE project_id = ?");
+        $countStmt->execute([$invitation['project_id']]);
+        if ((int)$countStmt->fetchColumn() >= (int)$project['maxUsers']) {
+            $conn->rollBack();
+            http_response_code(409);
+            echo json_encode(['error' => 'O projeto atingiu o limite de participantes.']);
+            exit;
+        }
+    }
     
     // Adicionar à tabela users_projects
     $addMemberSql = "

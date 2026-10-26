@@ -6,6 +6,7 @@ require_once '../core/AuthMiddleware.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
 require_once '../core/Csrf.php';
+require_once '../core/MosquittoSync.php';
 
 use App\Core\AuthMiddleware;
 use App\Core\Csrf;
@@ -57,8 +58,30 @@ try {
     $deleteSql = "UPDATE projects SET deletedAt = NOW() WHERE id = ?";
     $deleteStmt = $conn->prepare($deleteSql);
     $deleteStmt->execute([$project_id]);
+
+    // Os dispositivos do projeto também saem de uso (como em deletar_dispositivo.php)
+    $deviceIdsStmt = $conn->prepare("SELECT id FROM devices WHERE project_id = ? AND deletedAt IS NULL");
+    $deviceIdsStmt->execute([$project_id]);
+    $deviceIds = $deviceIdsStmt->fetchAll(PDO::FETCH_COLUMN);
+
+    $conn->prepare("UPDATE devices SET deletedAt = NOW() WHERE project_id = ? AND deletedAt IS NULL")->execute([$project_id]);
+
+    if ($deviceIds) {
+        $placeholders = implode(',', array_fill(0, count($deviceIds), '?'));
+        $conn->prepare("UPDATE mqtt_credentials SET enabled = 0 WHERE device_id IN ($placeholders)")->execute($deviceIds);
+    }
     
     $conn->commit();
+
+    // Sincroniza o Mosquitto para que as credenciais desativadas parem de valer imediatamente
+    if ($deviceIds) {
+        try {
+            $sync = new MosquittoSync($conn, true);
+            $sync->sync();
+        } catch (Exception $e) {
+            // Não bloqueia a exclusão se a sincronização falhar
+        }
+    }
     
     http_response_code(200);
     echo json_encode(['message' => 'Projeto deletado com sucesso!']);

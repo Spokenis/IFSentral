@@ -51,6 +51,12 @@ try {
         echo json_encode(['error' => 'Nome é obrigatório']);
         exit;
     }
+
+    if (mb_strlen($name) > 50) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Nome deve ter no máximo 50 caracteres']);
+        exit;
+    }
     
     if (empty($email)) {
         http_response_code(400);
@@ -63,6 +69,12 @@ try {
         echo json_encode(['error' => 'E-mail inválido']);
         exit;
     }
+
+    if (mb_strlen($email) > 50) {
+        http_response_code(400);
+        echo json_encode(['error' => 'E-mail deve ter no máximo 50 caracteres']);
+        exit;
+    }
     
     if (empty($username)) {
         http_response_code(400);
@@ -73,6 +85,12 @@ try {
     if (strlen($username) < 3 || strlen($username) > 20) {
         http_response_code(400);
         echo json_encode(['error' => 'Username deve ter entre 3 e 20 caracteres']);
+        exit;
+    }
+
+    if (!preg_match('/^[A-Za-z0-9_.-]+$/', $username)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Username só pode ter letras sem acento, números, ponto, hífen e sublinhado']);
         exit;
     }
     

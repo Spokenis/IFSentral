@@ -11,7 +11,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Configurações - IFSCSentral</title>
+    <title>Configurações - IFSCentral</title>
     
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -184,18 +184,18 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                     <form id="form-perfil">
                                         <div class="form-group">
                                             <label for="input-name">Nome Completo</label>
-                                            <input type="text" class="form-control" id="input-name" placeholder="Seu nome completo">
+                                            <input type="text" class="form-control" id="input-name" maxlength="50" placeholder="Seu nome completo">
                                         </div>
                                         
                                         <div class="form-group">
                                             <label for="input-email">E-mail</label>
-                                            <input type="email" class="form-control" id="input-email" placeholder="seu@email.com">
+                                            <input type="email" class="form-control" id="input-email" maxlength="50" placeholder="seu@email.com">
                                             <small class="form-text text-muted">Usado para login e notificações</small>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label for="input-username">Username</label>
-                                            <input type="text" class="form-control" id="input-username" placeholder="seu_username">
+                                            <input type="text" class="form-control" id="input-username" maxlength="20" placeholder="seu_username">
                                             <small class="form-text text-muted">Entre 3 e 20 caracteres</small>
                                         </div>
                                         
@@ -220,13 +220,13 @@ require_once __DIR__ . '/../auth/auth_check.php';
                                         
                                         <div class="form-group">
                                             <label for="input-new-password">Nova Senha</label>
-                                            <input type="password" class="form-control" id="input-new-password" placeholder="Digite a nova senha">
+                                            <input type="password" class="form-control" id="input-new-password" maxlength="72" placeholder="Digite a nova senha">
                                             <small class="form-text text-muted">Mínimo de 6 caracteres</small>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label for="input-confirm-password">Confirmar Nova Senha</label>
-                                            <input type="password" class="form-control" id="input-confirm-password" placeholder="Confirme a nova senha">
+                                            <input type="password" class="form-control" id="input-confirm-password" maxlength="72" placeholder="Confirme a nova senha">
                                         </div>
                                         
                                         <div id="senha-status"></div>
@@ -338,6 +338,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/input-limits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 <script src="/assets/js/profile-picture-helper.js"></script>

@@ -2,6 +2,7 @@
 // obter_chaves_dispositivo.php
 
 require_once '../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 setupSecureCORS();
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -78,7 +79,6 @@ try {
     echo json_encode($unique_keys); // Retorna todas as variáveis únicas
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar chaves: ' . $e->getMessage()]);
+    api_error_response('Erro ao buscar chaves', $e, 500);
 }
 ?>

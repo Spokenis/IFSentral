@@ -112,11 +112,11 @@ final class TwoFactorAuthTest extends TestCase
     public function testGetOtpAuthUriContainsExpectedParameters(): void
     {
         $secret = 'JBSWY3DPEHPK3PXP';
-        $uri = TwoFactorAuth::getOtpAuthUri($secret, 'user@example.com', 'IFSCSentral');
+        $uri = TwoFactorAuth::getOtpAuthUri($secret, 'user@example.com', 'IFSCentral');
 
         $this->assertStringStartsWith('otpauth://totp/', $uri);
         $this->assertStringContainsString('secret=' . $secret, $uri);
-        $this->assertStringContainsString('issuer=IFSCSentral', $uri);
+        $this->assertStringContainsString('issuer=IFSCentral', $uri);
         $this->assertStringContainsString('digits=6', $uri);
         $this->assertStringContainsString('period=30', $uri);
     }

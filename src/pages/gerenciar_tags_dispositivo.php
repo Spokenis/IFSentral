@@ -84,10 +84,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             exit;
         }
 
+        // tags.name é varchar(50)
+        foreach ($tags as $tag_input) {
+            if (is_scalar($tag_input) && mb_strlen(trim((string)$tag_input)) > 50) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Cada tag deve ter no máximo 50 caracteres.']);
+                exit;
+            }
+        }
+
         $conn->beginTransaction();
 
         $tag_ids = [];
         $stmt_find_tag = $conn->prepare("SELECT id FROM tags WHERE name = ?");
+        $stmt_find_tag_id = $conn->prepare("SELECT id FROM tags WHERE id = ?");
         $stmt_insert_tag = $conn->prepare("INSERT INTO tags (name) VALUES (?)");
 
         foreach ($tags as $tag_input) {
@@ -96,10 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 continue;
             }
 
-            // Se for numérico, é o ID de uma tag já existente (selecionada no Select2)
+            // Numérico e existente: é o ID de uma tag selecionada no Select2.
+            // Senão é uma tag nova — o Select2 usa o próprio texto como ID, então
+            // uma tag nova "2026" também chega como número.
             if (is_numeric($tag_input)) {
-                $tag_ids[] = intval($tag_input);
-                continue;
+                $stmt_find_tag_id->execute([intval($tag_input)]);
+                if ($stmt_find_tag_id->fetchColumn()) {
+                    $tag_ids[] = intval($tag_input);
+                    continue;
+                }
+                $tag_input = (string)$tag_input;
             }
 
             $stmt_find_tag->execute([$tag_input]);

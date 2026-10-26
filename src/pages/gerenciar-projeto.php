@@ -49,7 +49,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gerenciar Projeto | IFSCSentral</title>
+  <title>Gerenciar Projeto | IFSCentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -327,14 +327,14 @@ try {
                           
                           <div class="form-group">
                             <label for="chart-name">Nome do Gráfico</label>
-                            <input type="text" id="chart-name" class="form-control" placeholder="Ex: Temperatura vs Umidade" required>
+                            <input type="text" id="chart-name" maxlength="100" class="form-control" placeholder="Ex: Temperatura vs Umidade" required>
                           </div>
                           
                           <div class="form-group">
                           <label for="chart-type">Tipo de Gráfico</label>
                           <select id="chart-type" class="form-control select2" style="width: 100%;" required>
-                            <option value="linha">Linha</option>
-                            <option value="barra">Barra</option>
+                            <option value="line">Linha</option>
+                            <option value="bar">Barra</option>
                             <option value="area">Área</option>
                             <option value="scatter">Dispersão</option>
                           </select>
@@ -484,7 +484,7 @@ try {
                       <div class="card-body">
                         <div class="form-group">
                           <label>E-mail do usuário:</label>
-                          <input type="email" id="invite-email" class="form-control" placeholder="usuario@example.com">
+                          <input type="email" id="invite-email" maxlength="50" class="form-control" placeholder="usuario@example.com">
                         </div>
                         <div class="form-group">
                           <label>Permissão:</label>
@@ -557,18 +557,18 @@ try {
                       <div class="card-header">
                         <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Informações Gerais</h3>
                       </div>
-                      <form class="form-horizontal">
+                      <form class="form-horizontal" id="form-config-projeto">
                         <div class="card-body">
                           <div class="form-group row">
                             <label class="col-sm-3 col-form-label">Nome</label>
                             <div class="col-sm-9">
-                              <input type="text" class="form-control" id="config-proj-name" value="Carregando...">
+                              <input type="text" class="form-control" id="config-proj-name" maxlength="30" value="Carregando...">
                             </div>
                           </div>
                           <div class="form-group row">
                             <label class="col-sm-3 col-form-label">Descrição</label>
                             <div class="col-sm-9">
-                              <textarea class="form-control" rows="3" id="config-proj-desc">Carregando...</textarea>
+                              <textarea class="form-control" rows="3" id="config-proj-desc" maxlength="200">Carregando...</textarea>
                             </div>
                           </div>
                           <div class="form-group row">
@@ -579,9 +579,10 @@ try {
                           </div>
                         </div>
                         <div class="card-footer">
-                          <button type="submit" class="btn btn-primary">
+                          <button type="submit" class="btn btn-primary" id="btn-salvar-config-projeto">
                             <i class="fas fa-save mr-2"></i>Salvar Alterações
                           </button>
+                          <div id="config-proj-msg" class="mt-2"></div>
                         </div>
                       </form>
                     </div>
@@ -611,6 +612,47 @@ try {
                   </div>
                 </div>
                 
+                <div class="row">
+                  <div class="col-12">
+                    <div class="card card-info">
+                      <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-satellite-dish mr-2"></i>The Things Network (TTN)</h3>
+                      </div>
+                      <div class="card-body">
+                        <p class="text-muted">A ponte MQTT (contêiner <code>ttn-bridge</code>) recebe os uplinks da aplicação em tempo real, e a <strong>Storage Integration</strong> recupera o que chegar enquanto a ponte estiver parada (o TTN guarda os uplinks por 24 horas). Nos dois casos é o servidor que se conecta ao TTN — funciona mesmo que o TTN não consiga acessar este servidor.</p>
+                        <p class="text-muted small mb-3">No console do TTN: ative a Storage Integration da aplicação (<em>Integrations → Storage Integration</em>), configure um <em>payload formatter</em> para que os uplinks tenham <code>decoded_payload</code> e crie uma chave de API com o direito <em>Read application traffic</em>. Depois, informe o ID do TTN na página de cada dispositivo.</p>
+                        <form id="form-ttn">
+                          <div class="form-row">
+                            <div class="form-group col-md-4">
+                              <label for="ttn-cluster">Cluster</label>
+                              <select id="ttn-cluster" class="form-control"></select>
+                            </div>
+                            <div class="form-group col-md-4">
+                              <label for="ttn-application-id">ID da aplicação</label>
+                              <input type="text" id="ttn-application-id" class="form-control" maxlength="36" placeholder="minha-aplicacao" autocomplete="off">
+                            </div>
+                            <div class="form-group col-md-4">
+                              <label for="ttn-api-key">Chave de API</label>
+                              <input type="password" id="ttn-api-key" class="form-control" maxlength="255" placeholder="NNSXS...." autocomplete="new-password">
+                            </div>
+                          </div>
+                          <div class="custom-control custom-switch mb-3">
+                            <input type="checkbox" class="custom-control-input" id="ttn-enabled" checked>
+                            <label class="custom-control-label" for="ttn-enabled">Receber dados desta aplicação</label>
+                          </div>
+                          <button type="submit" class="btn btn-info" id="btn-ttn-salvar"><i class="fas fa-plug mr-2"></i>Testar e salvar</button>
+                          <button type="button" class="btn btn-outline-info" id="btn-ttn-sincronizar" style="display: none;"><i class="fas fa-sync mr-2"></i>Buscar agora</button>
+                          <button type="button" class="btn btn-outline-danger float-right" id="btn-ttn-remover" style="display: none;"><i class="fas fa-unlink mr-2"></i>Remover integração</button>
+                        </form>
+                        <div id="ttn-msg" class="mt-3"></div>
+                        <div id="ttn-status" class="mt-2 small text-muted"></div>
+                        <h6 class="mt-3">Dispositivos do projeto</h6>
+                        <div id="ttn-devices" class="small"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="row">
                   <div class="col-md-6">
                     <div class="card card-warning">
@@ -669,6 +711,7 @@ try {
 <script src="/assets/js/profile-picture-helper.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/input-limits.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
@@ -693,6 +736,9 @@ try {
     const API_OBTER_DADOS_GRAFICO = '/api/obter-dados-grafico-renderizado';
     const API_ALTERAR_VISIBILIDADE_GRAFICO = '/api/alterar-visibilidade-grafico';
     const API_ALTERAR_VISIBILIDADE_PROJETO = '/api/alterar-visibilidade-projeto';
+    const API_ATUALIZAR_PROJETO = '/api/atualizar-projeto';
+    const API_TTN_CONFIG = '/api/ttn-configuracao';
+    const API_TTN_SINCRONIZAR = '/api/ttn-sincronizar';
     const API_DEVICES_FORM = '/api/listar-devices';
     const API_ENVIAR_CONVITE = '/api/enviar-convite';
     const API_DELETAR_PROJETO = '/api/deletar-projeto';
@@ -708,6 +754,10 @@ try {
     const sensoresTbody = document.getElementById('sensores-tbody');
     const configNameEl = document.getElementById('config-proj-name');
     const configDescEl = document.getElementById('config-proj-desc');
+    const configTagsEl = document.getElementById('config-proj-tags');
+    const formConfigProjeto = document.getElementById('form-config-projeto');
+    const btnSalvarConfigProjeto = document.getElementById('btn-salvar-config-projeto');
+    const configProjMsg = document.getElementById('config-proj-msg');
     const infoBoxDevices = document.getElementById('info-box-devices');
     const infoBoxParticipantes = document.getElementById('info-box-participantes');
     const infoBoxGraficos = document.getElementById('info-box-graficos');
@@ -755,6 +805,23 @@ try {
         return response.json();
     }
 
+    function renderizarTagsProjeto(projectTags) {
+        if (projectTags) {
+            const tagsArray = projectTags.split(',');
+            let tagsHtml = '';
+            tagsArray.forEach(tag => {
+                const cores = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger'];
+                const cor = cores[Math.floor(Math.random() * cores.length)];
+                tagsHtml += `<span class="badge ${cor}">${escapeHtml(tag)}</span> `;
+            });
+            projectTagsContainer.innerHTML = tagsHtml;
+            geralTagsContainer.innerHTML = tagsHtml;
+        } else {
+            projectTagsContainer.innerHTML = '';
+            geralTagsContainer.innerHTML = '<span class="text-muted">(Sem tags)</span>';
+        }
+    }
+
     // --- FUNÇÃO 2: Carrega Dados Principais (Projeto, Dispositivos) ---
     async function carregarDadosPrincipais() {
         try {
@@ -766,21 +833,10 @@ try {
             geralProjName.textContent = project.name;
             configNameEl.value = project.name;
             configDescEl.value = project.description || '';
+            configTagsEl.value = project.project_tags ? project.project_tags.split(',').join(', ') : '';
             geralProjDesc.textContent = project.description || '(Sem descrição)';
 
-            if (project.project_tags) {
-                const tagsArray = project.project_tags.split(',');
-                let tagsHtml = '';
-                tagsArray.forEach(tag => {
-                    const cores = ['badge-primary', 'badge-info', 'badge-success', 'badge-warning', 'badge-danger'];
-                    const cor = cores[Math.floor(Math.random() * cores.length)];
-                    tagsHtml += `<span class="badge ${cor}">${escapeHtml(tag)}</span> `;
-                });
-                projectTagsContainer.innerHTML = tagsHtml;
-                geralTagsContainer.innerHTML = tagsHtml;
-            } else {
-                geralTagsContainer.innerHTML = '<span class="text-muted">(Sem tags)</span>';
-            }
+            renderizarTagsProjeto(project.project_tags);
 
             // Carregar visibilidade do projeto
             if (project.public) {
@@ -1363,6 +1419,176 @@ try {
             visibilityStatusMsg.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-circle mr-2"></i>Erro: ${error.message}</div>`;
         } finally {
             toggleProjectVisibility.disabled = false;
+        }
+      }
+
+      // --- FUNÇÃO 6.1: Salvar Informações Gerais (nome, descrição e tags) ---
+      async function salvarConfigProjeto(event) {
+        event.preventDefault();
+
+        const tags = configTagsEl.value.split(',').map(t => t.trim()).filter(t => t !== '');
+        const tagLonga = tags.find(t => t.length > 50);
+        if (tagLonga) {
+            configProjMsg.innerHTML = `<div class="alert alert-danger mb-0">Cada tag deve ter no máximo 50 caracteres ("${escapeHtml(tagLonga.slice(0, 20))}..." tem ${tagLonga.length}).</div>`;
+            return;
+        }
+
+        configProjMsg.innerHTML = '<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Salvando...</div>';
+        btnSalvarConfigProjeto.disabled = true;
+
+        try {
+            const response = await fetch(API_ATUALIZAR_PROJETO, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    project_id: PROJECT_ID,
+                    name: configNameEl.value,
+                    description: configDescEl.value,
+                    tags: tags
+                })
+            });
+
+            const result = await safeJson(response);
+
+            projectTitleEl.textContent = result.name;
+            geralProjName.textContent = result.name;
+            geralProjDesc.textContent = result.description || '(Sem descrição)';
+            configTagsEl.value = result.project_tags ? result.project_tags.split(',').join(', ') : '';
+            renderizarTagsProjeto(result.project_tags);
+
+            configProjMsg.innerHTML = '<div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-2"></i>Alterações salvas!</div>';
+            setTimeout(() => {
+                configProjMsg.innerHTML = '';
+            }, 3000);
+
+        } catch (error) {
+            configProjMsg.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-circle mr-2"></i>Erro: ${escapeHtml(error.message)}</div>`;
+        } finally {
+            btnSalvarConfigProjeto.disabled = false;
+        }
+      }
+
+      // --- FUNÇÃO 6.2: Integração com o The Things Network ---
+      function formatarDataTtn(valor) {
+        if (!valor) return 'nunca';
+        const data = new Date(String(valor).replace(' ', 'T'));
+        return isNaN(data) ? valor : data.toLocaleString('pt-BR');
+      }
+
+      async function carregarTtn() {
+        const status = document.getElementById('ttn-status');
+        try {
+          const response = await fetch(`${API_TTN_CONFIG}?project_id=${PROJECT_ID}`, { credentials: 'include' });
+          const cfg = await safeJson(response);
+
+          const cluster = document.getElementById('ttn-cluster');
+          cluster.innerHTML = Object.entries(cfg.clusters)
+            .map(([host, nome]) => `<option value="${escapeHtml(host)}" title="${escapeHtml(host)}">${escapeHtml(nome)}</option>`).join('');
+          if (cfg.cluster) cluster.value = cfg.cluster;
+          document.getElementById('ttn-application-id').value = cfg.application_id || '';
+          const chave = document.getElementById('ttn-api-key');
+          chave.value = '';
+          chave.placeholder = cfg.api_key_set ? 'já configurada (deixe em branco para manter)' : 'NNSXS....';
+          document.getElementById('ttn-enabled').checked = cfg.configured ? cfg.enabled : true;
+
+          // Membros veem o status; só o gerente altera
+          document.querySelectorAll('#form-ttn input, #form-ttn select, #btn-ttn-salvar').forEach(el => el.disabled = !cfg.is_manager);
+          document.getElementById('btn-ttn-remover').style.display = cfg.configured && cfg.is_manager ? '' : 'none';
+          document.getElementById('btn-ttn-sincronizar').style.display = cfg.configured ? '' : 'none';
+
+          if (!cfg.configured) {
+            status.textContent = 'Integração não configurada.';
+          } else {
+            status.innerHTML = `Última busca: ${escapeHtml(formatarDataTtn(cfg.last_sync_at))} · Último uplink lido do Storage: ${escapeHtml(formatarDataTtn(cfg.last_received_at))}`
+              + (cfg.last_error ? `<div class="text-danger mt-1"><i class="fas fa-exclamation-circle mr-1"></i>${escapeHtml(cfg.last_error)}</div>` : '');
+          }
+
+          document.getElementById('ttn-devices').innerHTML = cfg.devices.length === 0
+            ? '<span class="text-muted">Nenhum dispositivo no projeto.</span>'
+            : '<ul class="mb-0 pl-3">' + cfg.devices.map(d => `<li><a href="/dispositivo?id=${d.id}&project_id=${PROJECT_ID}">${escapeHtml(d.name)}</a>: `
+                + (d.ttn_device_id ? `<code>${escapeHtml(d.ttn_device_id)}</code>` : '<span class="text-muted">sem ID do TTN (defina na página do dispositivo)</span>')
+                + '</li>').join('') + '</ul>';
+        } catch (error) {
+          status.innerHTML = `<span class="text-danger">${escapeHtml(error.message)}</span>`;
+        }
+      }
+
+      async function salvarTtn(event) {
+        event.preventDefault();
+        const msg = document.getElementById('ttn-msg');
+        const botao = document.getElementById('btn-ttn-salvar');
+        msg.innerHTML = '<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Testando a conexão com o TTN...</div>';
+        botao.disabled = true;
+        try {
+          const response = await fetch(API_TTN_CONFIG, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+              project_id: PROJECT_ID,
+              cluster: document.getElementById('ttn-cluster').value,
+              application_id: document.getElementById('ttn-application-id').value.trim(),
+              api_key: document.getElementById('ttn-api-key').value.trim(),
+              enabled: document.getElementById('ttn-enabled').checked ? 1 : 0
+            })
+          });
+          await safeJson(response);
+          msg.innerHTML = '<div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-2"></i>Integração salva. A primeira busca traz os uplinks que o TTN ainda guarda (até 24 horas).</div>';
+          await carregarTtn();
+        } catch (error) {
+          msg.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-circle mr-2"></i>${escapeHtml(error.message)}</div>`;
+        } finally {
+          botao.disabled = false;
+        }
+      }
+
+      async function sincronizarTtn() {
+        const msg = document.getElementById('ttn-msg');
+        const botao = document.getElementById('btn-ttn-sincronizar');
+        msg.innerHTML = '<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando no TTN...</div>';
+        botao.disabled = true;
+        try {
+          const response = await fetch(API_TTN_SINCRONIZAR, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ project_id: PROJECT_ID })
+          });
+          const r = await safeJson(response);
+          if (r.message) {
+            msg.innerHTML = `<div class="alert alert-info mb-0">${escapeHtml(r.message)}</div>`;
+          } else {
+            const partes = [`${r.saved} novo(s)`, `${r.duplicate} já gravado(s)`];
+            if (r.unmapped) partes.push(`${r.unmapped} de end devices sem dispositivo correspondente no projeto`);
+            if (r.no_payload) partes.push(`${r.no_payload} sem decoded_payload (falta o payload formatter no TTN)`);
+            if (r.invalid) partes.push(`${r.invalid} fora dos limites de payload`);
+            msg.innerHTML = `<div class="alert alert-success mb-0"><i class="fas fa-check-circle mr-2"></i>Uplinks: ${escapeHtml(partes.join(', '))}.</div>`;
+            carregarStats();
+          }
+          await carregarTtn();
+        } catch (error) {
+          msg.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-exclamation-circle mr-2"></i>${escapeHtml(error.message)}</div>`;
+        } finally {
+          botao.disabled = false;
+        }
+      }
+
+      async function removerTtn() {
+        if (!confirm('Remover a integração com o TTN? Os dados já recebidos continuam no projeto.')) return;
+        const msg = document.getElementById('ttn-msg');
+        try {
+          const response = await fetch(API_TTN_CONFIG, {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ project_id: PROJECT_ID })
+          });
+          await safeJson(response);
+          msg.innerHTML = '<div class="alert alert-success mb-0">Integração removida.</div>';
+          await carregarTtn();
+        } catch (error) {
+          msg.innerHTML = `<div class="alert alert-danger mb-0">${escapeHtml(error.message)}</div>`;
         }
       }
 
@@ -2150,7 +2376,7 @@ try {
       // Dados fake estruturados corretamente para o eixo X
       const labels = Array.from({length: 10}, (_, i) => `${i + 8}:00`);
       
-      const chartType = $('#chart-type').val() || 'linha';
+      const chartType = $('#chart-type').val() || 'line';
       let actualChartType = converterTipoGrafico(chartType);
       
       if (chartPreview) {
@@ -2220,11 +2446,12 @@ try {
     
 // ===== CONVERTER TIPO DE GRÁFICO  =====
     function converterTipoGrafico(tipo) {
+      // Recebe o valor gravado em charts.chart_type (ou um nome antigo em português)
       const mapa = {
-        'linha': 'line',
-        'barra': 'bar',
-        'pizza': 'pie',
-        'rosca': 'doughnut',
+        'line': 'line', 'linha': 'line',
+        'bar': 'bar', 'barra': 'bar',
+        'pie': 'pie', 'pizza': 'pie',
+        'doughnut': 'doughnut', 'rosca': 'doughnut',
         'area': 'line',
         'scatter': 'line' // Forçamos 'line' para o Chart.js aceitar nosso Eixo X temporal
       };
@@ -2244,7 +2471,7 @@ try {
       const payload = {
         project_id: PROJECT_ID,
         name: chartName,
-        chart_type: converterTipoGrafico(chartType),
+        chart_type: chartType,
         time_range: selectedTimeRange,
         date_start: $('#date-start').val() || null,
         date_end: $('#date-end').val() || null,
@@ -2310,6 +2537,16 @@ try {
       deleteProjectButton.addEventListener('click', deletarProjeto);
     }
     
+    // Event Listener das informações gerais do projeto
+    if (formConfigProjeto) {
+      formConfigProjeto.addEventListener('submit', salvarConfigProjeto);
+    }
+    
+    // Event Listeners da integração com o TTN
+    document.getElementById('form-ttn').addEventListener('submit', salvarTtn);
+    document.getElementById('btn-ttn-sincronizar').addEventListener('click', sincronizarTtn);
+    document.getElementById('btn-ttn-remover').addEventListener('click', removerTtn);
+    
     // Event Listener da visibilidade do projeto
     if (toggleProjectVisibility) {
       toggleProjectVisibility.addEventListener('change', function() {
@@ -2360,6 +2597,7 @@ try {
     carregarStats(); 
     carregarGraficosSalvos();
     carregarParticipantes();
+    carregarTtn();
   });
 
 </script>

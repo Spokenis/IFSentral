@@ -5,6 +5,7 @@
 require_once '../config/config.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/ChartType.php';
 require_once '../core/Csrf.php';
 
 use App\Core\Csrf;
@@ -36,6 +37,31 @@ if (!isset($data->chart_id)) {
 }
 
 $chart_id = intval($data->chart_id);
+
+// charts.name é varchar(100)
+if (isset($data->name) && mb_strlen($data->name) > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome do gráfico deve ter no máximo 100 caracteres.']);
+    exit;
+}
+
+if (isset($data->chart_type)) {
+    $data->chart_type = normalize_chart_type($data->chart_type);
+    if ($data->chart_type === null) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Tipo de gráfico inválido (use line, bar, area ou scatter).']);
+        exit;
+    }
+}
+
+if (isset($data->datasets) && is_array($data->datasets)) {
+    $datasetError = validate_chart_datasets($data->datasets);
+    if ($datasetError) {
+        http_response_code(400);
+        echo json_encode(['error' => $datasetError]);
+        exit;
+    }
+}
 
 // Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;

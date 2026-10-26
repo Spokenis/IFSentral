@@ -7,7 +7,7 @@ require '../auth/auth_check.php';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Criar Novo Projeto | IFSCSentral</title>
+  <title>Criar Novo Projeto | IFSCentral</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -84,12 +84,12 @@ require '../auth/auth_check.php';
                   
                   <div class="form-group">
                     <label for="proj-name">Nome do Projeto:</label>
-                    <input type="text" id="proj-name" class="form-control" required>
+                    <input type="text" id="proj-name" class="form-control" maxlength="30" required>
                   </div>
                   
                   <div class="form-group">
                     <label for="proj-desc">Descrição:</label>
-                    <textarea id="proj-desc" class="form-control" rows="3"></textarea>
+                    <textarea id="proj-desc" class="form-control" rows="3" maxlength="200"></textarea>
                   </div>
                   
                   <div class="form-group">
@@ -99,7 +99,7 @@ require '../auth/auth_check.php';
                   
                   <div class="form-group">
                     <label for="proj-max-users">Máximo de Usuários (deixe 0 para ilimitado):</label>
-                    <input type="number" id="proj-max-users" class="form-control" min="0" value="0">
+                    <input type="number" id="proj-max-users" class="form-control" min="0" max="4294967295" value="0">
                   </div>
                   
                   <div class="form-group">
@@ -129,6 +129,7 @@ require '../auth/auth_check.php';
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/input-limits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
@@ -164,7 +165,9 @@ require '../auth/auth_check.php';
             theme: 'bootstrap4', // Usa o tema do AdminLTE
             placeholder: 'Ex: IoT, Automação, Sensor...',
             tags: true, // Permite criar novas tags
-            data: tagsExistentesFormatadas // Popula com tags do banco
+            data: tagsExistentesFormatadas, // Popula com tags do banco
+            maximumInputLength: 50, // tags.name é varchar(50)
+            language: { inputTooLong: (args) => `Máximo de ${args.maximum} caracteres por tag.` }
         });
     }
     

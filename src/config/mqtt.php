@@ -9,7 +9,11 @@ define('MQTT_HOST', getenv('MQTT_HOST') ?: ($_ENV['MQTT_HOST'] ?? 'localhost'));
 define('MQTT_PORT', getenv('MQTT_PORT') ?: ($_ENV['MQTT_PORT'] ?? 1883));
 define('MQTT_USERNAME', getenv('MQTT_USERNAME') ?: ($_ENV['MQTT_USERNAME'] ?? null));
 define('MQTT_PASSWORD', getenv('MQTT_PASSWORD') ?: ($_ENV['MQTT_PASSWORD'] ?? null));
-define('MQTT_CLIENT_ID', 'minha-api-php-subscriber-' . getmypid());
+// ID estável por instância do worker (hostname do contêiner): ao reiniciar, o
+// worker retoma a mesma sessão persistente no broker. Um ID novo a cada início
+// deixava sessões órfãs inscritas no grupo compartilhado ($share/...), e o
+// broker repartia as mensagens entre elas — que nunca mais as liam.
+define('MQTT_CLIENT_ID', 'ifsentral-worker-' . gethostname());
 
 // Tópicos MQTT (padrão)
 // Estrutura: mqtt/projects/{project_id}/devices/{device_id}

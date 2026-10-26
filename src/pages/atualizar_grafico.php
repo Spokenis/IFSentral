@@ -2,6 +2,8 @@
 // atualizar_grafico.php
 
 require_once '../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
+require_once __DIR__ . '/../core/ChartType.php';
 setupSecureCORS();
 require_once '../core/Csrf.php';
 
@@ -33,6 +35,20 @@ if (
 ) {
     http_response_code(400);
     echo json_encode(['error' => 'Todos os campos são obrigatórios e device_id/chart_id devem ser numéricos.']);
+    exit;
+}
+
+$data->chart_type = normalize_chart_type($data->chart_type);
+if ($data->chart_type === null) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Tipo de gráfico inválido (use line, bar, area ou scatter).']);
+    exit;
+}
+
+// charts.name é varchar(100)
+if (mb_strlen($data->name) > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome do gráfico deve ter no máximo 100 caracteres.']);
     exit;
 }
 
@@ -89,7 +105,6 @@ try {
     echo json_encode(['message' => 'Gráfico atualizado com sucesso!']);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao salvar no banco: ' . $e->getMessage()]);
+    api_error_response('Erro ao salvar no banco', $e, 500);
 }
 ?>

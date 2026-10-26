@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 require '../config/db.php';
 require '../auth/auth_check.php'; // $username_logado e $_SESSION['user_id'] estão disponíveis
 require '../core/Csrf.php';
+require_once '../core/ApiError.php';
 
 use App\Core\Csrf;
 
@@ -26,9 +27,32 @@ Csrf::requireValidToken();
 
 $data = json_decode(file_get_contents("php://input"));
 
+if (isset($data->name) && is_string($data->name)) {
+    $data->name = trim($data->name);
+}
+
 if (!isset($data->name) || empty($data->name)) {
     http_response_code(400);
     echo json_encode(['error' => 'Campo "name" (nome do projeto) é obrigatório.']);
+    exit;
+}
+
+// Limites das colunas da tabela `projects`
+if (!is_string($data->name) || mb_strlen($data->name) > 30) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome do projeto deve ter no máximo 30 caracteres.']);
+    exit;
+}
+
+if (isset($data->description) && (!is_string($data->description) || mb_strlen($data->description) > 200)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'A descrição deve ter no máximo 200 caracteres.']);
+    exit;
+}
+
+if (isset($data->maxUsers) && (filter_var($data->maxUsers, FILTER_VALIDATE_INT, ['options' => ['min_range' => 0, 'max_range' => 4294967295]]) === false)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Valor inválido para "Máximo de Usuários".']);
     exit;
 }
 
@@ -48,9 +72,7 @@ try {
         exit;
     }
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao validar permissões: ' . $e->getMessage()]);
-    exit;
+    api_error_response('Erro ao validar permissões', $e, 500);
 }
 
 $description = isset($data->description) ? $data->description : null;
@@ -59,6 +81,15 @@ $maxUsers = isset($data->maxUsers) ? intval($data->maxUsers) : null;
 $invitation_code = bin2hex(random_bytes(6));
 // *** NOVO: Pega o array de tags (pode estar vazio) ***
 $tags = isset($data->tags) ? (array)$data->tags : [];
+
+// tags.name é varchar(50)
+foreach ($tags as $tag_input) {
+    if (is_scalar($tag_input) && mb_strlen(trim((string)$tag_input)) > 50) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Cada tag deve ter no máximo 50 caracteres.']);
+        exit;
+    }
+}
 
 
 // 3. USA UMA TRANSAÇÃO
@@ -94,11 +125,26 @@ try {
         
         // Preparar statements para reutilização
         $stmt_find_tag = $conn->prepare("SELECT id FROM tags WHERE name = ?");
+        $stmt_find_tag_id = $conn->prepare("SELECT id FROM tags WHERE id = ?");
         $stmt_insert_tag = $conn->prepare("INSERT INTO tags (name) VALUES (?)");
         
         foreach ($tags as $tag_input) {
-            // Se o $tag_input for numérico, é um ID existente
+            $tag_input = is_string($tag_input) ? trim($tag_input) : $tag_input;
+            if ($tag_input === '' || $tag_input === null) {
+                continue;
+            }
+
+            // Numérico e existente: é o ID de uma tag selecionada no Select2.
+            // Senão é uma tag nova — o Select2 usa o próprio texto como ID, então
+            // uma tag nova "2026" também chega como número.
+            $is_existing_id = false;
             if (is_numeric($tag_input)) {
+                $stmt_find_tag_id->execute([intval($tag_input)]);
+                $is_existing_id = (bool)$stmt_find_tag_id->fetchColumn();
+                $tag_input = $is_existing_id ? $tag_input : (string)$tag_input;
+            }
+
+            if ($is_existing_id) {
                 $tag_ids[] = intval($tag_input);
             } else {
                 // Se for string, é uma nova tag.
@@ -141,8 +187,9 @@ try {
 
 } catch (PDOException $e) {
     // Se algo deu errado, desfaz tudo
-    $conn->rollBack();
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao salvar projeto: ' . $e->getMessage()]);
+    if ($conn->inTransaction()) {
+        $conn->rollBack();
+    }
+    api_error_response('Erro ao salvar projeto', $e, 500);
 }
 ?>

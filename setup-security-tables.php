@@ -8,7 +8,7 @@
 define('ROOT_DIR', __DIR__);
 
 echo "\n" . str_repeat('=', 80) . "\n";
-echo "🔐 SETUP DE SEGURANÇA - IFSCSentral\n";
+echo "🔐 SETUP DE SEGURANÇA - IFSCentral\n";
 echo str_repeat('=', 80) . "\n\n";
 
 // Carrega conexão

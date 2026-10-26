@@ -46,7 +46,7 @@ final class RateLimiterTest extends TestCase
     {
         $queryStmt = $this->createMock(PDOStatement::class);
         $queryStmt->method('execute')->willReturn(true);
-        $queryStmt->method('fetch')->willReturn(['count' => 2]);
+        $queryStmt->method('fetch')->willReturn(['by_identifier' => 2, 'by_ip' => 2]);
 
         $conn = $this->mockConn($this->emptySettingsStmt(), $queryStmt);
         $limiter = new RateLimiter($conn);
@@ -62,7 +62,7 @@ final class RateLimiterTest extends TestCase
     {
         $queryStmt = $this->createMock(PDOStatement::class);
         $queryStmt->method('execute')->willReturn(true);
-        $queryStmt->method('fetch')->willReturn(['count' => 5]);
+        $queryStmt->method('fetch')->willReturn(['by_identifier' => 5, 'by_ip' => 5]);
 
         $conn = $this->mockConn($this->emptySettingsStmt(), $queryStmt);
         $limiter = new RateLimiter($conn);
@@ -71,6 +71,36 @@ final class RateLimiterTest extends TestCase
 
         $this->assertFalse($resultado['allowed']);
         $this->assertSame(5, $resultado['attempts']);
+    }
+
+    public function testCheckLoginAttemptsIgnoresOtherAccountsFailuresFromSameIp(): void
+    {
+        // Rede com NAT: 6 falhas de outra conta no mesmo IP não bloqueiam esta
+        $queryStmt = $this->createMock(PDOStatement::class);
+        $queryStmt->method('execute')->willReturn(true);
+        $queryStmt->method('fetch')->willReturn(['by_identifier' => 0, 'by_ip' => 6]);
+
+        $conn = $this->mockConn($this->emptySettingsStmt(), $queryStmt);
+        $limiter = new RateLimiter($conn);
+
+        $resultado = $limiter->checkLoginAttempts('user@example.com', '127.0.0.1');
+
+        $this->assertTrue($resultado['allowed']);
+    }
+
+    public function testCheckLoginAttemptsDeniesWhenIpExceedsItsHigherLimit(): void
+    {
+        // Muitas contas diferentes testadas a partir de um só IP (4x o limite)
+        $queryStmt = $this->createMock(PDOStatement::class);
+        $queryStmt->method('execute')->willReturn(true);
+        $queryStmt->method('fetch')->willReturn(['by_identifier' => 0, 'by_ip' => 20]);
+
+        $conn = $this->mockConn($this->emptySettingsStmt(), $queryStmt);
+        $limiter = new RateLimiter($conn);
+
+        $resultado = $limiter->checkLoginAttempts('user@example.com', '127.0.0.1');
+
+        $this->assertFalse($resultado['allowed']);
     }
 
     public function testCheckLoginAttemptsFailsOpenWhenDatabaseThrows(): void

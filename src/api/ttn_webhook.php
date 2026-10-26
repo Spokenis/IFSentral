@@ -6,11 +6,14 @@
 
 require_once '../config/config.php';
 require_once '../core/PayloadHandler.php';
+require_once '../core/TtnSync.php';
 require_once '../core/RateLimiter.php';
 require_once '../core/ApiError.php';
 setupSecureCORS();
 
 use App\Core\PayloadHandler;
+use App\Core\TtnClient;
+use App\Core\TtnSync;
 use App\Core\RateLimiter;
 
 header("Content-Type: application/json; charset=UTF-8");
@@ -115,7 +118,15 @@ try {
         exit;
     }
 
-    $result = $handler->savePayload($device_id, $api_key, $payload_real, 'ttn');
+    // Horário de recepção no TTN e identificador do uplink: o mesmo uplink pode
+    // chegar também pela Storage Integration ou pela ponte MQTT (TtnSync), e é
+    // gravado uma vez só
+    $received_at = isset($data->received_at) && is_string($data->received_at) ? $data->received_at : null;
+    $received_time = TtnClient::parseTime($received_at);
+    $result = $handler->savePayload(
+        $device_id, $api_key, $payload_real, 'ttn',
+        $received_time, $received_time !== null ? TtnSync::externalId($received_at) : null
+    );
 
     if ($result['success']) {
         http_response_code(201);
