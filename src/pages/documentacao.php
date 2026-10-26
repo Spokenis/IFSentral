@@ -6,7 +6,7 @@ require '../auth/auth_check.php';
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Documentação | IFSCSentral Lite</title>
+  <title>Documentação | IFSCentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -109,6 +109,7 @@ require '../auth/auth_check.php';
                       <tr><td>Trocar senha, ativar 2FA, editar dados da conta</td><td><strong>Configurações</strong> (menu do avatar) ▸ aba <strong>Segurança</strong></td></tr>
                       <tr><td>Ver notificações de convites e solicitações pendentes</td><td>Ícone de sino 🔔 no menu superior (fica ao lado do seu avatar)</td></tr>
                       <tr><td>Convidar alguém, aprovar solicitações de entrada, expulsar/promover membro, excluir o projeto</td><td>Dentro do projeto ▸ abas <strong>Participantes</strong>, <strong>Solicitações</strong> e <strong>Configurações</strong> (só aparecem funcionais se você for Gerente daquele projeto)</td></tr>
+                      <tr><td>Receber dados de sensores LoRaWAN pelo The Things Network</td><td>Dentro do projeto ▸ aba <strong>Configurações</strong> ▸ cartão <strong>The Things Network</strong> (veja o <a href="#ttn">tutorial abaixo</a>)</td></tr>
                       <tr><td>Gerenciar usuários do sistema, aprovar pedidos de Moderador</td><td><strong>Administração</strong> (menu superior — só visível para Admin)</td></tr>
                     </tbody>
                   </table>
@@ -200,34 +201,85 @@ require '../auth/auth_check.php';
               </div>
             </div>
 
-            <div class="card card-warning card-outline">
+            <div class="card card-warning card-outline" id="ttn">
               <div class="card-header"><h3 class="card-title"><i class="fas fa-broadcast-tower mr-1"></i> Integração: The Things Network (TTN)</h3></div>
               <div class="card-body">
-                <p>O Webhook do TTN envia um formato JSON complexo e possui limitações de URL (máx 64 caracteres). Para esta integração, utilize o nosso script "adaptador" chamado <code>/api/ttn-webhook</code>.</p>
-                <p>Os dados recebidos via TTN serão salvos com <code>source='ttn'</code>, permitindo diferenciar dados de diferentes fontes (HTTP ou TTN).</p>
-                <div class="callout callout-warning">
-                  <h5><i class="icon fas fa-exclamation-triangle"></i> Pré-requisito Obrigatório</h5>
-                  <p>Seu dispositivo no TTN (LoRaWAN) **deve** ter um **Payload Formatter** (Uplink) ativado. Nosso script procura pelo campo <code>decoded_payload</code>.</p>
+                <h5>Como funciona</h5>
+                <div class="d-flex flex-wrap align-items-center mb-3">
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Sensor LoRaWAN</span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Gateway</span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">The Things Network<br><small>guarda 24 h (Storage)</small></span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Servidor do IFSCentral busca no TTN<br><small>a cada acesso ao site, no máximo 1×/min</small></span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Dispositivo no projeto<br><small>payloads e gráficos</small></span>
                 </div>
-                <h5>Configurando o Webhook no TTN</h5>
-                <ol>
-                  <li>No IFSCSentral Lite, copie o <strong>ID do Dispositivo</strong> e a <strong>API Key</strong> do seu dispositivo.</li>
-                  <li>No painel do TTN, adicione um Webhook JSON.</li>
-                  <li>No campo <strong>Base URL</strong>, coloque a URL do seu servidor:
-                    <pre><code><?php echo htmlspecialchars(app_absolute_url()); ?></code></pre>
-                  </li>
-                  <li>Marque a caixa <strong>Uplink message</strong>.</li>
-                  <li>No campo <strong>Uplink message path</strong>, coloque **apenas** o caminho do endpoint e o `device_id`:
-                    <pre><code>api/ttn-webhook?device_id=8</code></pre>
-                  </li>
-                  <li>Em <strong>Additional headers</strong>, clique em <strong>+ Add header entry</strong>.</li>
-                  <li>Preencha os campos:
-                    <ul>
-                      <li>Header Name: <code>X-Api-Key</code></li>
-                      <li>Header Value: <code>SUA_API_KEY_COMPLETA_AQUI</code></li>
-                    </ul>
-                  </li>
+                <p>O sensor LoRaWAN transmite pelo ar para um gateway, que repassa ao The Things Network. Com a <strong>Storage Integration</strong> ligada, o TTN guarda cada uplink por <strong>24 horas</strong>. É o próprio servidor do IFSCentral Lite que vai buscar esses uplinks no TTN, pela internet (HTTPS) — por isso <strong>funciona mesmo que o TTN não consiga acessar este servidor</strong>, como numa rede interna do câmpus.</p>
+                <p>Não há nenhum programa rodando em segundo plano no servidor: a busca acontece quando alguém usa o site (qualquer página dispara), no máximo uma vez por minuto para cada projeto. Se ninguém acessar por algumas horas, os uplinks continuam guardados no TTN e entram todos no próximo acesso — cada um com o horário em que o TTN o recebeu, então os gráficos ficam corretos.</p>
+                <p>Cada <strong>projeto</strong> do IFSCentral Lite se liga a uma <strong>aplicação</strong> do TTN, e cada <strong>dispositivo</strong> do projeto se liga a um <strong>end device</strong> dessa aplicação. O que é gravado é o <code>decoded_payload</code> — o objeto que o <em>payload formatter</em> do TTN monta a partir dos bytes que o sensor enviou. As chaves desse objeto (ex.: <code>temperatura</code>) são as variáveis que você escolhe nos gráficos, e os dados aparecem com origem <code>ttn</code>.</p>
+
+                <h5 class="mt-4">Tutorial: do TTN ao gráfico</h5>
+                <p class="text-muted small">Você precisa ser <strong>Gerente</strong> do projeto no IFSCentral Lite e ter acesso à aplicação no console do TTN (<a href="https://console.cloud.thethings.network/" target="_blank" rel="noopener">console.cloud.thethings.network</a>).</p>
+                <ol class="pl-3">
+                  <li class="mb-3"><strong>Tenha a aplicação e o end device no TTN.</strong><br>
+                    Anote o <strong>ID da aplicação</strong> (ex.: <code>estacao-campus</code>), o <strong>cluster</strong> onde ela está (aparece no endereço do console, ex.: <code>eu1</code>) e o <strong>ID de cada end device</strong> (ex.: <code>sensor-sala-204</code>). São IDs em letras minúsculas, números e hífens.</li>
+                  <li class="mb-3"><strong>Configure o payload formatter.</strong><br>
+                    Em <em>Payload formatters → Uplink</em>, escolha <em>Custom Javascript formatter</em> e converta os bytes do sensor em um objeto com nomes legíveis. Exemplo para um sensor que envia temperatura e umidade em 4 bytes:
+                    <pre class="mt-2"><code>function decodeUplink(input) {
+  // bytes 0-1: temperatura × 100 (com sinal); bytes 2-3: umidade × 100
+  var t = (input.bytes[0] &lt;&lt; 8) | input.bytes[1];
+  if (t &gt; 32767) t -= 65536;
+  var u = (input.bytes[2] &lt;&lt; 8) | input.bytes[3];
+  return { data: { temperatura: t / 100, umidade: u / 100 } };
+}</code></pre>
+                    Use nomes curtos (até 40 caracteres) e no máximo 50 campos — os mesmos limites de qualquer payload enviado ao IFSCentral Lite. Sem formatter, o uplink chega sem <code>decoded_payload</code> e é ignorado.</li>
+                  <li class="mb-3"><strong>Ative a Storage Integration.</strong><br>
+                    Na aplicação, em <em>Integrations → Storage Integration</em>, clique em <em>Activate Storage Integration</em>. A partir daí o TTN guarda os uplinks por 24 horas.</li>
+                  <li class="mb-3"><strong>Crie uma chave de API.</strong><br>
+                    Em <em>API keys → Add API key</em>, dê um nome (ex.: <code>ifscentral</code>), escolha <em>Grant individual rights</em> e marque só <em>Read application traffic (uplink and downlink)</em>. Copie a chave na hora (começa com <code>NNSXS.</code>) — o TTN não a mostra de novo.</li>
+                  <li class="mb-3"><strong>Ligue o projeto à aplicação.</strong><br>
+                    No IFSCentral Lite, abra o projeto → aba <strong>Configurações</strong> → cartão <strong>The Things Network</strong>. Escolha o cluster, informe o ID da aplicação, cole a chave e clique em <strong>Testar e salvar</strong>. O IFSCentral Lite testa a chave no TTN antes de gravar; se algo estiver errado, a mensagem diz o quê. A chave nunca é mostrada de novo, nem para os membros do projeto.</li>
+                  <li class="mb-3"><strong>Ligue cada dispositivo ao seu end device.</strong><br>
+                    Na página de cada dispositivo (aba <strong>Dispositivos</strong> do projeto → <strong>Gerenciar</strong>), no quadro <strong>📡 The Things Network</strong>, digite o ID do end device e clique em <strong>Salvar</strong>. Crie um dispositivo no projeto para cada end device que quiser receber.</li>
+                  <li class="mb-3"><strong>Confira.</strong><br>
+                    Volte ao cartão do projeto e clique em <strong>Buscar agora</strong>. A primeira busca traz o que o TTN guardou nas últimas 24 horas. Os dados aparecem em <strong>Últimos Payloads Recebidos</strong>, na página do dispositivo, e já podem ser usados nos gráficos. Os dados entram na próxima vez que alguém usar o site (no máximo um minuto depois). Uplinks com mais de 24 horas que ainda não tenham sido buscados se perdem.</li>
                 </ol>
+
+                <h5 class="mt-4">O que significa cada resultado do "Buscar agora"</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead class="thead-light"><tr><th>Mensagem</th><th>O que fazer</th></tr></thead>
+                    <tbody>
+                      <tr><td><em>N novo(s)</em></td><td>Uplinks gravados agora.</td></tr>
+                      <tr><td><em>N já gravado(s)</em></td><td>Nada: o uplink já estava no IFSCentral Lite (cada busca relê os últimos minutos por segurança).</td></tr>
+                      <tr><td><em>de end devices sem dispositivo correspondente</em></td><td>Chegaram uplinks de um end device que nenhum dispositivo do projeto usa. Preencha o ID do TTN no dispositivo certo (passo 6) e busque de novo — enquanto o TTN ainda os guardar (24 h), eles são recuperados.</td></tr>
+                      <tr><td><em>sem decoded_payload</em></td><td>Falta o payload formatter (passo 2), ou ele não devolve <code>data</code>.</td></tr>
+                      <tr><td><em>fora dos limites de payload</em></td><td>O objeto do formatter tem campos demais, nomes longos demais ou textos acima de 255 caracteres.</td></tr>
+                      <tr><td><em>O TTN recusou a chave de API</em></td><td>A chave foi digitada errada, apagada ou revogada no TTN. Crie outra (passo 4) e salve de novo.</td></tr>
+                      <tr><td><em>A chave de API não tem permissão…</em></td><td>A chave não tem o direito <em>Read application traffic</em>.</td></tr>
+                      <tr><td><em>Aplicação não encontrada… ou a Storage Integration não está ativada</em></td><td>Confira o ID da aplicação e o cluster, e se a Storage Integration está ativada (passo 3).</td></tr>
+                      <tr><td><em>Não foi possível conectar ao TTN</em></td><td>O servidor não está conseguindo acessar a internet por HTTPS (porta 443). Fale com quem administra a rede.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <details class="mt-3">
+                  <summary><strong>Alternativa: Webhook</strong> (só se o TTN conseguir acessar este servidor pela internet)</summary>
+                  <p class="mt-2">No webhook, é o TTN que envia cada uplink ao servidor, na hora. Ele funciona por dispositivo, com o ID e a chave de API do próprio dispositivo no IFSCentral Lite. Pode ser usado junto com a busca: um uplink que chegar pelos dois caminhos é gravado uma vez só.</p>
+                  <ol>
+                    <li>No IFSCentral Lite, copie o <strong>ID do Dispositivo</strong> e a <strong>Chave de API</strong> do dispositivo.</li>
+                    <li>No console do TTN, em <em>Integrations → Webhooks</em>, adicione um webhook do tipo <em>Custom webhook</em>, formato JSON.</li>
+                    <li>Em <strong>Base URL</strong>, coloque o endereço do servidor:
+                      <pre><code><?php echo htmlspecialchars(app_absolute_url()); ?></code></pre>
+                    </li>
+                    <li>Marque <strong>Uplink message</strong> e, no caminho, coloque o endpoint com o ID do dispositivo:
+                      <pre><code>api/ttn-webhook?device_id=8</code></pre>
+                    </li>
+                    <li>Em <strong>Additional headers</strong>, adicione <code>X-Api-Key</code> com a chave de API do dispositivo.</li>
+                  </ol>
+                </details>
               </div>
             </div>
 
@@ -237,14 +289,14 @@ require '../auth/auth_check.php';
                 <h5>REST API (HTTP)</h5>
                 <p>As rotas de envio e consulta de dados do seu dispositivo usam <code>X-Api-Key</code>:</p>
                 <pre><code>X-Api-Key: SUA_API_KEY_AQUI</code></pre>
-                <p>Os gráficos e estatísticas exibidos no painel do IFSCSentral Lite usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
+                <p>Os gráficos e estatísticas exibidos no painel do IFSCentral Lite usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
               </div>
             </div>
 
             <div class="card card-warning card-outline">
               <div class="card-header"><h3 class="card-title"><i class="fas fa-lock mr-1"></i> Como Obter Suas Credenciais</h3></div>
               <div class="card-body">
-                <h5>No Painel do IFSCSentral Lite</h5>
+                <h5>No Painel do IFSCentral Lite</h5>
                 <ol>
                   <li>Acesse <strong>Meus Projetos</strong></li>
                   <li>Clique no seu projeto</li>

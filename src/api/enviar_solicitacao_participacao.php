@@ -45,6 +45,12 @@ try {
 
     $project_id = intval($input['project_id']);
     $message = $input['message'] ?? 'Gostaria de participar deste projeto';
+
+    if (!is_string($message) || mb_strlen($message) > 2000) {
+        http_response_code(400);
+        echo json_encode(['error' => 'A mensagem deve ter no máximo 2000 caracteres.']);
+        exit;
+    }
     $user_id = $_SESSION['user_id'] ?? null;
 
     if (!$user_id) {

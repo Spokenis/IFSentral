@@ -1,8 +1,8 @@
-# IFSCSentral Lite - Plataforma IoT Smart Campus
+# IFSCentral Lite - Plataforma IoT Smart Campus
 
 Plataforma integrada de Internet das Coisas (IoT) para gerenciamento de projetos, dispositivos de hardware (sensores, ESP32, LoRaWAN via TTN) e visualização de dados em tempo real.
 
-O IFSCSentral Lite é a versão **simplificada** do IFSCSentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
+O IFSCentral Lite é a versão **simplificada** do IFSCentral, feita para rodar em hospedagem compartilhada ou em um servidor Apache tradicional (ex.: Hostinger, servidor do campus) — sem Docker e sem broker MQTT. Os dispositivos enviam dados via **HTTP (POST)** ou pelo **webhook do The Things Network (TTN)**.
 
 ## Requisitos do servidor
 
@@ -25,7 +25,7 @@ Nada mais é obrigatório. O site se adapta sozinho ao servidor:
 
 ### 1. Enviar os arquivos
 
-Copie o conteúdo desta pasta (`IFSCSentral/`) para o diretório do site no servidor — por exemplo `/var/www/html/site1/` ou `public_html/`. O `index.php` fica direto nesse diretório; é ele que atende todas as páginas.
+Copie o conteúdo desta pasta (`IFSCentral/`) para o diretório do site no servidor — por exemplo `/var/www/html/site1/` ou `public_html/`. O `index.php` fica direto nesse diretório; é ele que atende todas as páginas.
 
 **Não envie** o que não é necessário para o site rodar: `.git/`, `tests/`, `phpunit.xml`, `*.md`. A pasta `vendor/` precisa ir junto (ou rode `composer install --no-dev` no servidor).
 
@@ -75,6 +75,8 @@ php system-check.php
 
 `system-check.php` confirma se a configuração, o banco e as pastas estão corretos.
 
+**Banco instalado antes de 26/10/2026:** importe uma vez, pelo phpMyAdmin, `src/db/migracoes/2026-10-26_integracao_ttn.sql` (integração com o TTN). Sem ela, o envio de dados continua funcionando, mas a integração com o TTN não, e o `system-check.php` aponta a falta.
+
 ### 6. Acessar a aplicação
 
 Abra o endereço do site no navegador (`http://servidor/site1/`, `https://seudominio.com/` etc.). Se o servidor não aplicar o `.htaccess`, você será levado automaticamente para `.../index.php/` — é o comportamento esperado, e tudo funciona da mesma forma.
@@ -89,6 +91,12 @@ Sem broker MQTT, os dispositivos (ESP32, sensores, etc.) enviam telemetria por d
 
 * **`POST api/enviar-payload`** — endpoint padrão, autenticado por `X-Api-Key` (chave gerada ao cadastrar o dispositivo)
 * **`POST api/ttn-webhook?device_id=ID`** — webhook para integrações via The Things Network (LoRaWAN)
+
+### The Things Network sem acesso externo ao servidor
+
+Se o TTN não consegue acessar o servidor (rede interna do câmpus, por exemplo), use a **Storage Integration**: o próprio servidor busca no TTN, por HTTPS (porta 443), os uplinks que o TTN guarda por 24 horas. Não há processo em segundo plano nem cron — as páginas do site disparam a busca (`api/ttn-sincronizar`), que o servidor limita a uma vez por minuto por aplicação. Basta que o PHP consiga acessar a internet (extensão `curl` ou `allow_url_fopen` ligado).
+
+A configuração fica na aba **Configurações** do projeto (cartão **The Things Network**) e no campo **ID do dispositivo no TTN** de cada dispositivo; o passo a passo está na página **Documentação**.
 
 Os caminhos são relativos ao endereço do site (com `index.php/` na frente quando não há URLs limpas). A página **Documentação** dentro da aplicação mostra a URL completa já pronta para copiar, além de detalhes de payload, rate limiting e exemplos de código.
 

@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
 require '../config/db.php';
 require '../auth/auth_check.php'; // $username_logado e $_SESSION['user_id'] estão disponíveis
 require '../core/Csrf.php';
+require_once '../core/ApiError.php';
 
 use App\Core\Csrf;
 
@@ -37,6 +38,18 @@ if (
 ) {
     http_response_code(400); // Bad Request
     echo json_encode(['error' => 'Campos obrigatórios: project_id e name.']);
+    exit;
+}
+
+// Limites das colunas da tabela `devices`
+if (mb_strlen($data->name) > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome do dispositivo deve ter no máximo 100 caracteres.']);
+    exit;
+}
+if (isset($data->description) && mb_strlen($data->description) > 200) {
+    http_response_code(400);
+    echo json_encode(['error' => 'A descrição deve ter no máximo 200 caracteres.']);
     exit;
 }
 
@@ -82,12 +95,12 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    http_response_code(500);
     if ($e->getCode() == '23000') {
          // Erro de chave estrangeira (project_id não existe)
+         http_response_code(500);
          echo json_encode(['error' => 'Erro: project_id não existe ou é inválido.']);
     } else {
-         echo json_encode(['error' => 'Erro ao salvar no banco: ' . $e->getMessage()]);
+         api_error_response('Erro ao salvar no banco', $e, 500);
     }
 }
 ?>

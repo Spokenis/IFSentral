@@ -57,6 +57,9 @@ try {
     $deleteSql = "UPDATE projects SET deletedAt = NOW() WHERE id = ?";
     $deleteStmt = $conn->prepare($deleteSql);
     $deleteStmt->execute([$project_id]);
+
+    // Os dispositivos do projeto também saem de uso (como em deletar_dispositivo.php)
+    $conn->prepare("UPDATE devices SET deletedAt = NOW() WHERE project_id = ? AND deletedAt IS NULL")->execute([$project_id]);
     
     $conn->commit();
     

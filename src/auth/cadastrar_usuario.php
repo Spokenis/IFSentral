@@ -35,6 +35,53 @@ if (
     exit;
 }
 
+$data->name = trim((string)$data->name);
+$data->email = trim((string)$data->email);
+$data->username = trim((string)$data->username);
+
+if ($data->name === '') {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome é obrigatório.']);
+    exit;
+}
+if (!filter_var($data->email, FILTER_VALIDATE_EMAIL)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'E-mail inválido.']);
+    exit;
+}
+if (!preg_match('/^[A-Za-z0-9_.-]+$/', $data->username)) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome de usuário só pode ter letras sem acento, números, ponto, hífen e sublinhado.']);
+    exit;
+}
+if (strlen($data->password) < 6) {
+    http_response_code(400);
+    echo json_encode(['error' => 'A senha deve ter no mínimo 6 caracteres.']);
+    exit;
+}
+
+// Limites das colunas da tabela `users` (bcrypt só usa os primeiros 72 bytes da senha)
+if (mb_strlen($data->name) > 50) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome deve ter no máximo 50 caracteres.']);
+    exit;
+}
+if (mb_strlen($data->email) > 50) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O e-mail deve ter no máximo 50 caracteres.']);
+    exit;
+}
+if (strlen($data->username) < 3 || strlen($data->username) > 20) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome de usuário deve ter entre 3 e 20 caracteres.']);
+    exit;
+}
+if (strlen($data->password) > 72) {
+    http_response_code(400);
+    echo json_encode(['error' => 'A senha deve ter no máximo 72 caracteres.']);
+    exit;
+}
+
 // Cadastro público sempre cria conta com perfil 'User' — o campo 'profile'
 // do payload é ignorado para impedir que o cliente se auto-promova a Admin/Moderator.
 $profile = 'User';

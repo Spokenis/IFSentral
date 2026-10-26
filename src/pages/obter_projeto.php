@@ -2,6 +2,7 @@
 // obter_projeto.php - Retorna informações de um projeto específico com validação de permissão
 
 require_once '../config/config.php';
+require_once __DIR__ . '/../core/ApiError.php';
 require '../config/db.php';
 require '../auth/auth_check.php';
 
@@ -72,7 +73,7 @@ try {
         JOIN 
             roles r ON up_user.role_id = r.id
         WHERE 
-            up_user.user_id = ? AND p.id = ?
+            up_user.user_id = ? AND p.id = ? AND p.deletedAt IS NULL
         LIMIT 1
     ";
 
@@ -90,7 +91,6 @@ try {
     echo json_encode($project);
 
 } catch (Exception $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao obter projeto: ' . $e->getMessage()]);
+    api_error_response('Erro ao obter projeto', $e, 500);
 }
 ?>

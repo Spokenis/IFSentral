@@ -49,7 +49,7 @@ try {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Novo Dispositivo | IFSCSentral Lite</title>
+  <title>Novo Dispositivo | IFSCentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -130,11 +130,11 @@ try {
                 <div class="card-body">
                   <div class="form-group">
                     <label for="device-name">Nome do Dispositivo:</label>
-                    <input type="text" id="device-name" class="form-control" placeholder="Ex: Raspberry Pi Sala 204" required>
+                    <input type="text" id="device-name" maxlength="100" class="form-control" placeholder="Ex: Raspberry Pi Sala 204" required>
                   </div>
                   <div class="form-group">
                     <label for="device-desc">Descrição:</label>
-                    <textarea id="device-desc" class="form-control" rows="3" placeholder="Ex: Sensor de temperatura e umidade DHT22"></textarea>
+                    <textarea id="device-desc" maxlength="200" class="form-control" rows="3" placeholder="Ex: Sensor de temperatura e umidade DHT22"></textarea>
                   </div>
                 </div>
                 <div class="card-footer">
@@ -163,6 +163,7 @@ try {
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/input-limits.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="assets/js/fetch-helpers.js"></script>
 

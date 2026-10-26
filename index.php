@@ -70,7 +70,7 @@ function ifs_resolve_request(): string {
 
     http_response_code(404);
     header('Content-Type: text/html; charset=UTF-8');
-    echo '<!DOCTYPE html><html lang="pt-br"><head><meta charset="utf-8"><title>Página não encontrada | IFSCSentral Lite</title></head>'
+    echo '<!DOCTYPE html><html lang="pt-br"><head><meta charset="utf-8"><title>Página não encontrada | IFSCentral Lite</title></head>'
        . '<body style="font-family:sans-serif;text-align:center;margin-top:15vh">'
        . '<h1>404</h1><p>Página não encontrada.</p>'
        . '<p><a href="' . htmlspecialchars(app_url()) . '">Voltar para a página inicial</a></p></body></html>';

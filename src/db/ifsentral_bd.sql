@@ -690,6 +690,31 @@ INSERT INTO `tags` VALUES
 UNLOCK TABLES;
 
 --
+-- Table structure for table `ttn_applications`
+--
+
+DROP TABLE IF EXISTS `ttn_applications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ttn_applications` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` int(10) unsigned NOT NULL,
+  `cluster` varchar(64) NOT NULL COMMENT 'Ex.: eu1.cloud.thethings.network',
+  `application_id` varchar(36) NOT NULL,
+  `api_key` varchar(255) NOT NULL COMMENT 'Chave do TTN com direito de ler o tráfego da aplicação',
+  `enabled` tinyint(1) NOT NULL DEFAULT 1,
+  `last_received_at` varchar(40) DEFAULT NULL COMMENT 'received_at (RFC 3339) do último uplink lido do Storage do TTN',
+  `last_sync_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(255) DEFAULT NULL,
+  `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updatedAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_ttn_project` (`project_id`),
+  CONSTRAINT `ttn_applications_ibfk_1` FOREIGN KEY (`project_id`) REFERENCES `projects` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `users`
 --
 
@@ -854,6 +879,20 @@ CREATE TABLE `user_2fa_backup_codes` (
   CONSTRAINT `user_2fa_backup_codes_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Integração com o The Things Network (26/10/2026). As colunas entram aqui, depois
+-- dos dados, porque os INSERTs acima não listam as colunas. Bancos já instalados:
+-- src/db/migracoes/2026-10-26_integracao_ttn.sql
+--
+
+ALTER TABLE `devices`
+  ADD COLUMN `ttn_device_id` varchar(36) DEFAULT NULL COMMENT 'ID do end device no The Things Network' AFTER `api_key`,
+  ADD KEY `idx_devices_ttn` (`project_id`,`ttn_device_id`);
+
+ALTER TABLE `device_payloads`
+  ADD COLUMN `external_id` varchar(100) DEFAULT NULL COMMENT 'Identificador do dado na origem (evita gravar o mesmo uplink duas vezes)' AFTER `source`,
+  ADD UNIQUE KEY `uq_payload_external` (`device_id`,`external_id`);
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

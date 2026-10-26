@@ -73,6 +73,7 @@ return [
     'api/alterar-visibilidade-projeto'       => 'src/api/alterar_visibilidade_projeto.php',
     'api/atualizar-grafico-avancado'         => 'src/api/atualizar_grafico_avancado.php',
     'api/atualizar-perfil'                   => 'src/api/atualizar_perfil.php',
+    'api/atualizar-projeto'                  => 'src/api/atualizar_projeto.php',
     'api/atualizar-senha'                    => 'src/api/atualizar_senha.php',
     'api/buscar-payloads'                    => 'src/api/buscar_payloads.php',
     'api/deletar-foto-perfil'                => 'src/api/deletar_foto_perfil.php',
@@ -102,5 +103,8 @@ return [
     'api/salvar-grafico-avancado'            => 'src/api/salvar_grafico_avancado.php',
     'api/solicitacoes-perfil'                => 'src/api/solicitacoes_perfil.php',
     'api/ttn-webhook'                        => 'src/api/ttn_webhook.php',
+    'api/ttn-configuracao'                   => 'src/api/ttn_configuracao.php',
+    'api/ttn-dispositivo'                    => 'src/api/ttn_dispositivo.php',
+    'api/ttn-sincronizar'                    => 'src/api/ttn_sincronizar.php',
     'api/upload-foto-perfil'                 => 'src/api/upload_foto_perfil.php',
 ];

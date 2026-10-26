@@ -44,5 +44,5 @@ return [
     'SMTP_PASS' => 'SUBSTITUA_PELA_SENHA_DO_E-MAIL',
     'SMTP_ENCRYPTION' => 'ssl',
     'MAIL_FROM_ADDRESS' => 'suporte@seudominio.com',
-    'MAIL_FROM_NAME' => 'IFSCSentral Lite Smart Campus',
+    'MAIL_FROM_NAME' => 'IFSCentral Lite Smart Campus',
 ];

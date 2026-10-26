@@ -5,6 +5,7 @@
 require_once '../config/config.php';
 setupSecureCORS();
 require_once '../core/ApiError.php';
+require_once '../core/ChartType.php';
 require_once '../core/Csrf.php';
 
 use App\Core\Csrf;
@@ -38,6 +39,27 @@ if (
 ) {
     http_response_code(400);
     echo json_encode(['error' => 'Campos obrigatórios: project_id, name, chart_type, datasets (array).']);
+    exit;
+}
+
+// charts.name é varchar(100)
+if (mb_strlen($data->name) > 100) {
+    http_response_code(400);
+    echo json_encode(['error' => 'O nome do gráfico deve ter no máximo 100 caracteres.']);
+    exit;
+}
+
+$data->chart_type = normalize_chart_type($data->chart_type);
+if ($data->chart_type === null) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Tipo de gráfico inválido (use line, bar, area ou scatter).']);
+    exit;
+}
+
+$datasetError = validate_chart_datasets($data->datasets);
+if ($datasetError) {
+    http_response_code(400);
+    echo json_encode(['error' => $datasetError]);
     exit;
 }
 

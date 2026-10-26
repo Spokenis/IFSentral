@@ -61,7 +61,7 @@ if (!empty($project['project_tags'])) {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title><?php echo htmlspecialchars($project['name']); ?> | IFSCSentral Lite</title>
+  <title><?php echo htmlspecialchars($project['name']); ?> | IFSCentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -489,7 +489,7 @@ $(function() {
             // Criar gráfico
             const ctx = document.getElementById(canvasId).getContext('2d');
             const chartInstance = new Chart(ctx, {
-                type: chartType === 'area' ? 'line' : chartType,
+                type: ['area', 'scatter'].includes(chartType) ? 'line' : chartType,
                 data: {
                     labels: labels,
                     datasets: chartDatasets

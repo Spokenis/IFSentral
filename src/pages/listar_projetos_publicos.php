@@ -12,6 +12,7 @@ header("Access-Control-Allow-Methods: GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 // NÃO PRECISA DE CREDENCIAIS, POIS É PÚBLICA
 require '../config/db.php';
+require_once __DIR__ . '/../core/ApiError.php';
 // REMOVEMOS O 'auth_check.php'. ESTA API AGORA É PÚBLICA.
 
 if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
@@ -119,7 +120,6 @@ try {
     ]);
 
 } catch (PDOException $e) {
-    http_response_code(500);
-    echo json_encode(['error' => 'Erro ao buscar projetos públicos: ' . $e->getMessage()]);
+    api_error_response('Erro ao buscar projetos públicos', $e, 500);
 }
 ?>

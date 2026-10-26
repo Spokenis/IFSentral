@@ -60,6 +60,13 @@ try {
         exit;
     }
 
+    // users.email é varchar(50): um e-mail maior nunca corresponderia a uma conta
+    if (mb_strlen($invited_email) > 50) {
+        http_response_code(400);
+        echo json_encode(['error' => 'O e-mail deve ter no máximo 50 caracteres.']);
+        exit;
+    }
+
     // Verificar se a permissão existe
     $roleSql = "SELECT id FROM roles WHERE id = ?";
     $roleStmt = $conn->prepare($roleSql);

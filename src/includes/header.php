@@ -27,7 +27,7 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
   <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
     <div class="container">
       <a href="./" class="navbar-brand">
-        <span class="brand-text font-weight-bold">IFSCSentral Lite</span>
+        <span class="brand-text font-weight-bold">IFSCentral Lite</span>
       </a>
       <div class="collapse navbar-collapse order-3" id="navbarCollapse">
         <ul class="navbar-nav">

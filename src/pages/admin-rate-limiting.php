@@ -30,25 +30,59 @@ use App\Core\Csrf;
 $rateLimiter = new RateLimiter($conn);
 $allSettings = $rateLimiter->getAllSettings();
 
-// Se for POST, atualizar configuração
+// Configurações editáveis nesta tela: chave => [rótulo, mínimo, máximo]
+$editableSettings = [
+    'RATE_LIMIT_ENABLED'             => ['Habilitar Rate Limiting', 0, 1],
+    'RATE_LIMIT_REQUESTS_PER_MINUTE' => ['Requisições por Minuto', 1, 10000],
+    'RATE_LIMIT_WINDOW_MINUTES'      => ['Janela de Tempo', 1, 60],
+    'RATE_LIMIT_SOFT_LIMIT_PERCENT'  => ['Percentual de Aviso', 0, 100],
+    'LOG_RATE_LIMIT_VIOLATIONS'      => ['Registrar Violações', 0, 1],
+];
+
+// Se for POST, atualizar configurações (o formulário envia todas como settings[CHAVE])
 $message = '';
 $messageType = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_setting'])) {
     Csrf::requireValidTokenFromPost();
 
-    $settingKey = $_POST['setting_key'] ?? null;
-    $settingValue = $_POST['setting_value'] ?? null;
+    $submitted = is_array($_POST['settings'] ?? null) ? $_POST['settings'] : [];
+    $errors = [];
+    $changed = [];
 
-    if ($settingKey && $settingValue !== null) {
-        $result = $rateLimiter->updateSetting($settingKey, $settingValue);
-        $message = $result['message'];
-        $messageType = $result['success'] ? 'success' : 'danger';
-        
-        if ($result['success']) {
-            // Recarrega as settings
-            $allSettings = $rateLimiter->getAllSettings();
+    foreach ($editableSettings as $key => [$label, $min, $max]) {
+        if (!isset($submitted[$key])) {
+            continue;
         }
+        $value = filter_var($submitted[$key], FILTER_VALIDATE_INT, ['options' => ['min_range' => $min, 'max_range' => $max]]);
+        if ($value === false) {
+            $errors[] = "\"$label\" deve ser um número entre $min e $max.";
+            continue;
+        }
+        // UPDATE sem mudança devolve rowCount 0, que o RateLimiter trata como erro
+        if ((string)$value !== (string)($allSettings[$key] ?? '')) {
+            $changed[$key] = (string)$value;
+        }
+    }
+
+    if ($errors) {
+        $message = implode(' ', $errors);
+        $messageType = 'danger';
+    } elseif (!$changed) {
+        $message = 'Nenhuma alteração para salvar.';
+        $messageType = 'info';
+    } else {
+        foreach ($changed as $key => $value) {
+            $result = $rateLimiter->updateSetting($key, $value);
+            if (!$result['success']) {
+                $errors[] = $editableSettings[$key][0] . ': ' . $result['message'];
+            }
+        }
+        $message = $errors ? implode(' ', $errors) : 'Configurações atualizadas.';
+        $messageType = $errors ? 'danger' : 'success';
+
+        // Recarrega as settings
+        $allSettings = $rateLimiter->getAllSettings();
     }
 }
 
@@ -75,7 +109,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin - Rate Limiting | IFSCSentral Lite</title>
+  <title>Admin - Rate Limiting | IFSCentral Lite</title>
 
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -127,7 +161,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
                   <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Csrf::getToken()); ?>">
                   <div class="form-group">
                     <label for="rate_limit_enabled">Habilitar Rate Limiting?</label>
-                    <select id="rate_limit_enabled" name="setting_value" class="form-control" onchange="updateSetting('RATE_LIMIT_ENABLED', this.value)">
+                    <select id="rate_limit_enabled" name="settings[RATE_LIMIT_ENABLED]" class="form-control">
                       <option value="1" <?php echo $allSettings['RATE_LIMIT_ENABLED'] == '1' ? 'selected' : ''; ?>>✓ Habilitado</option>
                       <option value="0" <?php echo $allSettings['RATE_LIMIT_ENABLED'] == '0' ? 'selected' : ''; ?>>✗ Desabilitado</option>
                     </select>
@@ -135,36 +169,35 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
 
                   <div class="form-group">
                     <label for="requests_per_minute">Requisições por Minuto (Padrão)</label>
-                    <input type="number" id="requests_per_minute" name="setting_value" class="form-control" 
+                    <input type="number" id="requests_per_minute" name="settings[RATE_LIMIT_REQUESTS_PER_MINUTE]" class="form-control" 
                            value="<?php echo htmlspecialchars($allSettings['RATE_LIMIT_REQUESTS_PER_MINUTE'] ?? 60); ?>" min="1" max="10000">
                     <small class="form-text text-muted">Máximo de requisições HTTP por minuto por dispositivo</small>
                   </div>
 
                   <div class="form-group">
                     <label for="window_minutes">Janela de Tempo (minutos)</label>
-                    <input type="number" id="window_minutes" name="setting_value" class="form-control"
+                    <input type="number" id="window_minutes" name="settings[RATE_LIMIT_WINDOW_MINUTES]" class="form-control"
                            value="<?php echo htmlspecialchars($allSettings['RATE_LIMIT_WINDOW_MINUTES'] ?? 1); ?>" min="1" max="60">
                     <small class="form-text text-muted">Período para contagem de requisições</small>
                   </div>
 
                   <div class="form-group">
                     <label for="soft_limit">Percentual de Aviso (Soft Limit)</label>
-                    <input type="number" id="soft_limit" name="setting_value" class="form-control"
+                    <input type="number" id="soft_limit" name="settings[RATE_LIMIT_SOFT_LIMIT_PERCENT]" class="form-control"
                            value="<?php echo htmlspecialchars($allSettings['RATE_LIMIT_SOFT_LIMIT_PERCENT'] ?? 80); ?>" min="0" max="100">
                     <small class="form-text text-muted">Percentual do limite para começar a alertar (ex: 80%)</small>
                   </div>
 
                   <div class="form-group">
                     <label for="log_violations">Registrar Violações</label>
-                    <select id="log_violations" name="setting_value" class="form-control" onchange="updateSetting('LOG_RATE_LIMIT_VIOLATIONS', this.value)">
+                    <select id="log_violations" name="settings[LOG_RATE_LIMIT_VIOLATIONS]" class="form-control">
                       <option value="1" <?php echo $allSettings['LOG_RATE_LIMIT_VIOLATIONS'] == '1' ? 'selected' : ''; ?>>✓ Ativado</option>
                       <option value="0" <?php echo $allSettings['LOG_RATE_LIMIT_VIOLATIONS'] == '0' ? 'selected' : ''; ?>>✗ Desativado</option>
                     </select>
                   </div>
 
-                  <input type="hidden" name="setting_key" id="setting_key" value="">
                   <input type="hidden" name="update_setting" value="1">
-                  <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-2"></i>Salvar Configuração</button>
+                  <button type="submit" class="btn btn-primary"><i class="fas fa-save mr-2"></i>Salvar Configurações</button>
                 </form>
               </div>
             </div>
@@ -260,18 +293,6 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-function updateSetting(key, value) {
-  document.getElementById('setting_key').value = key;
-  document.querySelector('input[name="setting_value"][type="text"], input[name="setting_value"][type="number"], select[name="setting_value"]').value = value;
-}
-
-// Auto-update quando mudar os selects
-document.querySelector('select[name="setting_value"]').addEventListener('change', function(e) {
-  const key = e.target.id === 'rate_limit_enabled' ? 'RATE_LIMIT_ENABLED' : 'LOG_RATE_LIMIT_VIOLATIONS';
-  document.getElementById('setting_key').value = key;
-  document.querySelector('form').submit();
-});
-</script>
+<script src="assets/js/input-limits.js"></script>
 </body>
 </html>

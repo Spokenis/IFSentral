@@ -63,6 +63,12 @@ try {
         echo json_encode(['error' => 'Nova senha deve ter no mínimo 6 caracteres']);
         exit;
     }
+
+    if (strlen($new_password) > 72) {
+        http_response_code(400);
+        echo json_encode(['error' => 'Nova senha deve ter no máximo 72 caracteres']);
+        exit;
+    }
     
     if ($new_password !== $confirm_password) {
         http_response_code(400);

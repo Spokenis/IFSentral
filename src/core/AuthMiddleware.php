@@ -51,7 +51,12 @@ class AuthMiddleware
         }
 
         try {
-            $sql = "SELECT id, project_id, api_key FROM devices WHERE api_key = ? AND deletedAt IS NULL LIMIT 1";
+            // Dispositivo de projeto apagado também deixa de autenticar
+            $sql = "SELECT d.id, d.project_id, d.api_key
+                    FROM devices d
+                    JOIN projects p ON p.id = d.project_id
+                    WHERE d.api_key = ? AND d.deletedAt IS NULL AND p.deletedAt IS NULL
+                    LIMIT 1";
             $stmt = $pdo_connection->prepare($sql);
             $stmt->execute([$api_key]);
 
