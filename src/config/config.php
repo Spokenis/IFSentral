@@ -116,7 +116,8 @@ define('MAIL_FROM_NAME', env('MAIL_FROM_NAME'));
 $session_secure = filter_var(env('SESSION_SECURE'), FILTER_VALIDATE_BOOLEAN);
 if (env('APP_ENV') === 'production') {
     $session_secure = true;
-    if (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off') {
+    // Na linha de comando (scripts de setup e manutenção) não há HTTPS a conferir
+    if (PHP_SAPI !== 'cli' && (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] === 'off')) {
         error_log('[AVISO] APP_ENV=production mas HTTPS não está ativo. Ative HTTPS para que SESSION_SECURE funcione corretamente.');
     }
 }

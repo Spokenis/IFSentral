@@ -4,4 +4,5 @@ node_modules/
 vendor/
 logs/*.log
 !logs/.gitkeep
-
+# Backups (dados do banco) nunca entram na imagem
+backups/

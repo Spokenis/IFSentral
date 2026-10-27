@@ -31,6 +31,8 @@ RUN docker-php-ext-install pdo pdo_mysql posix
 RUN a2enmod rewrite
 # Habilita SSL e headers modules
 RUN a2enmod ssl headers
+# IP real do cliente atrás do proxy (docker/apache/ifsentral-http.conf)
+RUN a2enmod remoteip
 
 WORKDIR /var/www/html
 
@@ -47,8 +49,15 @@ COPY . /var/www/html/
 
 # Copy apache ssl vhost (if present in build context)
 COPY docker/apache/ifsentral-ssl.conf /etc/apache2/sites-available/ifsentral-ssl.conf
-RUN a2ensite ifsentral-ssl.conf || true
+COPY docker/apache/ifsentral-http.conf /etc/apache2/sites-available/ifsentral-http.conf
+RUN a2ensite ifsentral-ssl.conf ifsentral-http.conf || true
 RUN a2dissite 000-default.conf || true
+
+# Sessões PHP fora do contêiner (volume php_sessions, compartilhado pelos dois
+# contêineres web): o usuário continua logado quando o proxy o manda para o
+# outro contêiner e quando os contêineres são recriados numa atualização
+RUN mkdir -p /var/lib/php/sessions && chown www-data:www-data /var/lib/php/sessions \
+    && echo "session.save_path = /var/lib/php/sessions" > /usr/local/etc/php/conf.d/ifscentral-sessoes.ini
 
 # Ajusta permissões
 RUN chown -R www-data:www-data /var/www/html

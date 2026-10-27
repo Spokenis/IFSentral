@@ -69,6 +69,13 @@ INTERVALO="${MQTT_RELOAD_INTERVAL:-2}"
         sleep "$INTERVALO"
         atual="$(assinatura)"
         if [ "$atual" != "$ultima" ]; then
+            # Espera os arquivos pararem de mudar: senhas e ACL são gravadas em
+            # dois passos, e recarregar entre eles aplicaria só metade da mudança
+            sleep 1
+            while [ "$(assinatura)" != "$atual" ]; do
+                atual="$(assinatura)"
+                sleep 1
+            done
             ajustar_permissoes
             kill -HUP "$MOSQUITTO_PID" 2>/dev/null || true
             echo "[MOSQUITTO-ENTRYPOINT] Credenciais/ACL alteradas; broker recarregado (SIGHUP)."

@@ -1,0 +1,56 @@
+# Proxy de entrada do IFSCentral (contêiner proxy, ver docker-compose.yml).
+#
+# Termina o TLS e reparte as requisições entre os dois contêineres web. Na
+# atualização (manutencao/atualizar.sh) eles são recriados um de cada vez:
+# enquanto um reinicia, o nginx manda tudo para o outro, e o site não sai do ar.
+#
+# ${HTTPS_PORT} é preenchido na inicialização do contêiner (envsubst da imagem
+# oficial do nginx); as variáveis do próprio nginx ($host etc.) ficam intactas.
+
+# DNS interno do Docker: um contêiner recriado ganha outro IP, e o "resolve"
+# abaixo faz o nginx perceber isso sozinho
+resolver 127.0.0.11 valid=5s ipv6=off;
+
+upstream ifsentral_web {
+    zone ifsentral_web 64k;
+    server web:80 resolve max_fails=1 fail_timeout=5s;
+    server web-2:80 resolve max_fails=1 fail_timeout=5s;
+    keepalive 16;
+}
+
+server {
+    listen 80;
+    server_name _;
+    return 301 https://$host:${HTTPS_PORT}$request_uri;
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name _;
+
+    ssl_certificate     /etc/ssl/certs/ifsentral-chain.crt;
+    ssl_certificate_key /etc/ssl/private/ifsentral.key;
+    ssl_protocols       TLSv1.2 TLSv1.3;
+
+    # Foto de perfil vai até 5 MB
+    client_max_body_size 8m;
+
+    location / {
+        proxy_pass http://ifsentral_web;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        # Substitui (não acrescenta) o X-Forwarded-For recebido: o Apache usa
+        # este cabeçalho como IP do cliente (bloqueio de login, rate limit), e
+        # um valor vindo do cliente seria forjável
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+
+        # Se um contêiner web estiver reiniciando, tenta o outro
+        proxy_next_upstream error timeout http_502 http_503;
+        proxy_next_upstream_tries 2;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 120s;
+    }
+}

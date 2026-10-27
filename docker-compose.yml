@@ -1,48 +1,84 @@
+# Configuração comum aos dois contêineres web (web e web-2). Ficam atrás do
+# proxy: na atualização (manutencao/atualizar.sh) são trocados um de cada vez,
+# e o site não sai do ar.
+x-web: &web
+  image: ifsentral-app:latest
+  environment:
+    - ROLE=web
+    - DB_HOST=${DB_HOST:-db}
+    - DB_NAME=${DB_NAME:-ifsentral_bd}
+    - DB_USER=${DB_USER:-ifsentral_user}
+    - DB_PASS=${DB_PASS:-secretpassword}
+    - MQTT_HOST=${MQTT_HOST:-mosquitto}
+    - MQTT_PORT=${MQTT_PORT:-1883}
+    - MQTT_USERNAME=${MQTT_USERNAME:-admin}
+    - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
+    # Porta HTTPS exposta no host (usada pelo .htaccess para montar o
+    # redirect HTTP->HTTPS com a porta correta quando o Apache é acessado
+    # sem o proxy).
+    - HTTPS_PORT=${HOST_HTTPS_PORT:-8443}
+  volumes:
+    - ./logs:/var/www/html/logs
+    - ./uploads:/var/www/html/uploads
+    # Sessões compartilhadas pelos dois contêineres web (ver Dockerfile)
+    - php_sessions:/var/lib/php/sessions
+    # Mount host-managed config and certs (read-only) so TLS and secrets
+    # live outside the image. Ensure /etc/ifsentral and cert paths exist on host (run ./setup-ssl.sh).
+    - /etc/ifsentral:/etc/ifsentral:ro
+    - /etc/ssl/certs/ifsentral-chain.crt:/etc/ssl/certs/ifsentral-chain.crt:ro
+    - /etc/ssl/private/ifsentral.key:/etc/ssl/private/ifsentral.key:ro
+    - mqtt_config:/mosquitto/config
+  depends_on:
+    db:
+      condition: service_healthy
+    mosquitto:
+      condition: service_started
+  healthcheck:
+    # PHP + configuração + banco (src/api/saude.php)
+    test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "-H", "X-Forwarded-Proto: https", "http://localhost/api/saude"]
+    interval: 10s
+    timeout: 5s
+    retries: 3
+    start_period: 20s
+  restart: unless-stopped
+
 services:
 
-  # 1. Web Server (PHP/Apache)
-  web:
-    build: .
-    container_name: ifsentral_web
+  # 1. Proxy de entrada (nginx): TLS e repartição entre web e web-2
+  proxy:
+    image: nginx:1.28-alpine
+    container_name: ifsentral_proxy
     # In production on the intranet bind to 80/443. For local testing you can
     # change to a different host port (e.g. 8080:80).
     ports:
       - "${HOST_HTTP_PORT:-8080}:80"
       - "${HOST_HTTPS_PORT:-8443}:443"
     environment:
-      - ROLE=web
-      - DB_HOST=${DB_HOST:-db}
-      - DB_NAME=${DB_NAME:-ifsentral_bd}
-      - DB_USER=${DB_USER:-ifsentral_user}
-      - DB_PASS=${DB_PASS:-secretpassword}
-      - MQTT_HOST=${MQTT_HOST:-mosquitto}
-      - MQTT_PORT=${MQTT_PORT:-1883}
-      - MQTT_USERNAME=${MQTT_USERNAME:-admin}
-      - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
-      # Porta HTTPS exposta no host (usada pelo .htaccess para montar o
-      # redirect HTTP->HTTPS com a porta correta; sem isso o redirect
-      # preserva a porta HTTP original, que só coincide com a HTTPS em
-      # produção com 80/443 padrão).
       - HTTPS_PORT=${HOST_HTTPS_PORT:-8443}
     volumes:
-      - ./logs:/var/www/html/logs
-      - ./uploads:/var/www/html/uploads
-      # Mount host-managed config and certs (read-only) so TLS and secrets
-      # live outside the image. Ensure /etc/ifsentral and cert paths exist on host (run ./setup-ssl.sh).
-      - /etc/ifsentral:/etc/ifsentral:ro
+      # A pasta, não o arquivo: um arquivo montado sozinho continua com o
+      # conteúdo antigo depois que o git pull o substitui
+      - ./docker/nginx:/etc/nginx/templates:ro
       - /etc/ssl/certs/ifsentral-chain.crt:/etc/ssl/certs/ifsentral-chain.crt:ro
       - /etc/ssl/private/ifsentral.key:/etc/ssl/private/ifsentral.key:ro
-      - mqtt_config:/mosquitto/config
     depends_on:
-      db:
-        condition: service_healthy
-      mosquitto:
-        condition: service_started
+      - web
+      - web-2
     restart: unless-stopped
 
-  # 2. Background Worker (Executa o MQTT Subscriber)
-  worker:
+  # 2. Web Server (PHP/Apache) — duas cópias iguais atrás do proxy
+  web:
+    <<: *web
     build: .
+    container_name: ifsentral_web
+
+  web-2:
+    <<: *web
+    container_name: ifsentral_web_2
+
+  # 3. Background Worker (Executa o MQTT Subscriber)
+  worker:
+    image: ifsentral-app:latest
     container_name: ifsentral_worker
     # Hostname fixo = ID MQTT fixo (ver MQTT_CLIENT_ID em src/config/mqtt.php):
     # o worker retoma a mesma sessão no broker mesmo se o contêiner for recriado.
@@ -67,12 +103,16 @@ services:
       mosquitto:
         condition: service_started
     restart: unless-stopped
+    # O PHP (PID 1) ignora o SIGTERM, e o docker stop esperaria 10 s à toa.
+    # Encerrar na hora é seguro: o broker reentrega o que não foi confirmado
+    # (worker) e a ponte recupera pelo Storage do TTN (ttn-bridge).
+    stop_grace_period: 3s
     command: ["docker-entrypoint.sh"]
 
-  # 3. Ponte com o The Things Network (MQTT do TTN + Storage Integration -> banco)
+  # 4. Ponte com o The Things Network (MQTT do TTN + Storage Integration -> banco)
   # Só faz algo para projetos com a integração TTN configurada.
   ttn-bridge:
-    build: .
+    image: ifsentral-app:latest
     container_name: ifsentral_ttn_bridge
     hostname: ifsentral-ttn-bridge
     environment:
@@ -87,9 +127,13 @@ services:
       db:
         condition: service_healthy
     restart: unless-stopped
+    # O PHP (PID 1) ignora o SIGTERM, e o docker stop esperaria 10 s à toa.
+    # Encerrar na hora é seguro: o broker reentrega o que não foi confirmado
+    # (worker) e a ponte recupera pelo Storage do TTN (ttn-bridge).
+    stop_grace_period: 3s
     command: ["docker-entrypoint.sh"]
 
-  # 4. Database Server (MySQL)
+  # 5. Database Server (MySQL)
   db:
     image: mysql:8.0
     container_name: ifsentral_db
@@ -104,7 +148,10 @@ services:
       - db_data:/var/lib/mysql
       - ./src/db/ifsentral_bd.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_ROOT_PASS:-rootpassword}"]
+      # 127.0.0.1 (TCP), não localhost (socket): durante a importação inicial o
+      # MySQL já responde pelo socket mas ainda não aceita conexões TCP, que é
+      # como os outros contêineres se conectam
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_ROOT_PASS:-rootpassword}"]
       interval: 10s
       timeout: 5s
       retries: 6
@@ -116,7 +163,7 @@ services:
       start_period: 180s
     restart: unless-stopped
 
-  # 5. MQTT Broker (Mosquitto)
+  # 6. MQTT Broker (Mosquitto)
   mosquitto:
     image: eclipse-mosquitto:latest
     container_name: ifsentral_mqtt
@@ -155,7 +202,37 @@ services:
       start_period: 10s
     restart: unless-stopped
 
+  # 7. Backup automático do banco e das fotos de perfil (ver README, "Backup automático")
+  backup:
+    image: mysql:8.0
+    container_name: ifsentral_backup
+    entrypoint: ["bash", "/backup/agendador.sh"]
+    environment:
+      - DB_HOST=${DB_HOST:-db}
+      - DB_NAME=${DB_NAME:-ifsentral_bd}
+      - DB_USER=${DB_USER:-ifsentral_user}
+      - DB_PASS=${DB_PASS:-secretpassword}
+      # Horários (HH:MM, separados por espaço) e por quantos dias guardar
+      - BACKUP_HORARIOS=${BACKUP_HORARIOS:-03:00}
+      - BACKUP_MANTER_DIAS=${BACKUP_MANTER_DIAS:-14}
+      - TZ=${TZ:-America/Sao_Paulo}
+    volumes:
+      - ./docker/backup:/backup:ro
+      - ${BACKUP_DIR:-./backups}:/backups
+      - ./uploads:/dados/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      # "unhealthy" se o último backup bem-sucedido tiver mais de 26 horas
+      test: ["CMD", "bash", "/backup/verificar.sh"]
+      interval: 10m
+      timeout: 10s
+      retries: 1
+    restart: unless-stopped
+
 volumes:
   db_data:
   mqtt_data:
   mqtt_config:
+  php_sessions:

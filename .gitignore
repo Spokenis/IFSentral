@@ -67,3 +67,6 @@ test-*.php
 *-test.php
 mqtt_credentials_auto.txt
 src/config/.env
+
+# Backups (manutencao/, contêiner backup)
+backups/

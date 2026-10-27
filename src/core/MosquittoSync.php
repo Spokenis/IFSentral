@@ -173,7 +173,18 @@ class MosquittoSync {
             // Tenta mover para o volume compartilhado /mosquitto/config
             $config_dir = dirname($this->passwd_file);
             if (is_writable($config_dir)) {
-                // Move passwd
+                // ACL antes das senhas: se o broker recarregar entre os dois, o
+                // dispositivo novo ainda não consegue entrar (e tenta de novo),
+                // em vez de entrar sem permissão de publicar — o Mosquitto
+                // confirmaria e descartaria as mensagens em silêncio
+                $mv_acl = "mv $acl_tmp $this->acl_file 2>&1";
+                exec($mv_acl, $output2, $code2);
+
+                if ($code2 === 0) {
+                    exec("chown 1883:1883 $this->acl_file 2>&1");
+                    exec("chmod 644 $this->acl_file 2>&1");
+                }
+
                 $mv_passwd = "mv $passwd_tmp $this->passwd_file 2>&1";
                 exec($mv_passwd, $output1, $code1);
 
@@ -182,15 +193,6 @@ class MosquittoSync {
                     // (mesmo uid usado por docker-entrypoint.sh na geração inicial)
                     exec("chown 1883:1883 $this->passwd_file 2>&1");
                     exec("chmod 600 $this->passwd_file 2>&1");
-                }
-
-                // Move ACL
-                $mv_acl = "mv $acl_tmp $this->acl_file 2>&1";
-                exec($mv_acl, $output2, $code2);
-
-                if ($code2 === 0) {
-                    exec("chown 1883:1883 $this->acl_file 2>&1");
-                    exec("chmod 644 $this->acl_file 2>&1");
                 }
 
                 if ($code1 === 0 && $code2 === 0) {
