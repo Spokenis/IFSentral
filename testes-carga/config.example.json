@@ -1,0 +1,27 @@
+{
+  "base_url": "http://192.168.0.50:8080",
+  "targets": [
+    {
+      "name": "ProjetoA - sensor temperatura",
+      "device_id": 1,
+      "api_key": "COLE_AQUI_A_API_KEY_DO_DISPOSITIVO_1",
+      "weight": 2,
+      "payload": {
+        "temperatura": { "type": "float", "min": 20, "max": 35, "decimals": 2 },
+        "umidade":     { "type": "int",   "min": 40, "max": 90 },
+        "ligado":      { "type": "bool",  "p": 0.8 }
+      }
+    },
+    {
+      "name": "ProjetoB - estado",
+      "base_url": "https://ifsentral.online",
+      "device_id": 7,
+      "api_key": "COLE_AQUI_A_API_KEY_DO_DISPOSITIVO_7",
+      "payload": {
+        "estado":  { "type": "choice", "values": ["ok", "alerta", "falha"] },
+        "bateria": { "type": "int", "min": 0, "max": 100 },
+        "fixo": 42
+      }
+    }
+  ]
+}

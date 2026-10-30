@@ -1,0 +1,41 @@
+# Configuracao de exemplo para ifscentral_mqtt_loadtest.py
+# (MQTT so existe na edicao COMPLETA do IFSCentral).
+#
+# Copie para config.mqtt.yaml e preencha. Cada target e um dispositivo.
+# Login no broker: usuario "device_<device_id>" + senha gerada no cadastro.
+
+broker:
+  host: "192.168.0.50"   # IP/host do servidor
+  port: 1883             # 1883 (texto) ou 8883 (TLS)
+  tls: false             # true para a porta 8883
+
+targets:
+  - name: "ProjetoA - temperatura"
+    project_id: 1
+    device_id: 1
+    mqtt_username: "device_1"
+    mqtt_password: "COLE_AQUI_A_SENHA_MQTT_DO_DISPOSITIVO_1"
+    weight: 2
+    payload:
+      temperatura: { type: float, min: 20, max: 35, decimals: 2 }
+      umidade:     { type: int,   min: 40, max: 90 }
+
+  - name: "ProjetoA - pressao"
+    project_id: 1
+    device_id: 2
+    mqtt_username: "device_2"
+    mqtt_password: "COLE_AQUI_A_SENHA_MQTT_DO_DISPOSITIVO_2"
+    payload:
+      pressao: { type: float, min: 950, max: 1050, decimals: 1 }
+
+  # Um target pode apontar para outro broker/porta, se quiser:
+  # - name: "ProjetoB - estado"
+  #   host: "outro.servidor.com"
+  #   port: 8883
+  #   tls: true
+  #   project_id: 3
+  #   device_id: 9
+  #   mqtt_username: "device_9"
+  #   mqtt_password: "..."
+  #   payload:
+  #     estado: { type: choice, values: ["ok", "alerta", "falha"] }

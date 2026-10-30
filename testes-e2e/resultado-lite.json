@@ -1,0 +1,1994 @@
+[
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET / abre (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Bem-vindo ao IFSCentral Lite - Hub IoT para Smart Campus</title>    <lin"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET / sem erro de PHP no HTML",
+  "ok": true,
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Bem-vindo ao IFSCentral Lite - Hub IoT para Smart Ca"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /login abre (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Login</title>    <link rel=\"stylesheet\" href=\"https://"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /login sem erro de PHP no HTML",
+  "ok": true,
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>IFSCentral Lite | Login</title>\n\n  <link rel=\"styles"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /registrar abre (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Registro</title>    <link rel=\"stylesheet\" href=\"https"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /registrar sem erro de PHP no HTML",
+  "ok": true,
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>IFSCentral Lite | Registro</title>\n\n  <link rel=\"sty"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /esqueci-senha abre (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Esqueci minha senha | IFSCentral Lite</title>    <link rel=\"stylesheet\" "
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /esqueci-senha sem erro de PHP no HTML",
+  "ok": true,
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Esqueci minha senha | IFSCentral Lite</title>\n\n  <li"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /termos abre (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Termos de Serviço | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /termos sem erro de PHP no HTML",
+  "ok": true,
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Termos de Serviço | IFSCentral Lite</title>\n\n  <link"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /meus-projetos sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /explorar-projetos sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /meus-dispositivos sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /perfil sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /configuracoes sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /novo-projeto sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /projeto?id=1 sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /dispositivo?id=1 sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /admin sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /admin-usuarios sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /admin-rate-limiting sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /documentacao sem login redireciona (espera 301/302/303/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/listar-projetos sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/obter-perfil-usuario sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/listar-devices sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/obter-notificacoes sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/listar-tags sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/obter-projeto?id=1 sem login é recusado (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "1. Páginas públicas e proteção de rotas (sem login)",
+  "teste": "GET /api/listar-projetos-publicos sem login (usado pela página inicial) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"data\":[],\"pagination\":{\"page\":1,\"per_page\":12,\"total\":0,\"total_pages\":0}}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "cadastro válido (admin) (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"6\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "cadastro válido (gerente) (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"7\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "cadastro válido (membro) (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"8\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "cadastro válido (externo) (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"9\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "e-mail repetido é recusado (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Erro: E-mail ou Nome de Usu\\u00e1rio j\\u00e1 existem.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "nome de usuário repetido é recusado (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Erro: E-mail ou Nome de Usu\\u00e1rio j\\u00e1 existem.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "sem e-mail é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: name, email, username, e password.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "sem senha é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: name, email, username, e password.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "senha vazia é recusada (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: name, email, username, e password.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "nome vazio é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome \\u00e9 obrigat\\u00f3rio.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "e-mail sem formato válido ('abc') é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"E-mail inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "nome com 51 caracteres é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome deve ter no m\\u00e1ximo 50 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "e-mail com 51 caracteres é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O e-mail deve ter no m\\u00e1ximo 50 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "username com 2 caracteres é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome de usu\\u00e1rio deve ter entre 3 e 20 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "username com 21 caracteres é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome de usu\\u00e1rio deve ter entre 3 e 20 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "senha com 5 caracteres é recusada (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A senha deve ter no m\\u00ednimo 6 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "senha com 73 caracteres é recusada (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A senha deve ter no m\\u00e1ximo 72 caracteres.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "username com espaço/símbolos é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome de usu\\u00e1rio s\\u00f3 pode ter letras sem acento, n\\u00fameros, ponto, h\\u00edfen e sublinhado.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "JSON malformado é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: name, email, username, e password.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "GET em /api/cadastrar-usuario é recusado (espera 405)",
+  "ok": true,
+  "detalhe": "HTTP 405: {\"error\":\"M\\u00e9todo n\\u00e3o permitido. Use POST.\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "cadastro com profile=Admin no corpo (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"12\"}"
+ },
+ {
+  "secao": "2. Cadastro de usuário",
+  "teste": "…mas a conta é criada como User",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "senha errada (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"E-mail ou senha inv\\u00e1lidos.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "e-mail inexistente (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"E-mail ou senha inv\\u00e1lidos.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "sem senha (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"E-mail e senha s\\u00e3o obrigat\\u00f3rios.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "GET em /api/login (espera 405)",
+  "ok": true,
+  "detalhe": "HTTP 405: {\"error\":\"M\\u00e9todo n\\u00e3o permitido. Use POST.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "e-mail em maiúsculas (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "login correto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "sessão vale: obter perfil (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":8,\"name\":\"Teste Membro\",\"email\":\"membro034ee3@teste.dev\",\"username\":\"membro034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "página meus-projetos abre logado (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Meus Projetos | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\""
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "logout (espera 200/302)",
+  "ok": true,
+  "detalhe": "HTTP 302: "
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "depois do logout a sessão acabou (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "6ª tentativa errada seguida é bloqueada (espera 429)",
+  "ok": true,
+  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login. Tente novamente mais tarde.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "…e bloqueia também a senha certa do mesmo usuário (espera 429)",
+  "ok": true,
+  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login. Tente novamente mais tarde.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "bloqueio por erros de UM usuário não deveria barrar OUTRO usuário do mesmo IP",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent034ee3\"} (o limite conta falhas por e-mail OU por IP)"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "login de admin (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"admin034ee3\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "login de gerente (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent034ee3\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "login de membro (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+ },
+ {
+  "secao": "3. Login e sessão",
+  "teste": "login de externo (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+ },
+ {
+  "secao": "4. CSRF",
+  "teste": "POST sem token CSRF é recusado (criar projeto) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Token CSRF ausente ou inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "4. CSRF",
+  "teste": "POST com token CSRF errado é recusado (atualizar perfil) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Token CSRF ausente ou inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "4. CSRF",
+  "teste": "token CSRF de outra sessão é recusado (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Token CSRF ausente ou inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "ver perfil (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":8,\"name\":\"Teste Membro\",\"email\":\"membro034ee3@teste.dev\",\"username\":\"membro034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "atualizar nome (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Perfil atualizado com sucesso\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "…nome gravado",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "nome vazio (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Nome \\u00e9 obrigat\\u00f3rio\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "nome com 51 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Nome deve ter no m\\u00e1ximo 50 caracteres\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "e-mail inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"E-mail inv\\u00e1lido\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "e-mail com 51 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"E-mail deve ter no m\\u00e1ximo 50 caracteres\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "e-mail de outro usuário (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Este e-mail j\\u00e1 est\\u00e1 em uso por outro usu\\u00e1rio\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "username de outro usuário (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Este username j\\u00e1 est\\u00e1 em uso por outro usu\\u00e1rio\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "username com 2 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Username deve ter entre 3 e 20 caracteres\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "senha atual errada (espera 400/401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Senha atual incorreta\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "nova senha curta (5) (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Nova senha deve ter no m\\u00ednimo 6 caracteres\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "nova senha com 73 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Nova senha deve ter no m\\u00e1ximo 72 caracteres\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "confirmação diferente (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"As senhas n\\u00e3o coincidem\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "troca de senha válida (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Senha atualizada com sucesso\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "login com a senha antiga falha (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"E-mail ou senha inv\\u00e1lidos.\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "login com a senha nova funciona (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "upload de foto PNG (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Foto de perfil atualizada com sucesso\",\"profile_picture\":\"uploads\\/profile\\/user_8_1792986514.png\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "upload de PHP disfarçado de PNG é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Tipo de arquivo n\\u00e3o permitido. Use JPG, PNG, GIF ou WEBP\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "upload acima do limite de tamanho é recusado (espera 400/413)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O arquivo excede o tamanho m\\u00e1ximo permitido\"}"
+ },
+ {
+  "secao": "5. Perfil e senha",
+  "teste": "apagar foto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Foto de perfil removida com sucesso\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "status 2FA (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"enabled\":false}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "iniciar configuração (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"secret\":\"5TLPCKAXWV3T6ALRFEDBOEH2CW6P76BX\",\"otpauth_uri\":\"otpauth:\\/\\/totp\\/IFSCentral%20Lite%3Aexterno034ee3%40teste.dev?secret=5TLPCKAXWV3T6ALRFEDBOEH2CW6P76BX&issuer=IFSCentral+Lite&algorithm=SHA1&digits=6&period=30"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "confirmar com código errado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"C\\u00f3digo inv\\u00e1lido. Verifique o hor\\u00e1rio do seu dispositivo e tente novamente.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "confirmar com código certo (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Autentica\\u00e7\\u00e3o de dois fatores ativada com sucesso.\",\"backup_codes\":[\"B497-3CE0\",\"B45B-50AA\",\"22CF-5E60\",\"C7E7-D6A9\",\"B460-6965\",\"9D13-7F3F\",\"61FB-9479\",\"87FE-0CA5\"]}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "login passa a pedir o código",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"twofa_required\":true,\"message\":\"Informe o c\\u00f3digo de autentica\\u00e7\\u00e3o de dois fatores.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "sem código, a sessão não está autenticada (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "código 2FA errado (espera 400/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"C\\u00f3digo inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "mesmo código já usado na confirmação (replay) é recusado (espera 400/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"C\\u00f3digo inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "código 2FA do próximo passo é aceito (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "sessão autenticada após 2FA (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":9,\"name\":\"Teste Externo\",\"email\":\"externo034ee3@teste.dev\",\"username\":\"extern034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "desativar 2FA com senha errada (espera 400/401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Senha incorreta.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "desativar 2FA com senha certa (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Autentica\\u00e7\\u00e3o de dois fatores desativada.\"}"
+ },
+ {
+  "secao": "6. Autenticação em dois fatores (2FA)",
+  "teste": "login volta a não pedir código",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "User não pode criar projeto (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas Moderadores podem criar projetos como Gerente.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "pedido com mensagem curta (<5) (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Mensagem deve ter pelo menos 5 caracteres.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "pedido com mensagem de 2001 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Mensagem excede o limite de 2000 caracteres.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "pedido válido (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o enviada com sucesso. Aguarde aprova\\u00e7\\u00e3o.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "segundo pedido pendente é recusado (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Voc\\u00ea j\\u00e1 possui uma solicita\\u00e7\\u00e3o em an\\u00e1lise.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "User não pode aprovar pedidos (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Acesso negado.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "Admin lista pedidos (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":1,\"message\":\"Preciso criar projetos do lab\",\"createdAt\":\"2026-10-26 03:48:36\",\"name\":\"Teste Gerente\",\"email\":\"gerente034ee3@teste.dev\",\"user_id\":7}]"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "Admin com status inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Par\\u00e2metros inv\\u00e1lidos.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "Admin aprova (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o marcada como aprovado.\"}"
+ },
+ {
+  "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
+  "teste": "…usuário virou Moderator",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "criar projeto válido com tags (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"8\",\"invitation_code\":\"93c543767c07\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "…gerente associado com papel 1",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "…2 tags associadas",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "nome vazio (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campo \\\"name\\\" (nome do projeto) \\u00e9 obrigat\\u00f3rio.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "nome só com espaços (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campo \\\"name\\\" (nome do projeto) \\u00e9 obrigat\\u00f3rio.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "nome com 31 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome do projeto deve ter no m\\u00e1ximo 30 caracteres.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "nome com 30 (limite) (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"9\",\"invitation_code\":\"d40809fd76ae\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "descrição com 201 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A descri\\u00e7\\u00e3o deve ter no m\\u00e1ximo 200 caracteres.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "maxUsers negativo (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Valor inv\\u00e1lido para \\\"M\\u00e1ximo de Usu\\u00e1rios\\\".\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "maxUsers gigante (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Valor inv\\u00e1lido para \\\"M\\u00e1ximo de Usu\\u00e1rios\\\".\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "maxUsers texto (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Valor inv\\u00e1lido para \\\"M\\u00e1ximo de Usu\\u00e1rios\\\".\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "tag com 51 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Cada tag deve ter no m\\u00e1ximo 50 caracteres.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "tag numérica que não é ID de tag existente vira tag nova (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"10\",\"invitation_code\":\"a46965753b52\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "…com os nomes digitados",
+  "ok": true,
+  "detalhe": "['2026', '999999']"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "criar projeto privado com limite de 2 (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"11\",\"invitation_code\":\"8b0cdcf46666\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "listar meus projetos (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":9,\"name\":\"\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\",\"description\":\"Descri"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "obter projeto (gerente) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Gerente\",\"participant_count\":1,\"device_count\":0,\"project_tags\":\"Temperatura,nova-tag-034ee3\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "obter projeto privado (não membro) é recusado (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "obter projeto inexistente (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "obter projeto sem id (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"ID do projeto \\u00e9 obrigat\\u00f3rio\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "busca pública encontra o projeto público",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"data\":[{\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"maxUsers\":null,\"manager_name\":\"Teste Gerente\",\"participant_count\":1,\"device_count\":0,\"is_member\":null,\"project_tags\":\"Temperatura,nova-"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "busca pública NÃO mostra o projeto privado",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"data\":[],\"pagination\":{\"page\":1,\"per_page\":12,\"total\":0,\"total_pages\":0}}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "página pública do projeto (ver-projeto) logado (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"ht"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "página de gerenciar projeto (gerente) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Projeto | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "página de gerenciar projeto (não membro) é barrada (espera 302/403/404)",
+  "ok": true,
+  "detalhe": "HTTP 302: "
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "editar nome/descrição/tags (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Projeto atualizado\",\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"nova\",\"project_tags\":\"Temperatura\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "…tags substituídas (1 tag)",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "editar com nome de 31 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome do projeto deve ter no m\\u00e1ximo 30 caracteres.\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "não gerente não pode editar (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas o gerente do projeto pode alterar as informa\\u00e7\\u00f5es do projeto\"}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "tornar privado (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Projeto tornado privado\",\"public\":0}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "tornar público (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Projeto tornado p\\u00fablico\",\"public\":1}"
+ },
+ {
+  "secao": "8. Projetos: criar, ler, editar",
+  "teste": "não gerente não muda visibilidade (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas o gerente do projeto pode alterar a visibilidade\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "pedir participação com mensagem de 2001 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A mensagem deve ter no m\\u00e1ximo 2000 caracteres.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "pedir participação (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o enviada com sucesso! Aguarde a aprova\\u00e7\\u00e3o do gerente.\",\"request_id\":\"3\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "pedido repetido é recusado (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Voc\\u00ea j\\u00e1 enviou uma solicita\\u00e7\\u00e3o para este projeto\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "pedir participação em projeto privado é recusado (espera 400/403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas projetos p\\u00fablicos aceitam solicita\\u00e7\\u00f5es\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "pedir participação em projeto inexistente (espera 404)",
+  "ok": true,
+  "detalhe": "HTTP 404: {\"error\":\"Projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "gerente lista pedidos (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"requests\":[{\"id\":3,\"project_id\":8,\"user_id\":8,\"status\":\"pendente\",\"message\":\"Quero ajudar\",\"createdAt\":\"2026-10-26 03:48:38\",\"respondedAt\":null,\"user_name\":\"Membro Renomeado\",\"user_email\":\"membro034ee3@t"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "não gerente não responde pedido (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas o gerente pode responder solicita\\u00e7\\u00f5es\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "ação inválida (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Action deve ser 'aceitar' ou 'recusar'\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "gerente aceita (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o aceita! O usu\\u00e1rio agora \\u00e9 um participante do projeto.\",\"status\":\"aceito\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "…membro entrou como participante (2)",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "responder o mesmo pedido de novo (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Esta solicita\\u00e7\\u00e3o j\\u00e1 foi respondida\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "membro vê o projeto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"nova\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Participante\",\"participant_count\":2,\"device_count\":0,\"project_tags\":\"Temperatura\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "listar participantes (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"user_id\":7,\"user_name\":\"Teste Gerente\",\"user_username\":\"gerent034ee3\",\"profile_picture\":null,\"role_name\":\"Gerente\"},{\"user_id\":8,\"user_name\":\"Membro Renomeado\",\"user_username\":\"membro034ee3\",\"profile_picture\":null,\"ro"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "contagem de participantes (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"participant_count\":2}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convite com e-mail inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"E-mail inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convite com e-mail de 51 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O e-mail deve ter no m\\u00e1ximo 50 caracteres.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "não gerente não convida (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Voc\\u00ea n\\u00e3o tem permiss\\u00e3o para convidar membros a este projeto.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convite válido (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Convite enviado com sucesso!\",\"invitation_id\":\"0\",\"invited_email\":\"externo034ee3@teste.dev\",\"email_dispatched\":false}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convite repetido (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"J\\u00e1 existe um convite pendente para este e-mail.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convite a quem já é membro (espera 400/409)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Este e-mail j\\u00e1 \\u00e9 membro do projeto.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convidado lista convites (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":2,\"project_id\":11,\"invited_by\":7,\"invited_email\":\"externo034ee3@teste.dev\",\"role_id\":2,\"status\":\"pending\",\"created_at\":\"2026-10-26 03:48:38\",\"expires_at\":\"2026-11-02 03:48:38\",\"project_name\":\"Privado E2E\",\"project"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "outro usuário não aceita convite alheio (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Este convite n\\u00e3o \\u00e9 para voc\\u00ea.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "convidado aceita (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Convite aceito com sucesso!\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "…externo entrou no privado",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "aceitar convite respeita o limite de participantes (maxUsers=2, já lotado)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"O projeto atingiu o limite de participantes.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "…e o membro não entrou",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "promover membro a gerente (não gerente tenta) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas gerentes podem promover participantes\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "expulsar (não gerente tenta) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas gerentes podem expulsar participantes\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "gerente não pode expulsar a si mesmo (espera 400/403)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Use a op\\u00e7\\u00e3o \\\"Sair do projeto\\\" para sair voc\\u00ea mesmo.\"}"
+ },
+ {
+  "secao": "9. Participação: pedidos, convites, papéis",
+  "teste": "único gerente não pode sair do projeto",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Voc\\u00ea \\u00e9 o \\u00fanico gerente do projeto. Promova outro participante a gerente antes de sair.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "cadastrar dispositivo (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"12\",\"api_key\":\"fa5a610970c9ef6bc4e98cf0b670ec5aa1f6de258bfa3e792e62612f72f150cd\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "…chave de API com 64 caracteres",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "nome vazio (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: project_id e name.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "nome com 101 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome do dispositivo deve ter no m\\u00e1ximo 100 caracteres.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "descrição com 201 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A descri\\u00e7\\u00e3o deve ter no m\\u00e1ximo 200 caracteres.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "projeto de que não participa (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada. Voc\\u00ea n\\u00e3o \\u00e9 membro deste projeto ou n\\u00e3o tem permiss\\u00e3o para criar dispositivos.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "participante cadastra dispositivo (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"13\",\"api_key\":\"3cd95d8779e1cfda946f96baa1e508922b58eb7cdfc42109f7040187f1657772\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "info do dispositivo (membro) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"id\":12,\"name\":\"Sensor 1\",\"description\":\"DHT22\",\"api_key\":\"fa5a610970c9ef6bc4e98cf0b670ec5aa1f6de258bfa3e792e62612f72f150cd\",\"ttn_device_id\":null,\"createdAt\":\"2026-10-26 03:48:39\",\"project_id\":8,\"project_name\":\"Esta\\u00"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "info do dispositivo (não membro) é recusada (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "chaves do dispositivo (não membro) recusadas (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "listar meus dispositivos (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"total_devices\":3,\"total_projects\":2,\"data\":[{\"project_id\":8,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"project_description\":\"nova\",\"role_name\":\"Gerente\",\"role_id\":1,\"devices\":[{\"id\":12,\"name\":\"Sensor 1\",\"de"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "listar devices (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":12,\"name\":\"Sensor 1\",\"description\":\"DHT22\",\"createdAt\":\"2026-10-26 03:48:39\",\"project_id\":8,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"user_username\":\"gerent034ee3\"},{\"id\":13,\"name\":\"Sensor do membro\",\"description\":n"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "página do dispositivo (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Dispositivo | IFSCentral Lite</title>    <link rel=\"stylesheet"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "tags: adicionar nova e existente (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Tags atualizadas com sucesso.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "tags: tag com 51 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Cada tag deve ter no m\\u00e1ximo 50 caracteres.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "tags: listar (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":6,\"name\":\"externo\"},{\"id\":2,\"name\":\"Temperatura\"}]"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "tags: não membro (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: criar (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Mapeamento salvo com sucesso.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: mesmo campo/valor atualiza a descrição (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Mapeamento salvo com sucesso.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "…sem duplicar",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: campo vazio (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"device_id, json_key, value_read e description s\\u00e3o obrigat\\u00f3rios.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: campo com 101 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campo e valor bruto devem ter no m\\u00e1ximo 100 caracteres.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: descrição com 201 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"A descri\\u00e7\\u00e3o deve ter no m\\u00e1ximo 200 caracteres.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: listar (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":1,\"json_key\":\"status\",\"value_read\":\"1\",\"description\":\"Ligado (editado)\"}]"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: não membro não apaga (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 404: {\"error\":\"Mapeamento n\\u00e3o encontrado ou sem permiss\\u00e3o.\"}"
+ },
+ {
+  "secao": "10. Dispositivos, tags e mapeamentos",
+  "teste": "mapeamento: apagar (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Mapeamento removido.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "payload válido (espera 201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Payload salvo com sucesso!\",\"payload_id\":97,\"device_id\":12,\"project_id\":8,\"source\":\"http\",\"rate_limit\":{\"requests\":1,\"limit\":60,\"remaining\":59}}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "sem chave de API (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API inv\\u00e1lida ou n\\u00e3o fornecida no header.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "chave errada (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API inv\\u00e1lida ou n\\u00e3o fornecida no header.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "chave de outro dispositivo (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"A Chave de API n\\u00e3o pertence ao device informado.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "sem device_id (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"device_id (num\\u00e9rico) e payload (objeto JSON) s\\u00e3o obrigat\\u00f3rios.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "sem payload (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"device_id (num\\u00e9rico) e payload (objeto JSON) s\\u00e3o obrigat\\u00f3rios.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "JSON malformado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"JSON inv\\u00e1lido ou malformado.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "corpo maior que 2 KB (espera 413)",
+  "ok": true,
+  "detalhe": "HTTP 413: {\"error\":\"O payload excede o tamanho m\\u00e1ximo permitido (2KB).\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "mais de 50 chaves (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Payload inv\\u00e1lido\",\"errors\":[\"O payload cont\\u00e9m um n\\u00famero excessivo de chaves (m\\u00e1ximo 50 no total).\"]}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "chave com 41 caracteres (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Payload inv\\u00e1lido\",\"errors\":[\"A chave 'kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk' excede o limite de 40 caracteres.\"]}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "valor texto com 256 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Payload inv\\u00e1lido\",\"errors\":[\"O valor associado \\u00e0 chave 's' \\u00e9 muito longo (m\\u00e1ximo de 255 caracteres).\"]}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "aninhamento com 7 níveis (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Payload inv\\u00e1lido\",\"errors\":[\"O payload excede a profundidade m\\u00e1xima de aninhamento permitida (5 n\\u00edveis).\"]}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "payload como texto em vez de objeto (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Payload inv\\u00e1lido\",\"errors\":[\"Payload deve ser um array ou objeto JSON v\\u00e1lido.\"]}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "GET em /api/enviar-payload (espera 405)",
+  "ok": true,
+  "detalhe": "HTTP 405: {\"error\":\"M\\u00e9todo n\\u00e3o permitido. Use POST.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "…apenas os 4 payloads válidos foram gravados",
+  "ok": true,
+  "detalhe": "gravados: 4"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "buscar payloads com chave (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"payload\":{\"temperatura\":20,\"umidade\":50},\"created_at\":\"2026-10-26 03:48:40\"},{\"payload\":{\"temperatura\":21,\"umidade\":51},\"created_at\":\"2026-10-26 03:48:40\"}]"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "buscar payloads sem chave (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API inv\\u00e1lida ou n\\u00e3o fornecida.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "buscar payloads de outro device com a chave (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"A Chave de API n\\u00e3o pertence a este dispositivo.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "dados para gráfico (sessão) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"time\":\"2026-10-26 03:48:39\",\"value\":\"25.5\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"22\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"21\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"20\"}]"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "dados para gráfico de device alheio (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "estatísticas do projeto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"leituras_hoje\":4,\"ultima_leitura\":\"2026-10-26 03:48:40\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "TTN webhook válido (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":101,\"device_id\":12,\"project_id\":8,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22.1},\"rate_limit\":{\"requests\":4,\"limit\":60,\"remaining\":56}}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "TTN sem chave (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API (X-Api-Key) n\\u00e3o fornecida no header.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "TTN chave errada (espera 401/403)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"API Key ou Device ID inv\\u00e1lidos\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "TTN sem device_id na URL (espera 400/401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"device_id \\u00e9 obrigat\\u00f3rio na URL e deve ser num\\u00e9rico.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "TTN sem uplink_message (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Formato de JSON do TTN inv\\u00e1lido ou \\\"decoded_payload\\\" ausente.\",\"note\":\"Certifique-se de que seu dispositivo no TTN tenha um \\\"Payload Formatter\\\" ativado.\"}"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "admin salva limite de 3 req/min",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Admin - Rate Limiting | IFSCentral Lite</title>    <link rel=\"stylesheet"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "a partir da 4ª requisição no minuto vem 429",
+  "ok": true,
+  "detalhe": "[201, 201, 201, 429, 429]"
+ },
+ {
+  "secao": "11. Envio de dados por HTTP (dispositivo)",
+  "teste": "violação registrada",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "criar gráfico (espera 200/201)",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"12\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "nome com 101 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome do gr\\u00e1fico deve ter no m\\u00e1ximo 100 caracteres.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "sem datasets (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Campos obrigat\\u00f3rios: project_id, name, chart_type, datasets (array).\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "dataset com device de outro projeto (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Um ou mais dispositivos n\\u00e3o pertencem a este projeto.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo de gráfico inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Tipo de gr\\u00e1fico inv\\u00e1lido (use line, bar, area ou scatter).\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'line' é aceito e gravado como 'line'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"13\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'bar' é aceito e gravado como 'bar'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"14\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'area' é aceito e gravado como 'area'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"15\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'scatter' é aceito e gravado como 'scatter'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"16\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'linha' é aceito e gravado como 'line'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"17\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tipo 'barra' é aceito e gravado como 'bar'",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"18\",\"datasets_count\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "dataset sem variable_name (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Cada dataset precisa de uma vari\\u00e1vel (variable_name).\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "dataset com cor inválida (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Cor inv\\u00e1lida (use o formato #RRGGBB).\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "não membro não cria (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "listar gráficos (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":13,\"name\":\"Tipo line\",\"chart_type\":\"line\",\"json_key\":\"temperatura\",\"time_range\":\"all\",\"date_start\":null,\"date_end\":null,\"is_multi_device\":0,\"is_public\":0,\"device_name\":\"Sensor 1\",\"device_id\":12,\"dataset_count\":1,\""
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "dados do gráfico renderizado (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"chart\":{\"id\":12,\"project_id\":8,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"device_id\":12,\"json_key\":\"temperatura\",\"date_start\":null,\"date_end\":null,\"time_range\":\"all\",\"x_axis_var\":null,\"y_axis_vars\":\"[\\\"te"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "dados do gráfico avançado (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"chart\":{\"id\":12,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"time_range\":\"all\"},\"datasets\":[{\"id\":12,\"device_id\":12,\"variable_name\":\"temperatura\",\"alias\":\"Temp\",\"color\":\"#ff0000\",\"line_style\":\"solid\",\"axis\":\"y\",\"data\":[{\""
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "não membro não vê gráfico de projeto privado (lista) (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada para ver gr\\u00e1ficos deste projeto.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "editar gráfico (PUT) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Gr\\u00e1fico atualizado com sucesso!\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "editar gráfico com nome de 101 (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"O nome do gr\\u00e1fico deve ter no m\\u00e1ximo 100 caracteres.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "não gerente não edita (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada.\"}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "tornar gráfico público (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Gr\\u00e1fico tornado p\\u00fablico\",\"is_public\":1}"
+ },
+ {
+  "secao": "12. Gráficos",
+  "teste": "página novo-grafico (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Criar Gráfico Avançado | IFSCentral Lite</title>    <link rel=\"styleshee"
+ },
+ {
+  "secao": "13. Exportação e notificações",
+  "teste": "exportar dados (gerente) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"project\":{\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"createdAt\":\"2026-10-26 03:48:37\"},\"devices\":[{\"id\":12,\"name\":\"Sensor 1\"},{\"id\":13,\"name\":\"Sensor do membro\"}],\"data\":[{\"id\":104,\"device_id\":13,\"device_name\":\"Sen"
+ },
+ {
+  "secao": "13. Exportação e notificações",
+  "teste": "exportar dados (não membro) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada\"}"
+ },
+ {
+  "secao": "13. Exportação e notificações",
+  "teste": "notificações (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"total\":1,\"items\":[{\"type\":\"convite\",\"title\":\"Convite para o projeto \\\"Privado E2E\\\"\",\"link\":\"perfil\",\"created_at\":\"2026-10-26 03:48:38\"}]}"
+ },
+ {
+  "secao": "13. Exportação e notificações",
+  "teste": "listar tags (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"value\":4,\"text\":\"2026\"},{\"value\":5,\"text\":\"999999\"},{\"value\":6,\"text\":\"externo\"},{\"value\":3,\"text\":\"nova-tag-034ee3\"},{\"value\":2,\"text\":\"Temperatura\"}]"
+ },
+ {
+  "secao": "13. Exportação e notificações",
+  "teste": "listar usuários (para convite) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: [{\"id\":12,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto034ee3@teste.dev\",\"username\":\"esp034ee3\",\"profile\":\"User\",\"createdAt\":\"2026-10-26 03:48:30\"},{\"id\":6,\"name\":\"Teste Admin\",\"email\":\"admin034ee3@teste.dev\",\"username\":\""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "sem integração: configured=false",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"configured\":false,\"cluster\":null,\"application_id\":null,\"enabled\":false,\"api_key_set\":false,\"last_sync_at\":null,\"last_received_at\":null,\"last_error\":null,\"is_manager\":true,\"clusters\":{\"eu1.cloud.thethings.network\":\"Euro"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "cluster fora da lista é recusado (evita o servidor buscar URLs arbitrárias) (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Escolha um dos clusters do TTN (eu1, nam1 ou au1).\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "ID da aplicação com maiúsculas/sublinhado é recusado (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"ID da aplica\\u00e7\\u00e3o inv\\u00e1lido: use de 3 a 36 letras min\\u00fasculas, n\\u00fameros e h\\u00edfens, como aparece no console do TTN.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "chave com formato inválido é recusada (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Chave de API inv\\u00e1lida: copie a chave inteira gerada no console do TTN (come\\u00e7a com NNSXS.).\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "chave errada é recusada depois de testada no TTN",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"N\\u00e3o foi poss\\u00edvel acessar o TTN: O TTN recusou a chave de API (inv\\u00e1lida ou revogada).\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "aplicação inexistente (ou sem Storage Integration) é recusada",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"N\\u00e3o foi poss\\u00edvel acessar o TTN: Aplica\\u00e7\\u00e3o n\\u00e3o encontrada no TTN, ou a Storage Integration n\\u00e3o est\\u00e1 ativada nela.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "participante não configura (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Apenas o gerente do projeto pode configurar a integra\\u00e7\\u00e3o com o TTN\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "sem token CSRF é recusado (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Token CSRF ausente ou inv\\u00e1lido.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "configuração válida (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Integra\\u00e7\\u00e3o com o TTN salva\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…chave gravada",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "membro vê o status, mas não a chave",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"configured\":true,\"cluster\":\"eu1.cloud.thethings.network\",\"application_id\":\"app-e2e\",\"enabled\":true,\"api_key_set\":true,\"last_sync_at\":null,\"last_received_at\":null,\"last_error\":null,\"is_manager\":false,\"clusters\":{\"eu1.cl"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "não membro não vê a configuração (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "salvar sem reenviar a chave (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Integra\\u00e7\\u00e3o com o TTN salva\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…mantém a chave atual",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "ID do TTN inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"ID do dispositivo no TTN inv\\u00e1lido: use de 3 a 36 letras min\\u00fasculas, n\\u00fameros e h\\u00edfens, como aparece no console do TTN.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "ligar o dispositivo ao end device 'sensor-1' (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"ttn_device_id\":\"sensor-1\",\"message\":\"Dispositivo ligado ao TTN\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "o mesmo end device em outro dispositivo do projeto (espera 409)",
+  "ok": true,
+  "detalhe": "HTTP 409: {\"error\":\"Este ID do TTN j\\u00e1 est\\u00e1 ligado ao dispositivo \\\"Sensor LoRa\\\" do projeto.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "não membro não liga (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou dispositivo n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "info do dispositivo traz o ID do TTN",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"id\":15,\"name\":\"Sensor LoRa\",\"description\":null,\"api_key\":\"17c3d0e4c030f571c8fd91bb20835654dc86c30e49ec6b9239df50d3281679e8\",\"ttn_device_id\":\"sensor-1\",\"createdAt\":\"2026-10-26 03:48:43\",\"project_id\":8,\"project_name\":\"Es"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "buscar agora: 3 gravados, 1 de end device não ligado, 1 sem decoded_payload, 1 fora dos limites",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"saved\":3,\"duplicate\":0,\"unmapped\":1,\"no_payload\":1,\"invalid\":1,\"failed\":0}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…cada dado fica com o horário de recepção no TTN (não o da busca)",
+  "ok": true,
+  "detalhe": "[1792979324.0, 1792982924.0, 1792986464.0] vs [1792979323.742205, 1792982923.74224, 1792986463.742251]"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…origem 'ttn'",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…'visto por último' é o último uplink, não o momento da busca",
+  "ok": true,
+  "detalhe": "1792986464.0 vs 1792986463.742251"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "buscar de novo não grava em dobro",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"saved\":0,\"duplicate\":1,\"unmapped\":1,\"no_payload\":1,\"invalid\":1,\"failed\":0}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "uplink que entra no Storage fora de ordem (anterior ao último lido) também é recuperado",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"saved\":1,\"duplicate\":1,\"unmapped\":1,\"no_payload\":1,\"invalid\":1,\"failed\":0}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "webhook com um uplink que o Storage já trouxe não grava em dobro",
+  "ok": true,
+  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":null,\"device_id\":15,\"project_id\":8,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22},\"rate_limit\":{\"requests\":0,\"limit\":60,\"remaining\":60}}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "busca automática, sem login (como as páginas disparam), grava o uplink novo",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"applications\":1}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…no máximo uma busca automática por minuto",
+  "ok": true,
+  "detalhe": "gravados: 5"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "buscar um projeto específico exige login (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"N\\u00e3o autenticado. Fa\\u00e7a login primeiro.\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "buscar projeto de que não participa (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "páginas do Lite disparam a busca (ttn-sync.js)",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "chave revogada no TTN: erro claro",
+  "ok": true,
+  "detalhe": "HTTP 502: {\"error\":\"O TTN recusou a chave de API (inv\\u00e1lida ou revogada).\"}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…e aparece no status do projeto",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "com a chave válida de novo, recupera o que ficou pendente",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"saved\":1,\"duplicate\":3,\"unmapped\":1,\"no_payload\":1,\"invalid\":1,\"failed\":0}"
+ },
+ {
+  "secao": "14. The Things Network (Storage Integration)",
+  "teste": "…e o erro some do status",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "painel admin (admin) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Painel Administrativo | IFSCentral Lite</title>    <link rel=\"stylesheet"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "painel admin (usuário comum) (espera 302/403)",
+  "ok": true,
+  "detalhe": "HTTP 302: "
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "página admin-usuarios (admin) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Admin - Gerenciar Usuários | IFSCentral Lite</title>    <link rel=\"style"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "página admin-rate-limiting (comum) (espera 302/403)",
+  "ok": true,
+  "detalhe": "HTTP 302: "
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "listar usuários (admin) (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"data\":[{\"id\":12,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto034ee3@teste.dev\",\"profile\":\"User\",\"createdAt\":\"2026-10-26 03:48:30\"},{\"id\":6,\"name\":\"Teste Admin\",\"email\":\"admin034ee3@teste.dev\",\"profile\":\"Admin\",\"createdA"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "listar usuários (comum) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Acesso negado. Apenas administradores.\"}"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "mudar perfil para valor inválido (espera 400)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Dados inv\\u00e1lidos para atualiza\\u00e7\\u00e3o.\"}"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "comum não muda perfil (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Acesso negado. Apenas administradores.\"}"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "admin muda perfil do membro para Moderator (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Perfil atualizado com sucesso.\"}"
+ },
+ {
+  "secao": "17. Administração",
+  "teste": "admin não pode rebaixar a si mesmo (evita ficar sem admin)",
+  "ok": true,
+  "detalhe": "HTTP 400: {\"error\":\"Voc\\u00ea n\\u00e3o pode alterar seu pr\\u00f3prio perfil por aqui.\"}"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/meus-projetos abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Meus Projetos | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\""
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/explorar-projetos abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Explorar Projetos | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/meus-dispositivos abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-BR\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Meus Dispositivos - IFSCentral Lite</title>          <link rel=\""
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/perfil abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Meu Perfil | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"htt"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/configuracoes abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-BR\"> <head>     <meta charset=\"UTF-8\">     <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">     <title>Configurações - IFSCentral Lite</title>          <link rel=\"styl"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/documentacao abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Documentação | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"h"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/novo-projeto abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Criar Novo Projeto | IFSCentral Lite</title>    <link rel=\"stylesheet\" h"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/novo-dispositivo?project_id=8 abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Novo Dispositivo | IFSCentral Lite</title>    <link rel=\"stylesheet\" hre"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/projeto?id=8 abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Projeto | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/ver-projeto?id=8 abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"ht"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/dispositivo?id=12&project_id=8 abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Dispositivo | IFSCentral Lite</title>    <link rel=\"stylesheet"
+ },
+ {
+  "secao": "18. Páginas logadas (sem erros de PHP)",
+  "teste": "/termos abre sem erro",
+  "ok": true,
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Termos de Serviço | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "não gerente não apaga dispositivo (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Seu papel neste projeto n\\u00e3o tem permiss\\u00e3o para excluir dispositivos.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "apagar gráfico (não gerente) (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada para apagar este gr\\u00e1fico.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "apagar gráfico (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Gr\\u00e1fico apagado com sucesso.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "apagar dispositivo (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Dispositivo removido com sucesso.\",\"project_id\":8}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "dispositivo apagado não envia mais dados (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API inv\\u00e1lida ou n\\u00e3o fornecida no header.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "participante sai do projeto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Voc\\u00ea saiu do projeto com sucesso.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "…e perde o acesso (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "não gerente não apaga projeto (espera 403)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Voc\\u00ea n\\u00e3o tem permiss\\u00e3o para deletar este projeto.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "gerente apaga projeto (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"message\":\"Projeto deletado com sucesso!\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "projeto apagado some (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 403: {\"error\":\"Permiss\\u00e3o negada ou projeto n\\u00e3o encontrado\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "device de projeto apagado não envia mais dados",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"Chave de API inv\\u00e1lida ou n\\u00e3o fornecida no header.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "device de projeto apagado não aparece mais (espera 403/404)",
+  "ok": true,
+  "detalhe": "HTTP 404: {\"error\":\"Dispositivo n\\u00e3o encontrado.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "projeto apagado some da lista de projetos",
+  "ok": true,
+  "detalhe": ""
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "admin apaga usuário (espera 200)",
+  "ok": true,
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Usu\\u00e1rio removido do sistema. E-mail e nome de usu\\u00e1rio foram liberados para reutiliza\\u00e7\\u00e3o.\"}"
+ },
+ {
+  "secao": "19. Exclusões",
+  "teste": "usuário apagado não loga (espera 401)",
+  "ok": true,
+  "detalhe": "HTTP 401: {\"error\":\"E-mail ou senha inv\\u00e1lidos.\"}"
+ }
+]

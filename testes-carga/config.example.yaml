@@ -1,0 +1,36 @@
+# Configuracao de exemplo para ifscentral_loadtest.py
+#
+# Copie para config.yaml e preencha com os dados reais dos seus dispositivos.
+# Cada item em "targets" e um dispositivo (pode ser de projetos diferentes).
+# Pegue device_id e api_key na pagina do dispositivo dentro da plataforma.
+
+# base_url global (opcional). Pode ser sobrescrito por target.
+base_url: "http://192.168.0.50:8080"
+
+targets:
+  # ---- Projeto A ----
+  - name: "ProjetoA - sensor temperatura"
+    device_id: 1
+    api_key: "COLE_AQUI_A_API_KEY_DO_DISPOSITIVO_1"
+    weight: 2            # recebe ~2x mais requisicoes que um target de peso 1
+    payload:
+      temperatura: { type: float, min: 20, max: 35, decimals: 2 }
+      umidade:     { type: int,   min: 40, max: 90 }
+      ligado:      { type: bool,  p: 0.8 }        # 80% de chance de true
+
+  # ---- Projeto A, outro dispositivo ----
+  - name: "ProjetoA - sensor pressao"
+    device_id: 2
+    api_key: "COLE_AQUI_A_API_KEY_DO_DISPOSITIVO_2"
+    payload:
+      pressao: { type: float, min: 950, max: 1050, decimals: 1 }
+
+  # ---- Projeto B (outro servidor, se quiser) ----
+  - name: "ProjetoB - estado"
+    base_url: "https://ifsentral.online"
+    device_id: 7
+    api_key: "COLE_AQUI_A_API_KEY_DO_DISPOSITIVO_7"
+    payload:
+      estado:  { type: choice, values: ["ok", "alerta", "falha"] }
+      bateria: { type: int, min: 0, max: 100 }
+      fixo:    42                                  # valor constante

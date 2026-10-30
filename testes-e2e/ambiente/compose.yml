@@ -1,0 +1,129 @@
+name: ifs_e2e
+services:
+  web:
+    build: "../../IFSentral"
+    image: ifs_e2e_web
+    entrypoint: ["sh", "-c", "cat /e2e-ca.pem >> /etc/ssl/certs/ca-certificates.crt && exec docker-entrypoint.sh apache2-foreground"]
+    environment: &env
+      ROLE: web
+      DB_HOST: db
+      DB_NAME: ifsentral_bd
+      DB_USER: ifs
+      DB_PASS: ifs
+      MQTT_HOST: mosquitto
+      MQTT_PORT: "1883"
+      MQTT_USERNAME: admin
+      MQTT_PASSWORD: e2e_admin_pw
+      HTTPS_PORT: "28443"
+      APP_ENV: development
+      ENABLE_EMAIL_FEATURES: "false"
+    ports: ["127.0.0.1:28080:80", "127.0.0.1:28443:443"]
+    volumes:
+      - ./certs/cert.pem:/etc/ssl/certs/ifsentral-chain.crt:ro
+      - ./certs/key.pem:/etc/ssl/private/ifsentral.key:ro
+      - ./certs/ca.pem:/e2e-ca.pem:ro
+      - mqtt_config:/mosquitto/config
+    depends_on:
+      db: {condition: service_healthy}
+      mosquitto: {condition: service_started}
+  worker:
+    image: ifs_e2e_web
+    hostname: ifsentral-worker
+    environment:
+      <<: *env
+      ROLE: worker
+    volumes: [mqtt_config:/mosquitto/config]
+    command: ["docker-entrypoint.sh"]
+    restart: unless-stopped
+    depends_on:
+      db: {condition: service_healthy}
+      web: {condition: service_started}
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ifsentral_bd
+      MYSQL_USER: ifs
+      MYSQL_PASSWORD: ifs
+    volumes: ["./init:/docker-entrypoint-initdb.d:ro"]
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      retries: 60
+      start_period: 120s
+  mosquitto:
+    image: eclipse-mosquitto:latest
+    entrypoint: ["/usr/local/bin/mosquitto-entrypoint.sh"]
+    command: []
+    environment:
+      MQTT_USERNAME: admin
+      MQTT_PASSWORD: e2e_admin_pw
+    ports: ["127.0.0.1:21883:1883"]
+    volumes:
+      - "../../IFSentral/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro"
+      - "../../IFSentral/mosquitto-entrypoint.sh:/usr/local/bin/mosquitto-entrypoint.sh:ro"
+      - mqtt_config:/mosquitto/config
+      - ./certs/cert.pem:/etc/ssl/certs/ifsentral-chain.crt:ro
+      - ./certs/key.pem:/etc/ssl/private/ifsentral.key:ro
+  lite:
+    image: ifs_e2e_web
+    entrypoint: ["sh", "-c", "cat /e2e-ca.pem >> /etc/ssl/certs/ca-certificates.crt && exec apache2-foreground"]
+    environment:
+      DB_HOST: db
+      DB_NAME: ifsentral_lite
+      DB_USER: ifs
+      DB_PASS: ifs
+      APP_ENV: development
+      ENABLE_EMAIL_FEATURES: "false"
+    ports: ["127.0.0.1:28090:8090"]
+    volumes:
+      - "./lite:/var/www/lite"
+      - "./lite.conf:/etc/apache2/sites-enabled/lite.conf:ro"
+      - ./certs/cert.pem:/etc/ssl/certs/ifsentral-chain.crt:ro
+      - ./certs/key.pem:/etc/ssl/private/ifsentral.key:ro
+      - ./certs/ca.pem:/e2e-ca.pem:ro
+    depends_on:
+      db: {condition: service_healthy}
+  ttn-bridge:
+    image: ifs_e2e_web
+    hostname: ifsentral-ttn-bridge
+    entrypoint: ["sh", "-c", "cat /e2e-ca.pem >> /etc/ssl/certs/ca-certificates.crt && exec docker-entrypoint.sh"]
+    environment:
+      ROLE: ttn-bridge
+      DB_HOST: db
+      DB_NAME: ifsentral_bd
+      DB_USER: ifs
+      DB_PASS: ifs
+      APP_ENV: development
+    volumes: ["./certs/ca.pem:/e2e-ca.pem:ro"]
+    restart: unless-stopped
+    depends_on:
+      db: {condition: service_healthy}
+      web: {condition: service_started}
+  # The Things Network simulado: responde como eu1.cloud.thethings.network
+  ttn-mock:
+    image: ifs_e2e_web
+    entrypoint: ["python3", "/mock/ttn_mock.py"]
+    environment:
+      TTN_APPS: "app-e2e:NNSXS.E2ETESTKEY.0123456789ABCDEF"
+    ports: ["127.0.0.1:28444:8080"]
+    volumes:
+      - ./ttn_mock.py:/mock/ttn_mock.py:ro
+      - ./certs:/certs:ro
+    networks:
+      default:
+        aliases: [eu1.cloud.thethings.network]
+    depends_on:
+      web: {condition: service_started}
+  ttn-mqtt:
+    image: eclipse-mosquitto:latest
+    entrypoint: ["/bin/sh", "/config/ttn_mqtt.sh"]
+    environment:
+      TTN_APPS: "app-e2e:NNSXS.E2ETESTKEY.0123456789ABCDEF"
+    ports: ["127.0.0.1:21884:1883"]
+    volumes:
+      - ./ttn_mqtt.conf:/config/ttn_mqtt.conf:ro
+      - ./ttn_mqtt.sh:/config/ttn_mqtt.sh:ro
+      - ./certs:/certs:ro
+volumes:
+  mqtt_config:

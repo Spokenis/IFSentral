@@ -1,0 +1,5 @@
+# Geradores de carga IFSCentral
+aiohttp>=3.9        # gerador HTTP (ifscentral_loadtest.py)
+paho-mqtt>=1.6      # gerador MQTT (ifscentral_mqtt_loadtest.py)
+matplotlib>=3.6     # graficos da bateria (bateria.py) - opcional
+PyYAML>=6.0         # configs .yaml - opcional (configs .json dispensam)
