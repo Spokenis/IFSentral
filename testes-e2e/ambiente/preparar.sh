@@ -42,7 +42,7 @@ fi
 chmod 644 certs/*.pem certs/*.key
 
 rm -rf lite && mkdir lite
-(cd "$RAIZ/IFSentral_Lite/IFSentral" && tar --exclude=.git -cf - .) | tar -xf - -C lite
+(cd "$RAIZ/IFSentral_Lite/IFSentral" && tar --exclude=.git --exclude=./src/sessoes -cf - .) | tar -xf - -C lite
 
 docker compose -f compose.yml up -d --build
 docker exec ifs_e2e-lite-1 chown -R www-data:www-data /var/www/lite/uploads

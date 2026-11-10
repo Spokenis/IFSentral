@@ -1,0 +1,7 @@
+# Gerados ao subir o ambiente E2E (preparar.sh)
+testes-e2e/ambiente/certs/
+testes-e2e/ambiente/init/
+testes-e2e/ambiente/lite/
+.venv/
+__pycache__/
+*.pyc

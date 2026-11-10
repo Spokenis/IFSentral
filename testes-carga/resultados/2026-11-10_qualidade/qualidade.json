@@ -1,0 +1,447 @@
+[
+ {
+  "grupo": "publico",
+  "url": "/",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/",
+  "tempo_ms": 865,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/login",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/login",
+  "tempo_ms": 85,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/registrar",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/registrar",
+  "tempo_ms": 93,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/esqueci-senha",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/esqueci-senha",
+  "tempo_ms": 84,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/explorar-projetos",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/",
+  "tempo_ms": 96,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/",
+  "tempo_ms": 120,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/login",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/login",
+  "tempo_ms": 87,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/registrar",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/registrar",
+  "tempo_ms": 101,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/esqueci-senha",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/esqueci-senha",
+  "tempo_ms": 87,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "publico",
+  "url": "/explorar-projetos",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/",
+  "tempo_ms": 109,
+  "transborda": "",
+  "erros_console": [
+   "Failed to load resource: the server responded with a status of 401 ()"
+  ],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/meus-projetos",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/meus-projetos",
+  "tempo_ms": 149,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/projeto?id=30",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/projeto?id=30",
+  "tempo_ms": 176,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/dispositivo?id=218",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/meus-projetos",
+  "tempo_ms": 101,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/ver-projeto?id=30",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/explorar-projetos",
+  "tempo_ms": 105,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/meus-dispositivos",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/meus-dispositivos",
+  "tempo_ms": 99,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/perfil",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/perfil",
+  "tempo_ms": 112,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/configuracoes",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/configuracoes",
+  "tempo_ms": 104,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/documentacao",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/documentacao",
+  "tempo_ms": 159,
+  "transborda": "",
+  "erros_console": [],
+  "axe": [
+   {
+    "id": "aria-required-children",
+    "impacto": "critical",
+    "n": 3,
+    "ex": "#tabs-mqtt"
+   },
+   {
+    "id": "aria-required-parent",
+    "impacto": "critical",
+    "n": 9,
+    "ex": "#tabs-mqtt-js-tab"
+   },
+   {
+    "id": "listitem",
+    "impacto": "serious",
+    "n": 9,
+    "ex": "#tabs-mqtt > .nav-item:nth-child(1)"
+   }
+  ]
+ },
+ {
+  "grupo": "usuario",
+  "url": "/novo-grafico?project_id=30",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/novo-grafico?project_id=30",
+  "tempo_ms": 107,
+  "transborda": "",
+  "erros_console": [],
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impacto": "serious",
+    "n": 1,
+    "ex": "#btn-add-dataset"
+   }
+  ]
+ },
+ {
+  "grupo": "usuario",
+  "url": "/novo-dispositivo?project_id=30",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/novo-dispositivo?project_id=30",
+  "tempo_ms": 95,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/meus-projetos",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/meus-projetos",
+  "tempo_ms": 116,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/projeto?id=30",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/projeto?id=30",
+  "tempo_ms": 176,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/dispositivo?id=218",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/meus-projetos",
+  "tempo_ms": 97,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/ver-projeto?id=30",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/explorar-projetos",
+  "tempo_ms": 107,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/meus-dispositivos",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/meus-dispositivos",
+  "tempo_ms": 98,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/perfil",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/perfil",
+  "tempo_ms": 97,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/configuracoes",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/configuracoes",
+  "tempo_ms": 102,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/documentacao",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/documentacao",
+  "tempo_ms": 432,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/novo-grafico?project_id=30",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/novo-grafico?project_id=30",
+  "tempo_ms": 104,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "usuario",
+  "url": "/novo-dispositivo?project_id=30",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/novo-dispositivo?project_id=30",
+  "tempo_ms": 98,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/admin",
+  "tempo_ms": 200,
+  "transborda": "",
+  "erros_console": [],
+  "axe": [
+   {
+    "id": "color-contrast",
+    "impacto": "serious",
+    "n": 1,
+    "ex": "#logStatus"
+   }
+  ]
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin/usuarios",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/admin/usuarios",
+  "tempo_ms": 102,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin/rate-limiting",
+  "vp": "desktop",
+  "status": 200,
+  "url_final": "/admin/rate-limiting",
+  "tempo_ms": 275,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/admin",
+  "tempo_ms": 178,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin/usuarios",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/admin/usuarios",
+  "tempo_ms": 95,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ },
+ {
+  "grupo": "admin",
+  "url": "/admin/rate-limiting",
+  "vp": "celular",
+  "status": 200,
+  "url_final": "/admin/rate-limiting",
+  "tempo_ms": 246,
+  "transborda": "",
+  "erros_console": [],
+  "axe": []
+ }
+]

@@ -4,7 +4,7 @@
  * Mesma API REST do ESP32, adaptada para o core do ESP8266.
  * Funciona na edicao completa e no IFSCentral Lite.
  *
- * Endpoint: POST {BASE_URL}/api/enviar_payload.php
+ * Endpoint: POST {BASE_URL}/api/enviar-payload
  * Header:   X-Api-Key: <api_key>
  * Corpo:    {"device_id": <id>, "payload": { ... }}
  *
@@ -58,16 +58,19 @@ void enviarPayload() {
   serializeJson(doc, corpo);
 
   HTTPClient http;
-  String url = String(BASE_URL) + "/api/enviar_payload.php";
+  String url = String(BASE_URL) + "/api/enviar-payload";
   bool ok;
 
+  // Os clientes ficam fora do if: o HTTPClient só guarda um ponteiro para
+  // eles, e um cliente declarado dentro do if é destruído antes do POST
+  // (resultado: HTTP -1 / "connection refused" e nada chega na plataforma).
+  WiFiClientSecure clienteTls;
+  WiFiClient clienteTexto;
   if (url.startsWith("https")) {
-    WiFiClientSecure client;
-    client.setInsecure();
-    ok = http.begin(client, url);
+    clienteTls.setInsecure();
+    ok = http.begin(clienteTls, url);
   } else {
-    WiFiClient client;
-    ok = http.begin(client, url);
+    ok = http.begin(clienteTexto, url);
   }
 
   if (!ok) {

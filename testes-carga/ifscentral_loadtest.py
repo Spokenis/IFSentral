@@ -2,7 +2,7 @@
 """
 ifscentral_loadtest.py - Gerador de carga / testes para a plataforma IFSCentral.
 
-Envia payloads para o endpoint HTTP /api/enviar_payload.php (funciona na edicao
+Envia payloads para o endpoint HTTP /api/enviar-payload (funciona na edicao
 completa e no Lite), com:
   - numero de requisicoes OU duracao configuravel;
   - paralelismo (pool de workers assincronos) com limite de concorrencia;
@@ -81,7 +81,7 @@ def validar_targets(config):
         normalizados.append(
             {
                 "name": t.get("name", f"target-{t['device_id']}"),
-                "url": base.rstrip("/") + "/api/enviar_payload.php",
+                "url": base.rstrip("/") + "/api/enviar-payload",
                 "device_id": int(t["device_id"]),
                 "api_key": t["api_key"],
                 "payload_template": t.get("payload", {"valor": {"type": "float", "min": 0, "max": 100}}),

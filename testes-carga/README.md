@@ -1,7 +1,7 @@
 # Testes de carga — IFSCentral
 
 `ifscentral_loadtest.py` gera carga contra o endpoint HTTP da plataforma
-(`/api/enviar_payload.php`) e registra os dados necessários para **validar o
+(`/api/enviar-payload`) e registra os dados necessários para **validar o
 projeto** no capítulo de Resultados: taxa de sucesso, latência (média, mediana,
 p90/p95/p99), throughput (req/s) e contagem de erros — por teste e por
 dispositivo/projeto.
@@ -19,6 +19,22 @@ pip install -r requirements.txt
 
 > `aiohttp` é obrigatório. `PyYAML` só é preciso se a config for `.yaml`
 > (há também `config.example.json`, que não exige PyYAML).
+
+## Cenário pronto: muitos projetos e dispositivos (`preparar_cenario.py`)
+
+Cria N projetos com M dispositivos cada, pela API (como um usuário faria), e
+grava as configs dos dois geradores com as chaves e credenciais MQTT reais.
+Precisa de uma conta **Admin ou Moderator** sem 2FA:
+
+```bash
+pip install requests
+python preparar_cenario.py --base https://IP:8443 --email admin@x --senha 'S3nha' \
+    --projetos 20 --dispositivos 10 --mqtt-host IP --mqtt-port 1883
+# -> config.cenario.json (HTTP) e config.mqtt.cenario.json (MQTT)
+```
+
+Os projetos se chamam "Carga 01", "Carga 02"... Para limpar depois, exclua-os
+pela plataforma (Configurações do projeto > Excluir projeto).
 
 ## Configuração
 
@@ -112,19 +128,52 @@ python ifscentral_mqtt_loadtest.py --config config.mqtt.yaml --requests 1000 --c
 
 Config (`config.mqtt.example.yaml`): um `broker` global (host/porta/tls) e uma
 lista de `targets`. Cada target precisa de `project_id`, `device_id`,
-`mqtt_username` (`device_<id>`) e `mqtt_password`. Publica no tópico
+`mqtt_username` (o usuário `mqdev_...` mostrado na página do dispositivo) e `mqtt_password`. Publica no tópico
 `mqtt/projects/{project_id}/devices/{device_id}`.
 
 - `--concurrency N` = N **conexões simultâneas** (cada uma é um cliente MQTT
-  persistente). Como a autenticação MQTT é por dispositivo, as conexões são
-  distribuídas entre os targets conforme o `weight`.
+  persistente). Como a autenticação MQTT é por dispositivo, **cada conexão usa
+  um dispositivo**: com `--concurrency 10` só 10 dispositivos enviam. Para um
+  cenário realista use `--concurrency` igual ao número de dispositivos — senão
+  cada um passa do limite de 60 mensagens/min e o excedente é descartado pelo
+  rate limiter (aparece como "Rate limit excedido" no log do worker).
 - Porta `1883` (texto) ou `8883` (TLS, com `tls: true`). TLS de teste usa
   certificado self-signed sem validação.
 - Saídas iguais às do HTTP: `mqtt_requests_*.csv` e `mqtt_resumo_*.json`.
 
 > A latência MQTT medida é até o **broker**, não até o dado ser gravado no banco
-> (isso depende do worker consumidor). O throughput também depende da capacidade
+> (isso depende do worker consumidor). **Sempre confira no banco** quantas
+> mensagens foram gravadas (`SELECT COUNT(*) FROM device_payloads WHERE
+> source='mqtt'` antes e depois): o PUBACK sai mesmo quando a mensagem é depois
+> descartada pela fila do broker. Resultados de 08/11/2026 em
+> `resultados/2026-11-08_pc-local/`. O throughput também depende da capacidade
 > do broker, não só da ferramenta.
+
+## Gerador de leitura (`ifscentral_leitura_loadtest.py`)
+
+Os outros dois geradores só **enviam** dados. Este mede o lado da **leitura**,
+como pessoas olhando os projetos e integrações consultando a API:
+
+- `grafico` — `GET /api/obter-dados-grafico-renderizado?chart_id=N` com sessão
+  logada (o que a página do projeto pede ao abrir e a cada 60 s; é a leitura
+  mais pesada, porque agrega todas as leituras do período);
+- `api` — `GET /api/buscar-payloads?device_id=N&limit=50` com a `X-Api-Key`.
+
+```bash
+python ifscentral_leitura_loadtest.py --config config.leitura.json --duration 60 --concurrency 10
+python bateria.py --tool leitura --config config.leitura.json --levels 1,5,10,20 --duration 20
+```
+
+Config: `base_url`, `login` (`email`/`senha` de quem vê os projetos), lista de
+ids em `graficos`, `dispositivos` (`device_id` + `api_key`) e, opcional, `mix`
+(ex.: `{"grafico": 70, "api": 30}`). Saídas: `leitura_requests_*.csv` e
+`leitura_resumo_*.json`, com percentis **por endpoint**.
+
+Para medir **leitura e escrita ao mesmo tempo**, rode este junto com os
+geradores HTTP/MQTT (em terminais separados ou em segundo plano) e compare a
+latência de escrita com a de uma rodada só de escrita. Para a leitura ter
+sentido, o banco precisa de histórico (dias de dados), não só dos minutos do
+teste.
 
 ## Bateria de testes (`bateria.py`)
 

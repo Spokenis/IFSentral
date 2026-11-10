@@ -1,0 +1,10 @@
+gráfico                   bloco   pontos   iguais  dif. máx  antigo ms  novo ms
+24h (blocos de 5 min)       300     2800     2800  4.81e-09        105      138   cache: MISS/MISS
+7d (blocos de 15 min)       900     6690     6690  4.87e-09        584      187   cache: MISS/MISS
+30d (médias por hora)      3600     7190     7190  4.65e-09       8325      558   cache: MISS/MISS
+gráfico 14                  300     2800     2800  4.83e-09        142       32   cache: MISS/MISS
+gráfico 15                  900     6690     6690  4.26e-09        712      173   cache: MISS/MISS
+gráfico 16                  300     2809     2809  4.90e-09        136       77   cache: MISS/MISS
+gráfico 17                  900     6699     6699  4.78e-09        649      331   cache: MISS/MISS
+gráfico 18                  300     2809     2809  4.91e-09        142       53   cache: MISS/MISS
+gráfico 19                  900     6699     6699  4.62e-09        818      163   cache: MISS/MISS

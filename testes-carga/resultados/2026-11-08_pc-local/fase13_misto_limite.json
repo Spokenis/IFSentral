@@ -1,0 +1,144 @@
+{
+  "fase": "fase13_misto_limite",
+  "duracao_s": 132.2,
+  "drenagem_worker_s": 0.4,
+  "banco_antes": {
+    "http": 2022000,
+    "mqtt": 6199
+  },
+  "banco_depois": {
+    "http": 2024400,
+    "mqtt": 8798
+  },
+  "gravados_http": 2400,
+  "gravados_mqtt": 2599,
+  "linhas_duplicadas_total": 0,
+  "recursos": {
+    "ifs_carga_proxy": {
+      "cpu_media_pct": 1.1,
+      "cpu_p95_pct": 1.5,
+      "mem_max_mb": 9.4
+    },
+    "ifs_carga_web": {
+      "cpu_media_pct": 6.5,
+      "cpu_p95_pct": 8.9,
+      "mem_max_mb": 89.0
+    },
+    "ifs_carga_web_2": {
+      "cpu_media_pct": 6.8,
+      "cpu_p95_pct": 9.0,
+      "mem_max_mb": 93.8
+    },
+    "ifs_carga_worker": {
+      "cpu_media_pct": 0.5,
+      "cpu_p95_pct": 0.6,
+      "mem_max_mb": 5.7
+    },
+    "ifs_carga_worker_2": {
+      "cpu_media_pct": 0.5,
+      "cpu_p95_pct": 0.5,
+      "mem_max_mb": 6.5
+    },
+    "ifs_carga_db": {
+      "cpu_media_pct": 485.5,
+      "cpu_p95_pct": 550.5,
+      "mem_max_mb": 1312.8
+    },
+    "ifs_carga_mqtt": {
+      "cpu_media_pct": 0.6,
+      "cpu_p95_pct": 2.1,
+      "mem_max_mb": 5.2
+    }
+  },
+  "http": {
+    "enviadas": {
+      "requests": 2400,
+      "sucesso": 2400,
+      "falha": 0,
+      "taxa_sucesso_pct": 100.0,
+      "throughput_rps": 20.0
+    },
+    "aceitas_201": 2400,
+    "status": {
+      "201": 2400
+    },
+    "erros": {},
+    "throughput_rps": 20.0,
+    "latencia_ms": {
+      "min": 2.37,
+      "mean": 17.18,
+      "median": 6.41,
+      "p90": 13.24,
+      "p95": 29.87,
+      "p99": 252.6,
+      "max": 1167.85,
+      "stdev": 72.68
+    },
+    "integridade_ok": true
+  },
+  "mqtt": {
+    "totais": {
+      "requests": 2599,
+      "sucesso": 2599,
+      "falha": 0,
+      "taxa_sucesso_pct": 100.0,
+      "throughput_rps": 19.67
+    },
+    "erros": {},
+    "latencia_puback_ms": {
+      "min": 0.23,
+      "mean": 0.61,
+      "median": 0.37,
+      "p90": 1.18,
+      "p95": 1.96,
+      "p99": 3.2,
+      "max": 7.23,
+      "stdev": 0.64
+    }
+  },
+  "leitura": {
+    "totais": {
+      "requests": 2575,
+      "sucesso": 2575,
+      "falha": 0,
+      "taxa_sucesso_pct": 100.0,
+      "throughput_rps": 20.99
+    },
+    "status": {
+      "200": 2575
+    },
+    "erros": {},
+    "por_endpoint": {
+      "api": {
+        "requests": 756,
+        "sucesso": 756,
+        "bytes_medio": 5885,
+        "latency_ms": {
+          "min": 1.72,
+          "mean": 4.86,
+          "median": 4.2,
+          "p90": 7.9,
+          "p95": 9.63,
+          "p99": 13.6,
+          "max": 38.45,
+          "stdev": 2.97
+        }
+      },
+      "grafico": {
+        "requests": 1819,
+        "sucesso": 1819,
+        "bytes_medio": 201414,
+        "latency_ms": {
+          "min": 111.75,
+          "mean": 669.87,
+          "median": 359.27,
+          "p90": 1267.41,
+          "p95": 1348.23,
+          "p99": 1452.03,
+          "max": 1894.04,
+          "stdev": 462.51
+        }
+      }
+    }
+  }
+}

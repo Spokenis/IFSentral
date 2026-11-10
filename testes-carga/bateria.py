@@ -33,8 +33,9 @@ AQUI = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = {
     "http": os.path.join(AQUI, "ifscentral_loadtest.py"),
     "mqtt": os.path.join(AQUI, "ifscentral_mqtt_loadtest.py"),
+    "leitura": os.path.join(AQUI, "ifscentral_leitura_loadtest.py"),
 }
-PADRAO_RESUMO = {"http": "resumo_*.json", "mqtt": "mqtt_resumo_*.json"}
+PADRAO_RESUMO = {"http": "resumo_*.json", "mqtt": "mqtt_resumo_*.json", "leitura": "leitura_resumo_*.json"}
 
 
 def rodar_nivel(args, nivel, out_dir):
@@ -153,7 +154,7 @@ def parse_args():
         description="Bateria de testes com concorrencias crescentes (HTTP ou MQTT).",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    p.add_argument("--tool", choices=["http", "mqtt"], required=True)
+    p.add_argument("--tool", choices=["http", "mqtt", "leitura"], required=True)
     p.add_argument("--config", required=True)
     p.add_argument("--levels", required=True,
                    help="Niveis de concorrencia separados por virgula, ex.: 1,10,50,100")

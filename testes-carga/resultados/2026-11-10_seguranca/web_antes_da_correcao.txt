@@ -1,0 +1,72 @@
+== 1) sem login
+  ABERTO? POST api/ttn-sincronizar 200 '{"applications":0}'
+  (fim; só aparece acima o que respondeu 2xx sem login fora das rotas públicas)
+== 2) CSRF: requisição autenticada sem token
+  login 200
+  api/criar-projeto: 403 '{"error":"Token CSRF ausente ou inv\\u00e1lido."}'
+  api/atualizar-perfil: 403 '{"error":"Token CSRF ausente ou inv\\u00e1lido."}'
+  api/alterar-visibilidade-projeto: 403 '{"error":"Token CSRF ausente ou inv\\u00e1lido."}'
+  api/deletar-projeto: 403 '{"error":"Token CSRF ausente ou inv\\u00e1lido."}'
+  form de outra origem: 403 '{"error":"Token CSRF ausente ou inv\\u00e1lido."}'
+== 3) cookies e cabeçalhos
+  Set-Cookie: PHPSESSID=6abd8e7997c2596ebe3a38b4b1cdf84c; path=/; secure; HttpOnly; SameSite=Lax, PHPSESSID=5bb961cd750bdc7a03160b116a7902b7; path=/; secure; HttpOnly; SameSite=Lax
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; connect-src 'self' ws: wss:;
+  X-Frame-Options: SAMEORIGIN
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), microphone=(), camera=()
+  Server: nginx/1.28.3
+  X-Powered-By: PHP/8.2.35
+  API Content-Type: application/json; charset=UTF-8 | Cache-Control: no-store, no-cache, must-revalidate
+  HTTP -> HTTPS: 301 https://127.0.0.1:38443/login
+== 4) sessão: logout invalida? id muda no login?
+  id antes/depois do login iguais? False ['PHPSESSID']
+  logout 200
+  cookie antigo após logout: 401 {"error":"N\u00e3o autenticado. Fa\u00e7a login primeiro."}
+== 5) força bruta no login
+  tentativa 5: 401 '{"error":"E-mail ou senha inv\\u00e1lidos."}'
+  tentativa 6: 429 '{"error":"Muitas tentativas de login. Tente novamente mais tarde.","retry_info":"Limite de'
+  tentativa 11: 429 '{"error":"Muitas tentativas de login. Tente novamente mais tarde.","retry_info":"Limite de'
+  tentativa 30: 429 '{"error":"Muitas tentativas de login. Tente novamente mais tarde.","retry_info":"Limite de'
+  códigos: {401: 5, 429: 25} 5.5s
+  senha CERTA logo depois: 429 {"error":"Muitas tentativas de login. Tente novamente mais tarde.","retry_info":"Limite de
+  30 e-mails diferentes, mesmo IP: {401: 15, 429: 15}
+  enumeração (inexistente x existente): 429 {"error":"Muitas tentativas de login. Tente novamente mais tarde.","re | 429 {"error":"Muitas tentativas de login. Tente novamente mais tarde.","re
+  esqueci-senha (inexistente x existente): 429 {"error":"Muitas solicita\u00e7\u00f5es. Tente novamente mais tarde."} | 429 {"error":"Muitas solicita\u00e7\u00f5es. Tente novamente mais tarde."}
+== 6) API pública de envio: chaves erradas em sequência
+  100 chaves erradas: {401: 100}
+== 7) injeção SQL e entradas estranhas
+  "30'"                               obter-projeto 400 listar-devices 200 
+  '30 OR 1=1'                         obter-projeto 400 listar-devices 200 
+  '30) UNION SELECT 1,2,3-- -'        obter-projeto 400 listar-devices 200 
+  '-1'                                obter-projeto 403 listar-devices 200 
+  '99999999999999999999'              obter-projeto 403 listar-devices 200 
+  '[]'                                obter-projeto 400 listar-devices 200 
+  'abc'                               obter-projeto 400 listar-devices 200 
+  login com injeção: 429 {"error":"Muitas tentativas de login. Tente novamente mais t
+  JSON quebrado: 401 {"error":"Chave de API inv\u00e1lida ou n\u00e3o fornecida no header."}
+  corpo de 2 MB: 401 {"error":"Chave de API inv\u00e1lida ou n\u00e3o fornecida no header."}
+== 8) arquivos que não podem ser servidos
+  .env                             200    1017B VAZOU
+  .git/config                      404     314B 
+  .htaccess                        403     317B 
+  docker-compose.yml               200   12575B VAZOU
+  src/config/config.php            200       0B 
+  src/config/db.php                200       0B 
+  logs/mqtt_subscriber.log         200 100049134B 
+  src/db/ifsentral_bd.sql          200   50612B VAZOU
+  composer.json                    200     339B 
+  vendor/autoload.php              200       0B 
+  manutencao/atualizar.sh          200    6796B VAZOU
+  backups/                         404     314B 
+  src/                             403     317B 
+  src/uploads/                     404     314B 
+  src/mqtt/mqtt_subscriber.php     504     167B 
+  phpinfo.php                      404     314B 
+  server-status                    403     317B 
+  src/db/migrations/               404     314B 
+  .env.example                     404     314B 
+  src/api/                         403     317B 
+  /api/saude: 200 {"ok":true}
+  404 mostra versão? 404 ['Apache/2.4.69']

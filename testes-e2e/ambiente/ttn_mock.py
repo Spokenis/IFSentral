@@ -63,7 +63,7 @@ class Storage(BaseHTTPRequestHandler):
         q = parse_qs(url.query)
         limite = int(q.get('limit', ['100'])[0])
         with TRAVA:
-            registros = sorted(UPLINKS[app], key=lambda r: instante(r['received_at']))
+            registros = sorted(UPLINKS.get(app, []), key=lambda r: instante(r['received_at']))
         if 'after' in q:
             depois = instante(q['after'][0])
             registros = [r for r in registros if instante(r['received_at']) > depois]
@@ -112,7 +112,11 @@ def repassar_mqtt():
     servidor = socket.create_server(('0.0.0.0', 8883))
     while True:
         cliente, _ = servidor.accept()
-        destino = socket.create_connection(('ttn-mqtt', 8883))
+        try:
+            destino = socket.create_connection(('ttn-mqtt', 8883))
+        except OSError:
+            cliente.close()  # broker simulado fora do ar: recusa só esta conexão
+            continue
 
         def copiar(de, para):
             try:

@@ -3,19 +3,19 @@
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
   "teste": "GET / abre (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Bem-vindo ao IFSCentral Lite - Hub IoT para Smart Campus</title>    <lin"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <meta name=\"description\" content=\"IFSCentral: plataforma do câmpus que recebe, "
  },
  {
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
   "teste": "GET / sem erro de PHP no HTML",
   "ok": true,
-  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <title>Bem-vindo ao IFSCentral Lite - Hub IoT para Smart Ca"
+  "detalhe": "<!DOCTYPE html>\n<html lang=\"pt-br\">\n<head>\n  <meta charset=\"utf-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n  <meta name=\"description\" content=\"IFSCentral: plataforma do"
  },
  {
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
   "teste": "GET /login abre (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Login</title>    <link rel=\"stylesheet\" href=\"https://"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Login</title>    <link rel=\"stylesheet\" href=\"assets/v"
  },
  {
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
@@ -27,7 +27,7 @@
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
   "teste": "GET /registrar abre (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Registro</title>    <link rel=\"stylesheet\" href=\"https"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>IFSCentral Lite | Registro</title>    <link rel=\"stylesheet\" href=\"asset"
  },
  {
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
@@ -171,31 +171,31 @@
   "secao": "1. Páginas públicas e proteção de rotas (sem login)",
   "teste": "GET /api/listar-projetos-publicos sem login (usado pela página inicial) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"data\":[],\"pagination\":{\"page\":1,\"per_page\":12,\"total\":0,\"total_pages\":0}}"
+  "detalhe": "HTTP 200: {\"data\":[{\"id\":9,\"name\":\"\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\",\"description\""
  },
  {
   "secao": "2. Cadastro de usuário",
   "teste": "cadastro válido (admin) (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"6\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"13\"}"
  },
  {
   "secao": "2. Cadastro de usuário",
   "teste": "cadastro válido (gerente) (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"7\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"14\"}"
  },
  {
   "secao": "2. Cadastro de usuário",
   "teste": "cadastro válido (membro) (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"8\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"15\"}"
  },
  {
   "secao": "2. Cadastro de usuário",
   "teste": "cadastro válido (externo) (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"9\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"16\"}"
  },
  {
   "secao": "2. Cadastro de usuário",
@@ -297,7 +297,7 @@
   "secao": "2. Cadastro de usuário",
   "teste": "cadastro com profile=Admin no corpo (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"12\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Usu\\u00e1rio cadastrado com sucesso! Conta j\\u00e1 ativada (verifica\\u00e7\\u00e3o por e-mail desligada).\",\"insertedId\":\"19\"}"
  },
  {
   "secao": "2. Cadastro de usuário",
@@ -333,19 +333,19 @@
   "secao": "3. Login e sessão",
   "teste": "e-mail em maiúsculas (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro4c371d\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "login correto (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro4c371d\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "sessão vale: obter perfil (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":8,\"name\":\"Teste Membro\",\"email\":\"membro034ee3@teste.dev\",\"username\":\"membro034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29\"}"
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":15,\"name\":\"Teste Membro\",\"email\":\"membro4c371d@teste.dev\",\"username\":\"membro4c371d\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-11-09 22:32:20\",\"updatedAt\":\"2026-11-09 22:32:20\""
  },
  {
   "secao": "3. Login e sessão",
@@ -369,43 +369,43 @@
   "secao": "3. Login e sessão",
   "teste": "6ª tentativa errada seguida é bloqueada (espera 429)",
   "ok": true,
-  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login. Tente novamente mais tarde.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
+  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login erradas nesta conta. Tente novamente em at\\u00e9 15 minutos ou pe\\u00e7a a um administrador para desbloquear.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "…e bloqueia também a senha certa do mesmo usuário (espera 429)",
   "ok": true,
-  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login. Tente novamente mais tarde.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
+  "detalhe": "HTTP 429: {\"error\":\"Muitas tentativas de login erradas nesta conta. Tente novamente em at\\u00e9 15 minutos ou pe\\u00e7a a um administrador para desbloquear.\",\"retry_info\":\"Limite de 5 tentativas excedido.\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "bloqueio por erros de UM usuário não deveria barrar OUTRO usuário do mesmo IP",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent034ee3\"} (o limite conta falhas por e-mail OU por IP)"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent4c371d\"} (o limite conta falhas por e-mail OU por IP)"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "login de admin (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"admin034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"admin4c371d\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "login de gerente (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"gerent4c371d\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "login de membro (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro4c371d\"}"
  },
  {
   "secao": "3. Login e sessão",
   "teste": "login de externo (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern4c371d\"}"
  },
  {
   "secao": "4. CSRF",
@@ -429,7 +429,7 @@
   "secao": "5. Perfil e senha",
   "teste": "ver perfil (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":8,\"name\":\"Teste Membro\",\"email\":\"membro034ee3@teste.dev\",\"username\":\"membro034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29\"}"
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":15,\"name\":\"Teste Membro\",\"email\":\"membro4c371d@teste.dev\",\"username\":\"membro4c371d\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-11-09 22:32:20\",\"updatedAt\":\"2026-11-09 22:32:20\""
  },
  {
   "secao": "5. Perfil e senha",
@@ -525,13 +525,13 @@
   "secao": "5. Perfil e senha",
   "teste": "login com a senha nova funciona (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"membro4c371d\"}"
  },
  {
   "secao": "5. Perfil e senha",
   "teste": "upload de foto PNG (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Foto de perfil atualizada com sucesso\",\"profile_picture\":\"uploads\\/profile\\/user_8_1792986514.png\"}"
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Foto de perfil atualizada com sucesso\",\"profile_picture\":\"uploads\\/profile\\/user_15_1794274347.png\"}"
  },
  {
   "secao": "5. Perfil e senha",
@@ -561,7 +561,7 @@
   "secao": "6. Autenticação em dois fatores (2FA)",
   "teste": "iniciar configuração (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"secret\":\"5TLPCKAXWV3T6ALRFEDBOEH2CW6P76BX\",\"otpauth_uri\":\"otpauth:\\/\\/totp\\/IFSCentral%20Lite%3Aexterno034ee3%40teste.dev?secret=5TLPCKAXWV3T6ALRFEDBOEH2CW6P76BX&issuer=IFSCentral+Lite&algorithm=SHA1&digits=6&period=30"
+  "detalhe": "HTTP 200: {\"secret\":\"NRA7KEOZ3JQ6MYOQ3QG2DIS5SFDHTWUN\",\"otpauth_uri\":\"otpauth:\\/\\/totp\\/IFSCentral%20Lite%3Aexterno4c371d%40teste.dev?secret=NRA7KEOZ3JQ6MYOQ3QG2DIS5SFDHTWUN&issuer=IFSCentral+Lite&algorithm=SHA1&digits=6&period=30"
  },
  {
   "secao": "6. Autenticação em dois fatores (2FA)",
@@ -573,7 +573,7 @@
   "secao": "6. Autenticação em dois fatores (2FA)",
   "teste": "confirmar com código certo (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Autentica\\u00e7\\u00e3o de dois fatores ativada com sucesso.\",\"backup_codes\":[\"B497-3CE0\",\"B45B-50AA\",\"22CF-5E60\",\"C7E7-D6A9\",\"B460-6965\",\"9D13-7F3F\",\"61FB-9479\",\"87FE-0CA5\"]}"
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Autentica\\u00e7\\u00e3o de dois fatores ativada com sucesso.\",\"backup_codes\":[\"4328-FE82\",\"1C14-DAC4\",\"7FB6-D6BF\",\"8186-FF66\",\"03CD-735A\",\"0E19-B364\",\"A089-4C17\",\"6912-F076\"]}"
  },
  {
   "secao": "6. Autenticação em dois fatores (2FA)",
@@ -603,13 +603,13 @@
   "secao": "6. Autenticação em dois fatores (2FA)",
   "teste": "código 2FA do próximo passo é aceito (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern4c371d\"}"
  },
  {
   "secao": "6. Autenticação em dois fatores (2FA)",
   "teste": "sessão autenticada após 2FA (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":9,\"name\":\"Teste Externo\",\"email\":\"externo034ee3@teste.dev\",\"username\":\"extern034ee3\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-10-26 03:48:29\",\"updatedAt\":\"2026-10-26 03:48:29"
+  "detalhe": "HTTP 200: {\"success\":true,\"user\":{\"id\":16,\"name\":\"Teste Externo\",\"email\":\"externo4c371d@teste.dev\",\"username\":\"extern4c371d\",\"profile\":\"User\",\"profile_picture\":null,\"createdAt\":\"2026-11-09 22:32:20\",\"updatedAt\":\"2026-11-09 22:32:2"
  },
  {
   "secao": "6. Autenticação em dois fatores (2FA)",
@@ -627,7 +627,7 @@
   "secao": "6. Autenticação em dois fatores (2FA)",
   "teste": "login volta a não pedir código",
   "ok": true,
-  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern034ee3\"}"
+  "detalhe": "HTTP 200: {\"message\":\"Login bem-sucedido!\",\"username\":\"extern4c371d\"}"
  },
  {
   "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
@@ -669,7 +669,7 @@
   "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
   "teste": "Admin lista pedidos (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":1,\"message\":\"Preciso criar projetos do lab\",\"createdAt\":\"2026-10-26 03:48:36\",\"name\":\"Teste Gerente\",\"email\":\"gerente034ee3@teste.dev\",\"user_id\":7}]"
+  "detalhe": "HTTP 200: [{\"id\":2,\"message\":\"Preciso criar projetos do lab\",\"createdAt\":\"2026-11-09 22:32:30\",\"name\":\"Teste Gerente\",\"email\":\"gerente4c371d@teste.dev\",\"user_id\":14}]"
  },
  {
   "secao": "7. Pedido de perfil Moderador (quem pode criar projetos)",
@@ -693,7 +693,7 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "criar projeto válido com tags (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"8\",\"invitation_code\":\"93c543767c07\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"12\",\"invitation_code\":\"35d46b86be29\"}"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -729,7 +729,7 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "nome com 30 (limite) (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"9\",\"invitation_code\":\"d40809fd76ae\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"13\",\"invitation_code\":\"ad480a62773a\"}"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -765,7 +765,7 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "tag numérica que não é ID de tag existente vira tag nova (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"10\",\"invitation_code\":\"a46965753b52\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"14\",\"invitation_code\":\"018fe5180005\"}"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -777,19 +777,19 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "criar projeto privado com limite de 2 (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"11\",\"invitation_code\":\"8b0cdcf46666\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Projeto criado, gerente e tags associados com sucesso!\",\"insertedId\":\"15\",\"invitation_code\":\"031b97ecc6dd\"}"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "listar meus projetos (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":9,\"name\":\"\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\",\"description\":\"Descri"
+  "detalhe": "HTTP 200: [{\"id\":13,\"name\":\"\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\\u00e7\",\"description\":\"Descr"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "obter projeto (gerente) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Gerente\",\"participant_count\":1,\"device_count\":0,\"project_tags\":\"Temperatura,nova-tag-034ee3\"}"
+  "detalhe": "HTTP 200: {\"id\":12,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Gerente\",\"participant_count\":1,\"device_count\":0,\"project_tags\":\"Temperatura,nova-tag-4c371d\"}"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -813,7 +813,7 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "busca pública encontra o projeto público",
   "ok": true,
-  "detalhe": "HTTP 200: {\"data\":[{\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"maxUsers\":null,\"manager_name\":\"Teste Gerente\",\"participant_count\":1,\"device_count\":0,\"is_member\":null,\"project_tags\":\"Temperatura,nova-"
+  "detalhe": "HTTP 200: {\"data\":[{\"id\":12,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"Descri\\u00e7\\u00e3o\",\"maxUsers\":null,\"manager_name\":\"Teste Gerente\",\"participant_count\":1,\"device_count\":0,\"is_member\":null,\"project_tags\":\"Temperatura,nova"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -825,7 +825,7 @@
   "secao": "8. Projetos: criar, ler, editar",
   "teste": "página pública do projeto (ver-projeto) logado (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"ht"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"as"
  },
  {
   "secao": "8. Projetos: criar, ler, editar",
@@ -891,7 +891,7 @@
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "pedir participação (espera 200/201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o enviada com sucesso! Aguarde a aprova\\u00e7\\u00e3o do gerente.\",\"request_id\":\"3\"}"
+  "detalhe": "HTTP 201: {\"success\":true,\"message\":\"Solicita\\u00e7\\u00e3o enviada com sucesso! Aguarde a aprova\\u00e7\\u00e3o do gerente.\",\"request_id\":\"4\"}"
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
@@ -915,7 +915,7 @@
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "gerente lista pedidos (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"requests\":[{\"id\":3,\"project_id\":8,\"user_id\":8,\"status\":\"pendente\",\"message\":\"Quero ajudar\",\"createdAt\":\"2026-10-26 03:48:38\",\"respondedAt\":null,\"user_name\":\"Membro Renomeado\",\"user_email\":\"membro034ee3@t"
+  "detalhe": "HTTP 200: {\"success\":true,\"requests\":[{\"id\":4,\"project_id\":12,\"user_id\":15,\"status\":\"pendente\",\"message\":\"Quero ajudar\",\"createdAt\":\"2026-11-09 22:32:33\",\"respondedAt\":null,\"user_name\":\"Membro Renomeado\",\"user_email\":\"membro4c371d"
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
@@ -951,13 +951,13 @@
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "membro vê o projeto (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"id\":8,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"nova\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Participante\",\"participant_count\":2,\"device_count\":0,\"project_tags\":\"Temperatura\"}"
+  "detalhe": "HTTP 200: {\"id\":12,\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"description\":\"nova\",\"public\":1,\"maxUsers\":null,\"user_role_name\":\"Participante\",\"participant_count\":2,\"device_count\":0,\"project_tags\":\"Temperatura\"}"
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "listar participantes (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"user_id\":7,\"user_name\":\"Teste Gerente\",\"user_username\":\"gerent034ee3\",\"profile_picture\":null,\"role_name\":\"Gerente\"},{\"user_id\":8,\"user_name\":\"Membro Renomeado\",\"user_username\":\"membro034ee3\",\"profile_picture\":null,\"ro"
+  "detalhe": "HTTP 200: [{\"user_id\":14,\"user_name\":\"Teste Gerente\",\"user_username\":\"gerent4c371d\",\"profile_picture\":null,\"role_name\":\"Gerente\"},{\"user_id\":15,\"user_name\":\"Membro Renomeado\",\"user_username\":\"membro4c371d\",\"profile_picture\":null,\""
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
@@ -987,7 +987,7 @@
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "convite válido (espera 200/201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Convite enviado com sucesso!\",\"invitation_id\":\"0\",\"invited_email\":\"externo034ee3@teste.dev\",\"email_dispatched\":false}"
+  "detalhe": "HTTP 201: {\"message\":\"Convite enviado com sucesso!\",\"invitation_id\":\"0\",\"invited_email\":\"externo4c371d@teste.dev\",\"email_dispatched\":false}"
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
@@ -1005,7 +1005,7 @@
   "secao": "9. Participação: pedidos, convites, papéis",
   "teste": "convidado lista convites (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":2,\"project_id\":11,\"invited_by\":7,\"invited_email\":\"externo034ee3@teste.dev\",\"role_id\":2,\"status\":\"pending\",\"created_at\":\"2026-10-26 03:48:38\",\"expires_at\":\"2026-11-02 03:48:38\",\"project_name\":\"Privado E2E\",\"project"
+  "detalhe": "HTTP 200: [{\"id\":4,\"project_id\":15,\"invited_by\":14,\"invited_email\":\"externo4c371d@teste.dev\",\"role_id\":2,\"status\":\"pending\",\"created_at\":\"2026-11-09 22:32:34\",\"expires_at\":\"2026-11-16 22:32:34\",\"project_name\":\"Privado E2E\",\"projec"
  },
  {
   "secao": "9. Participação: pedidos, convites, papéis",
@@ -1065,7 +1065,7 @@
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "cadastrar dispositivo (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"12\",\"api_key\":\"fa5a610970c9ef6bc4e98cf0b670ec5aa1f6de258bfa3e792e62612f72f150cd\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"16\",\"api_key\":\"85291767eb269f58bea95e732bb3c8e42a6986da2af03c1c2ba92155db6da8ef\"}"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
@@ -1101,13 +1101,13 @@
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "participante cadastra dispositivo (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"13\",\"api_key\":\"3cd95d8779e1cfda946f96baa1e508922b58eb7cdfc42109f7040187f1657772\"}"
+  "detalhe": "HTTP 201: {\"message\":\"Dispositivo cadastrado com sucesso!\",\"insertedId\":\"17\",\"api_key\":\"9b10d10586e02303e9f53656931438a8abbc261f887ba24deea34d0aa5e36e60\"}"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "info do dispositivo (membro) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"id\":12,\"name\":\"Sensor 1\",\"description\":\"DHT22\",\"api_key\":\"fa5a610970c9ef6bc4e98cf0b670ec5aa1f6de258bfa3e792e62612f72f150cd\",\"ttn_device_id\":null,\"createdAt\":\"2026-10-26 03:48:39\",\"project_id\":8,\"project_name\":\"Esta\\u00"
+  "detalhe": "HTTP 200: {\"id\":16,\"name\":\"Sensor 1\",\"description\":\"DHT22\",\"api_key\":\"85291767eb269f58bea95e732bb3c8e42a6986da2af03c1c2ba92155db6da8ef\",\"ttn_device_id\":null,\"createdAt\":\"2026-11-09 22:32:34\",\"project_id\":12,\"project_name\":\"Esta\\u0"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
@@ -1125,13 +1125,13 @@
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "listar meus dispositivos (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"total_devices\":3,\"total_projects\":2,\"data\":[{\"project_id\":8,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"project_description\":\"nova\",\"role_name\":\"Gerente\",\"role_id\":1,\"devices\":[{\"id\":12,\"name\":\"Sensor 1\",\"de"
+  "detalhe": "HTTP 200: {\"success\":true,\"total_devices\":3,\"total_projects\":2,\"data\":[{\"project_id\":12,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"project_description\":\"nova\",\"role_name\":\"Gerente\",\"role_id\":1,\"devices\":[{\"id\":16,\"name\":\"Sensor 1\",\"d"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "listar devices (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":12,\"name\":\"Sensor 1\",\"description\":\"DHT22\",\"createdAt\":\"2026-10-26 03:48:39\",\"project_id\":8,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"user_username\":\"gerent034ee3\"},{\"id\":13,\"name\":\"Sensor do membro\",\"description\":n"
+  "detalhe": "HTTP 200: [{\"id\":17,\"name\":\"Sensor do membro\",\"description\":null,\"createdAt\":\"2026-11-09 22:32:35\",\"project_id\":12,\"project_name\":\"Esta\\u00e7\\u00e3o E2E\",\"user_username\":\"membro4c371d\"},{\"id\":18,\"name\":\"Sensor privado\",\"descriptio"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
@@ -1203,7 +1203,7 @@
   "secao": "10. Dispositivos, tags e mapeamentos",
   "teste": "mapeamento: listar (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":1,\"json_key\":\"status\",\"value_read\":\"1\",\"description\":\"Ligado (editado)\"}]"
+  "detalhe": "HTTP 200: [{\"id\":3,\"json_key\":\"status\",\"value_read\":\"1\",\"description\":\"Ligado (editado)\"}]"
  },
  {
   "secao": "10. Dispositivos, tags e mapeamentos",
@@ -1221,7 +1221,7 @@
   "secao": "11. Envio de dados por HTTP (dispositivo)",
   "teste": "payload válido (espera 201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Payload salvo com sucesso!\",\"payload_id\":97,\"device_id\":12,\"project_id\":8,\"source\":\"http\",\"rate_limit\":{\"requests\":1,\"limit\":60,\"remaining\":59}}"
+  "detalhe": "HTTP 201: {\"message\":\"Payload salvo com sucesso!\",\"payload_id\":119,\"device_id\":16,\"project_id\":12,\"source\":\"http\",\"rate_limit\":{\"requests\":1,\"limit\":60,\"remaining\":59}}"
  },
  {
   "secao": "11. Envio de dados por HTTP (dispositivo)",
@@ -1311,7 +1311,7 @@
   "secao": "11. Envio de dados por HTTP (dispositivo)",
   "teste": "buscar payloads com chave (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"payload\":{\"temperatura\":20,\"umidade\":50},\"created_at\":\"2026-10-26 03:48:40\"},{\"payload\":{\"temperatura\":21,\"umidade\":51},\"created_at\":\"2026-10-26 03:48:40\"}]"
+  "detalhe": "HTTP 200: [{\"payload\":{\"temperatura\":20,\"umidade\":50},\"created_at\":\"2026-11-09 22:32:37\"},{\"payload\":{\"temperatura\":21,\"umidade\":51},\"created_at\":\"2026-11-09 22:32:37\"}]"
  },
  {
   "secao": "11. Envio de dados por HTTP (dispositivo)",
@@ -1329,7 +1329,7 @@
   "secao": "11. Envio de dados por HTTP (dispositivo)",
   "teste": "dados para gráfico (sessão) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"time\":\"2026-10-26 03:48:39\",\"value\":\"25.5\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"22\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"21\"},{\"time\":\"2026-10-26 03:48:40\",\"value\":\"20\"}]"
+  "detalhe": "HTTP 200: [{\"time\":\"2026-11-09 22:32:36\",\"value\":\"25.5\"},{\"time\":\"2026-11-09 22:32:37\",\"value\":\"22\"},{\"time\":\"2026-11-09 22:32:37\",\"value\":\"21\"},{\"time\":\"2026-11-09 22:32:37\",\"value\":\"20\"}]"
  },
  {
   "secao": "11. Envio de dados por HTTP (dispositivo)",
@@ -1341,13 +1341,13 @@
   "secao": "11. Envio de dados por HTTP (dispositivo)",
   "teste": "estatísticas do projeto (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"leituras_hoje\":4,\"ultima_leitura\":\"2026-10-26 03:48:40\"}"
+  "detalhe": "HTTP 200: {\"leituras_hoje\":4,\"ultima_leitura\":\"2026-11-09 22:32:37\"}"
  },
  {
   "secao": "11. Envio de dados por HTTP (dispositivo)",
   "teste": "TTN webhook válido (espera 200/201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":101,\"device_id\":12,\"project_id\":8,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22.1},\"rate_limit\":{\"requests\":4,\"limit\":60,\"remaining\":56}}"
+  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":123,\"device_id\":16,\"project_id\":12,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22.1},\"rate_limit\":{\"requests\":4,\"limit\":60,\"remaining\":56}}"
  },
  {
   "secao": "11. Envio de dados por HTTP (dispositivo)",
@@ -1395,7 +1395,7 @@
   "secao": "12. Gráficos",
   "teste": "criar gráfico (espera 200/201)",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"12\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"19\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
@@ -1425,37 +1425,37 @@
   "secao": "12. Gráficos",
   "teste": "tipo 'line' é aceito e gravado como 'line'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"13\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"20\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
   "teste": "tipo 'bar' é aceito e gravado como 'bar'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"14\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"21\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
   "teste": "tipo 'area' é aceito e gravado como 'area'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"15\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"22\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
   "teste": "tipo 'scatter' é aceito e gravado como 'scatter'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"16\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"23\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
   "teste": "tipo 'linha' é aceito e gravado como 'line'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"17\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"24\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
   "teste": "tipo 'barra' é aceito e gravado como 'bar'",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"18\",\"datasets_count\":1}"
+  "detalhe": "HTTP 201: {\"message\":\"Gr\\u00e1fico salvo com sucesso!\",\"chart_id\":\"25\",\"datasets_count\":1}"
  },
  {
   "secao": "12. Gráficos",
@@ -1479,19 +1479,19 @@
   "secao": "12. Gráficos",
   "teste": "listar gráficos (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":13,\"name\":\"Tipo line\",\"chart_type\":\"line\",\"json_key\":\"temperatura\",\"time_range\":\"all\",\"date_start\":null,\"date_end\":null,\"is_multi_device\":0,\"is_public\":0,\"device_name\":\"Sensor 1\",\"device_id\":12,\"dataset_count\":1,\""
+  "detalhe": "HTTP 200: [{\"id\":21,\"name\":\"Tipo bar\",\"chart_type\":\"bar\",\"json_key\":\"temperatura\",\"time_range\":\"all\",\"date_start\":null,\"date_end\":null,\"is_multi_device\":0,\"is_public\":0,\"device_name\":\"Sensor 1\",\"device_id\":16,\"dataset_count\":1,\"vi"
  },
  {
   "secao": "12. Gráficos",
   "teste": "dados do gráfico renderizado (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"chart\":{\"id\":12,\"project_id\":8,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"device_id\":12,\"json_key\":\"temperatura\",\"date_start\":null,\"date_end\":null,\"time_range\":\"all\",\"x_axis_var\":null,\"y_axis_vars\":\"[\\\"te"
+  "detalhe": "HTTP 200: {\"success\":true,\"chart\":{\"id\":19,\"project_id\":12,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"device_id\":16,\"json_key\":\"temperatura\",\"date_start\":null,\"date_end\":null,\"time_range\":\"all\",\"x_axis_var\":null,\"y_axis_vars\":\"[\\\"t"
  },
  {
   "secao": "12. Gráficos",
   "teste": "dados do gráfico avançado (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"chart\":{\"id\":12,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"time_range\":\"all\"},\"datasets\":[{\"id\":12,\"device_id\":12,\"variable_name\":\"temperatura\",\"alias\":\"Temp\",\"color\":\"#ff0000\",\"line_style\":\"solid\",\"axis\":\"y\",\"data\":[{\""
+  "detalhe": "HTTP 200: {\"chart\":{\"id\":19,\"name\":\"Temperatura\",\"chart_type\":\"line\",\"time_range\":\"all\"},\"datasets\":[{\"id\":19,\"device_id\":16,\"variable_name\":\"temperatura\",\"alias\":\"Temp\",\"color\":\"#ff0000\",\"line_style\":\"solid\",\"axis\":\"y\",\"data\":[{\""
  },
  {
   "secao": "12. Gráficos",
@@ -1533,7 +1533,7 @@
   "secao": "13. Exportação e notificações",
   "teste": "exportar dados (gerente) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"project\":{\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"createdAt\":\"2026-10-26 03:48:37\"},\"devices\":[{\"id\":12,\"name\":\"Sensor 1\"},{\"id\":13,\"name\":\"Sensor do membro\"}],\"data\":[{\"id\":104,\"device_id\":13,\"device_name\":\"Sen"
+  "detalhe": "HTTP 200: {\"success\":true,\"project\":{\"name\":\"Esta\\u00e7\\u00e3o E2E\",\"createdAt\":\"2026-11-09 22:32:30\"},\"devices\":[{\"id\":16,\"name\":\"Sensor 1\"},{\"id\":17,\"name\":\"Sensor do membro\"}],\"data\":[{\"id\":119,\"device_id\":16,\"device_name\":\"Sen"
  },
  {
   "secao": "13. Exportação e notificações",
@@ -1545,19 +1545,19 @@
   "secao": "13. Exportação e notificações",
   "teste": "notificações (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"total\":1,\"items\":[{\"type\":\"convite\",\"title\":\"Convite para o projeto \\\"Privado E2E\\\"\",\"link\":\"perfil\",\"created_at\":\"2026-10-26 03:48:38\"}]}"
+  "detalhe": "HTTP 200: {\"total\":1,\"items\":[{\"type\":\"convite\",\"title\":\"Convite para o projeto \\\"Privado E2E\\\"\",\"link\":\"perfil\",\"created_at\":\"2026-11-09 22:32:34\"}]}"
  },
  {
   "secao": "13. Exportação e notificações",
   "teste": "listar tags (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"value\":4,\"text\":\"2026\"},{\"value\":5,\"text\":\"999999\"},{\"value\":6,\"text\":\"externo\"},{\"value\":3,\"text\":\"nova-tag-034ee3\"},{\"value\":2,\"text\":\"Temperatura\"}]"
+  "detalhe": "HTTP 200: [{\"value\":4,\"text\":\"2026\"},{\"value\":5,\"text\":\"999999\"},{\"value\":6,\"text\":\"externo\"},{\"value\":7,\"text\":\"nova-tag-4c371d\"},{\"value\":3,\"text\":\"nova-tag-9f5e7e\"},{\"value\":2,\"text\":\"Temperatura\"}]"
  },
  {
   "secao": "13. Exportação e notificações",
   "teste": "listar usuários (para convite) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: [{\"id\":12,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto034ee3@teste.dev\",\"username\":\"esp034ee3\",\"profile\":\"User\",\"createdAt\":\"2026-10-26 03:48:30\"},{\"id\":6,\"name\":\"Teste Admin\",\"email\":\"admin034ee3@teste.dev\",\"username\":\""
+  "detalhe": "HTTP 200: [{\"id\":19,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto4c371d@teste.dev\",\"username\":\"esp4c371d\",\"profile\":\"User\",\"createdAt\":\"2026-11-09 22:32:21\"},{\"id\":13,\"name\":\"Teste Admin\",\"email\":\"admin4c371d@teste.dev\",\"username\":"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1593,7 +1593,7 @@
   "secao": "14. The Things Network (Storage Integration)",
   "teste": "aplicação inexistente (ou sem Storage Integration) é recusada",
   "ok": true,
-  "detalhe": "HTTP 400: {\"error\":\"N\\u00e3o foi poss\\u00edvel acessar o TTN: Aplica\\u00e7\\u00e3o n\\u00e3o encontrada no TTN, ou a Storage Integration n\\u00e3o est\\u00e1 ativada nela.\"}"
+  "detalhe": "HTTP 400: {\"error\":\"N\\u00e3o foi poss\\u00edvel acessar o TTN: Aplica\\u00e7\\u00e3o n\\u00e3o encontrada no TTN, ou o Message storage (Storage Integration) n\\u00e3o est\\u00e1 ativado nela.\"}"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1671,7 +1671,7 @@
   "secao": "14. The Things Network (Storage Integration)",
   "teste": "info do dispositivo traz o ID do TTN",
   "ok": true,
-  "detalhe": "HTTP 200: {\"id\":15,\"name\":\"Sensor LoRa\",\"description\":null,\"api_key\":\"17c3d0e4c030f571c8fd91bb20835654dc86c30e49ec6b9239df50d3281679e8\",\"ttn_device_id\":\"sensor-1\",\"createdAt\":\"2026-10-26 03:48:43\",\"project_id\":8,\"project_name\":\"Es"
+  "detalhe": "HTTP 200: {\"id\":19,\"name\":\"Sensor LoRa\",\"description\":null,\"api_key\":\"c2efc98ee1d334879cfdea57dedf4af72ac49eddfe66b1100336d5c77e3f1a03\",\"ttn_device_id\":\"sensor-1\",\"createdAt\":\"2026-11-09 22:32:42\",\"project_id\":12,\"project_name\":\"E"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1683,7 +1683,7 @@
   "secao": "14. The Things Network (Storage Integration)",
   "teste": "…cada dado fica com o horário de recepção no TTN (não o da busca)",
   "ok": true,
-  "detalhe": "[1792979324.0, 1792982924.0, 1792986464.0] vs [1792979323.742205, 1792982923.74224, 1792986463.742251]"
+  "detalhe": "[1794267163.0, 1794270763.0, 1794274303.0] vs [1794267162.699996, 1794270762.70002, 1794274302.700026]"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1695,7 +1695,7 @@
   "secao": "14. The Things Network (Storage Integration)",
   "teste": "…'visto por último' é o último uplink, não o momento da busca",
   "ok": true,
-  "detalhe": "1792986464.0 vs 1792986463.742251"
+  "detalhe": "1794274303.0 vs 1794274302.700026"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1713,7 +1713,7 @@
   "secao": "14. The Things Network (Storage Integration)",
   "teste": "webhook com um uplink que o Storage já trouxe não grava em dobro",
   "ok": true,
-  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":null,\"device_id\":15,\"project_id\":8,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22},\"rate_limit\":{\"requests\":0,\"limit\":60,\"remaining\":60}}"
+  "detalhe": "HTTP 201: {\"message\":\"Payload do TTN recebido e salvo com sucesso!\",\"payload_id\":null,\"device_id\":19,\"project_id\":12,\"source\":\"ttn\",\"payload_data\":{\"temperatura\":22},\"rate_limit\":{\"requests\":4,\"limit\":60,\"remaining\":56}}"
  },
  {
   "secao": "14. The Things Network (Storage Integration)",
@@ -1797,7 +1797,7 @@
   "secao": "17. Administração",
   "teste": "listar usuários (admin) (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"data\":[{\"id\":12,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto034ee3@teste.dev\",\"profile\":\"User\",\"createdAt\":\"2026-10-26 03:48:30\"},{\"id\":6,\"name\":\"Teste Admin\",\"email\":\"admin034ee3@teste.dev\",\"profile\":\"Admin\",\"createdA"
+  "detalhe": "HTTP 200: {\"data\":[{\"id\":19,\"name\":\"Usu\\u00e1rio Teste\",\"email\":\"esperto4c371d@teste.dev\",\"profile\":\"User\",\"createdAt\":\"2026-11-09 22:32:21\"},{\"id\":13,\"name\":\"Teste Admin\",\"email\":\"admin4c371d@teste.dev\",\"profile\":\"Admin\",\"created"
  },
  {
   "secao": "17. Administração",
@@ -1851,7 +1851,7 @@
   "secao": "18. Páginas logadas (sem erros de PHP)",
   "teste": "/perfil abre sem erro",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Meu Perfil | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"htt"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Meu Perfil | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"ass"
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
@@ -1863,7 +1863,7 @@
   "secao": "18. Páginas logadas (sem erros de PHP)",
   "teste": "/documentacao abre sem erro",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Documentação | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"h"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Documentação | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"a"
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
@@ -1873,25 +1873,25 @@
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
-  "teste": "/novo-dispositivo?project_id=8 abre sem erro",
+  "teste": "/novo-dispositivo?project_id=12 abre sem erro",
   "ok": true,
   "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Novo Dispositivo | IFSCentral Lite</title>    <link rel=\"stylesheet\" hre"
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
-  "teste": "/projeto?id=8 abre sem erro",
+  "teste": "/projeto?id=12 abre sem erro",
   "ok": true,
   "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Projeto | IFSCentral Lite</title>    <link rel=\"stylesheet\" hr"
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
-  "teste": "/ver-projeto?id=8 abre sem erro",
+  "teste": "/ver-projeto?id=12 abre sem erro",
   "ok": true,
-  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"ht"
+  "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Estação E2E | IFSCentral Lite</title>    <link rel=\"stylesheet\" href=\"as"
  },
  {
   "secao": "18. Páginas logadas (sem erros de PHP)",
-  "teste": "/dispositivo?id=12&project_id=8 abre sem erro",
+  "teste": "/dispositivo?id=16&project_id=12 abre sem erro",
   "ok": true,
   "detalhe": "HTTP 200: <!DOCTYPE html> <html lang=\"pt-br\"> <head>   <meta charset=\"utf-8\">   <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">   <title>Gerenciar Dispositivo | IFSCentral Lite</title>    <link rel=\"stylesheet"
  },
@@ -1923,7 +1923,7 @@
   "secao": "19. Exclusões",
   "teste": "apagar dispositivo (espera 200)",
   "ok": true,
-  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Dispositivo removido com sucesso.\",\"project_id\":8}"
+  "detalhe": "HTTP 200: {\"success\":true,\"message\":\"Dispositivo removido com sucesso.\",\"project_id\":12}"
  },
  {
   "secao": "19. Exclusões",

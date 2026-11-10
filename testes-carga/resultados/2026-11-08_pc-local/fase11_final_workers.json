@@ -1,0 +1,68 @@
+{
+  "fase": "fase11_final_workers",
+  "duracao_s": 2.5,
+  "drenagem_worker_s": 0.1,
+  "banco_antes": {
+    "http": 6000,
+    "mqtt": 6199
+  },
+  "banco_depois": {
+    "http": 6000,
+    "mqtt": 8199
+  },
+  "gravados_http": 0,
+  "gravados_mqtt": 2000,
+  "linhas_duplicadas_total": 0,
+  "recursos": {
+    "ifs_carga_proxy": {
+      "cpu_media_pct": 0.0,
+      "cpu_p95_pct": 0.0,
+      "mem_max_mb": 8.1
+    },
+    "ifs_carga_web": {
+      "cpu_media_pct": 0.0,
+      "cpu_p95_pct": 0.0,
+      "mem_max_mb": 30.7
+    },
+    "ifs_carga_web_2": {
+      "cpu_media_pct": 0.0,
+      "cpu_p95_pct": 0.0,
+      "mem_max_mb": 30.1
+    },
+    "ifs_carga_worker": {
+      "cpu_media_pct": 9.9,
+      "cpu_p95_pct": 9.9,
+      "mem_max_mb": 6.5
+    },
+    "ifs_carga_db": {
+      "cpu_media_pct": 59.1,
+      "cpu_p95_pct": 59.1,
+      "mem_max_mb": 513.3
+    },
+    "ifs_carga_mqtt": {
+      "cpu_media_pct": 10.6,
+      "cpu_p95_pct": 10.6,
+      "mem_max_mb": 5.9
+    }
+  },
+  "mqtt": {
+    "totais": {
+      "requests": 2000,
+      "sucesso": 2000,
+      "falha": 0,
+      "taxa_sucesso_pct": 100.0,
+      "throughput_rps": 884.53
+    },
+    "erros": {},
+    "latencia_puback_ms": {
+      "min": 0.25,
+      "mean": 2.27,
+      "median": 1.03,
+      "p90": 5.67,
+      "p95": 7.85,
+      "p99": 12.8,
+      "max": 25.2,
+      "stdev": 2.72
+    }
+  }
+}

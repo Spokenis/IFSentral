@@ -74,7 +74,7 @@ void enviarPayload() {
   }
 
   // Requisicao HTTP manual
-  client->print("POST /api/enviar_payload.php HTTP/1.1\r\n");
+  client->print("POST /api/enviar-payload HTTP/1.1\r\n");
   client->print("Host: "); client->print(HOST); client->print("\r\n");
   client->print("X-Api-Key: "); client->print(API_KEY); client->print("\r\n");
   client->print("Content-Type: application/json\r\n");
