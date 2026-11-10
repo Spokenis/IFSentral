@@ -162,4 +162,47 @@ final class RateLimiterTest extends TestCase
         $limiter->recordLoginAttempt('user@example.com', '127.0.0.1', true);
         $this->addToAssertionCount(1); // não lançou exceção
     }
+
+    public function testIpNaListaAceitaIpExatoERedesCidr(): void
+    {
+        $lista = '10.50.0.0/16, 192.168.1.20 2001:db8::/32';
+        $this->assertTrue(RateLimiter::ipNaLista('10.50.3.7', $lista));
+        $this->assertTrue(RateLimiter::ipNaLista('192.168.1.20', $lista));
+        $this->assertTrue(RateLimiter::ipNaLista('2001:db8::1', $lista));
+        $this->assertFalse(RateLimiter::ipNaLista('10.51.0.1', $lista));
+        $this->assertFalse(RateLimiter::ipNaLista('192.168.1.21', $lista));
+        $this->assertFalse(RateLimiter::ipNaLista('', $lista));
+        $this->assertFalse(RateLimiter::ipNaLista('10.50.3.7', ''));
+        $this->assertTrue(RateLimiter::ipNaLista('172.21.0.9', '172.16.0.0/12'));
+        $this->assertFalse(RateLimiter::ipNaLista('172.32.0.1', '172.16.0.0/12'));
+    }
+
+    public function testNormalizarListaIpsSeparaInvalidos(): void
+    {
+        [$ok, $invalidos] = RateLimiter::normalizarListaIps("10.50.0.0/16\n192.168.1.20; abc, 10.0.0.0/40, 10.50.0.0/16");
+        $this->assertSame('10.50.0.0/16, 192.168.1.20', $ok);
+        $this->assertSame(['abc', '10.0.0.0/40'], $invalidos);
+    }
+
+    public function testLimitePorIpIgnoradoParaIpIsento(): void
+    {
+        $settingsStmt = $this->createMock(PDOStatement::class);
+        $settingsStmt->method('execute')->willReturn(true);
+        $settingsStmt->method('fetch')->willReturnOnConsecutiveCalls(
+            ['setting_key' => 'LOGIN_RATE_LIMIT_MAX_PER_IP', 'setting_value' => '20'],
+            ['setting_key' => 'LOGIN_RATE_LIMIT_IP_ISENTOS', 'setting_value' => '10.50.0.0/16'],
+            false
+        );
+        $query = $this->createMock(PDOStatement::class);
+        $query->method('execute')->willReturn(true);
+        $query->method('fetch')->willReturn(['by_identifier' => 0, 'by_ip' => 500]);
+        $conn = $this->createMock(PDO::class);
+        $conn->method('prepare')->willReturnCallback(fn(string $sql) => str_contains($sql, 'api_settings') ? $settingsStmt : $query);
+        $limiter = new RateLimiter($conn);
+
+        $this->assertTrue($limiter->checkLoginAttempts('a@b.c', '10.50.9.9')['allowed'], 'rede isenta: só o limite por conta vale');
+        $r = $limiter->checkLoginAttempts('a@b.c', '200.1.2.3');
+        $this->assertFalse($r['allowed']);
+        $this->assertSame('ip', $r['motivo']);
+    }
 }

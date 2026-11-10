@@ -1,0 +1,37 @@
+/*
+ * Contraste mínimo WCAG 2 AA (4,5:1 para texto normal).
+ * O teste com axe-core de 10/11/2026 achou estas cores do Bootstrap/AdminLTE
+ * abaixo do mínimo; aqui elas são escurecidas sem mudar a identidade visual.
+ */
+code { color: #c2185b; }                                   /* 3,8 -> 5,9 */
+a, .btn-link { color: #0062cc; }                           /* 4,0 -> 5,8 */
+a:hover, .btn-link:hover { color: #004a99; }
+.navbar-light .navbar-nav .nav-link { color: #555; }       /* 4,0 -> 7,5 */
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link:focus { color: #1b7d3d; }
+.main-footer, .main-footer a:not(.btn) { color: #5f6b75; } /* 3,3 -> 5,5 */
+.text-muted { color: #5a6268 !important; }                 /* 4,3 -> 5,7 */
+.badge-success, .bg-success, .btn-success { background-color: #1e7e34 !important; border-color: #1e7e34; } /* 3,1 -> 5,1 */
+.btn-success:hover { background-color: #19692c !important; }
+.badge-info, .bg-info { background-color: #117a8b !important; }
+.badge-warning, .bg-warning { color: #1f2d3d !important; }
+/* Abas do projeto (fundo verde da plataforma) */
+#project-tabs .nav-link:not(.active) { color: #fff; }
+/* Links no meio do texto precisam de algo além da cor */
+p a:not(.btn), li a:not(.btn):not(.nav-link):not(.dropdown-item):not(.page-link), td a:not(.btn) { text-decoration: underline; }
+/* Foco sempre visível para quem navega pelo teclado */
+a:focus-visible, button:focus-visible, .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 3px solid #1b7d3d; outline-offset: 2px;
+}
+/* Cores de fundo do AdminLTE com texto branco (azul 4,0; verde 3,1; ciano 3,0).
+   "Primário" vira o verde da plataforma (#1B7D3D, 5,2:1), como as páginas do projeto já faziam */
+.bg-primary, .badge-primary, .btn-primary, .card-primary:not(.card-outline) > .card-header { background-color: #1b7d3d !important; border-color: #1b7d3d; }
+.btn-primary:hover, .btn-primary:focus { background-color: #145c2d !important; border-color: #145c2d; }
+.card-success:not(.card-outline) > .card-header { background-color: #1e7e34 !important; }
+.card-info:not(.card-outline) > .card-header { background-color: #117a8b !important; }
+.btn-outline-primary { color: #1b7d3d; border-color: #1b7d3d; }
+.btn-outline-primary:hover, .btn-outline-primary.active { color: #fff; background-color: #1b7d3d; }
+.btn-outline-secondary { color: #5a6268; border-color: #5a6268; }
+.btn-outline-secondary:hover { color: #fff; background-color: #5a6268; }
+.badge-warning, .bg-warning { color: #1f2d3d !important; }
+label a, .form-check-label a { text-decoration: underline; }

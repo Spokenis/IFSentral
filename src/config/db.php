@@ -30,9 +30,15 @@ try {
             PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
         ]
     );
+    // Mesmo fuso do PHP (config.php): NOW(), CURRENT_TIMESTAMP e as colunas
+    // TIMESTAMP passam a vir no horário local
+    $conn->exec("SET time_zone = '" . date('P') . "'");
 } catch(PDOException $e) {
     if (!headers_sent()) {
-        http_response_code(500);
+        // 503 + Retry-After: o banco está fora, não é erro da requisição; o
+        // dispositivo (ou o navegador) deve tentar de novo em instantes
+        http_response_code(503);
+        header('Retry-After: 10');
         header('Content-Type: application/json; charset=UTF-8');
     }
     

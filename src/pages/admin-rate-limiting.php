@@ -86,6 +86,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_setting'])) {
     }
 }
 
+// ---------- Proteção do login (tentativas erradas por conta e por IP) ----------
+$loginCampos = [
+    'LOGIN_RATE_LIMIT_ENABLED'        => ['Proteção do login', 0, 1, 'Bloquear login após tentativas erradas (1=sim, 0=não)'],
+    'LOGIN_RATE_LIMIT_MAX_ATTEMPTS'   => ['Tentativas por conta', 1, 100, 'Tentativas erradas por conta antes do bloqueio'],
+    'LOGIN_RATE_LIMIT_WINDOW_MINUTES' => ['Tempo de bloqueio', 1, 1440, 'Janela (minutos) em que as tentativas erradas são contadas'],
+    'LOGIN_RATE_LIMIT_MAX_PER_IP'     => ['Tentativas por IP', 0, 100000, 'Tentativas erradas por IP antes do bloqueio (0 = sem limite por IP)'],
+];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_login'])) {
+    Csrf::requireValidTokenFromPost();
+    $enviados = is_array($_POST['login'] ?? null) ? $_POST['login'] : [];
+    $errosLogin = [];
+    $novos = [];
+    foreach ($loginCampos as $key => [$label, $min, $max, $desc]) {
+        $v = filter_var($enviados[$key] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => $min, 'max_range' => $max]]);
+        if ($v === false) { $errosLogin[] = "\"$label\" deve ser um número entre $min e $max."; continue; }
+        $novos[$key] = [(string)$v, $desc];
+    }
+    [$listaIps, $invalidos] = RateLimiter::normalizarListaIps((string)($enviados['LOGIN_RATE_LIMIT_IP_ISENTOS'] ?? ''));
+    if ($invalidos) {
+        $errosLogin[] = 'IPs/redes inválidos: ' . implode(', ', array_slice($invalidos, 0, 5)) . '. Use o formato 10.50.0.0/16 ou 192.168.1.20.';
+    } elseif (strlen($listaIps) > 500) {
+        $errosLogin[] = 'A lista de IPs isentos passa de 500 caracteres; use redes (ex.: 10.50.0.0/16).';
+    }
+    if ($errosLogin) {
+        $message = implode(' ', $errosLogin);
+        $messageType = 'danger';
+    } else {
+        $novos['LOGIN_RATE_LIMIT_IP_ISENTOS'] = [$listaIps, 'IPs/redes isentos do limite por IP (o limite por conta continua valendo)'];
+        $falhou = false;
+        foreach ($novos as $key => [$v, $desc]) {
+            $falhou = !$rateLimiter->salvarConfiguracao($key, $v, $desc) || $falhou;
+        }
+        $message = $falhou ? 'Não foi possível salvar todas as configurações do login.' : 'Proteção do login atualizada.';
+        $messageType = $falhou ? 'danger' : 'success';
+    }
+    $allSettings = $rateLimiter->getAllSettings();
+}
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['desbloquear'])) {
+    Csrf::requireValidTokenFromPost();
+    $tipo = (string)$_POST['desbloquear'];
+    $alvo = (string)($_POST['alvo'] ?? '');
+    $n = $rateLimiter->desbloquearLogin($tipo, $alvo);
+    $message = $tipo === 'todos' ? "Todos os bloqueios de login foram removidos ($n tentativas erradas apagadas)."
+        : ($tipo === 'ip' ? 'IP' : 'Conta') . ' desbloqueado(a): ' . $alvo . '.';
+    $messageType = 'success';
+}
+$loginCfg = $rateLimiter->loginConfig();
+$loginBloqueios = $rateLimiter->bloqueiosLogin();
+$ipAtual = $_SERVER['REMOTE_ADDR'] ?? '';
+
 // Buscar estatísticas de violações recentes
 $sqlViolations = "SELECT device_id, COUNT(*) as total, MAX(created_at) as last_violation 
                   FROM rate_limit_violations 
@@ -111,9 +161,9 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin - Rate Limiting | IFSCentral Lite</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
   
   <style>
     :root {
@@ -137,7 +187,7 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
     <section class="content-header">
       <div class="container">
         <h1><i class="fas fa-cogs mr-2"></i>Administração - Rate Limiting</h1>
-        <p class="text-muted">Configure limites de requisições por dispositivo</p>
+        <p class="text-muted">Limites de requisições dos dispositivos e proteção do login</p>
       </div>
     </section>
 
@@ -219,7 +269,105 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
                 <p><strong>Limite Padrão:</strong> <span class="badge badge-primary"><?php echo $allSettings['RATE_LIMIT_REQUESTS_PER_MINUTE']; ?> req/min</span></p>
                 <p><strong>Janela:</strong> <span class="badge badge-secondary"><?php echo $allSettings['RATE_LIMIT_WINDOW_MINUTES']; ?> min</span></p>
                 <hr>
-                <p><i class="fas fa-exclamation-triangle text-warning mr-2"></i><strong>Nota:</strong> Use os inputs acima para atualizar cada configuração individualmente.</p>
+                              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-8">
+            <div class="card card-danger card-outline" id="protecao-login">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-user-lock mr-2"></i>Proteção do login</h3>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small mb-3">
+                  Bloqueia temporariamente o login depois de várias senhas erradas. O limite <strong>por conta</strong>
+                  protege cada usuário; o limite <strong>por IP</strong> barra quem testa muitas contas. Na rede do câmpus
+                  muitos usuários saem pelo mesmo IP: aumente o limite por IP, desligue-o (0) ou isente as redes do câmpus.
+                </p>
+                <form method="POST" action="">
+                  <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Csrf::getToken()); ?>">
+                  <div class="form-row">
+                    <div class="form-group col-md-6">
+                      <label for="login_enabled">Proteção do login</label>
+                      <select id="login_enabled" name="login[LOGIN_RATE_LIMIT_ENABLED]" class="form-control">
+                        <option value="1" <?php echo $loginCfg['ativo'] ? 'selected' : ''; ?>>✓ Ativada</option>
+                        <option value="0" <?php echo !$loginCfg['ativo'] ? 'selected' : ''; ?>>✗ Desativada</option>
+                      </select>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="login_janela">Tempo de bloqueio (minutos)</label>
+                      <input type="number" id="login_janela" name="login[LOGIN_RATE_LIMIT_WINDOW_MINUTES]" class="form-control" min="1" max="1440"
+                             value="<?php echo (int)$loginCfg['janela']; ?>">
+                      <small class="form-text text-muted">As tentativas erradas contam durante este tempo</small>
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="login_conta">Tentativas erradas por conta</label>
+                      <input type="number" id="login_conta" name="login[LOGIN_RATE_LIMIT_MAX_ATTEMPTS]" class="form-control" min="1" max="100"
+                             value="<?php echo (int)$loginCfg['por_conta']; ?>">
+                    </div>
+                    <div class="form-group col-md-6">
+                      <label for="login_ip">Tentativas erradas por IP</label>
+                      <input type="number" id="login_ip" name="login[LOGIN_RATE_LIMIT_MAX_PER_IP]" class="form-control" min="0" max="100000"
+                             value="<?php echo (int)$loginCfg['por_ip']; ?>">
+                      <small class="form-text text-muted">Somando todas as contas; 0 = sem limite por IP</small>
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label for="login_isentos">IPs ou redes isentos do limite por IP</label>
+                    <textarea id="login_isentos" name="login[LOGIN_RATE_LIMIT_IP_ISENTOS]" class="form-control" rows="2" maxlength="600"
+                              placeholder="ex.: 10.50.0.0/16, 192.168.1.20"><?php echo htmlspecialchars($loginCfg['ips_isentos']); ?></textarea>
+                    <small class="form-text text-muted">
+                      Separe por vírgula. O limite por conta continua valendo para eles.
+                      Seu IP agora: <code><?php echo htmlspecialchars($ipAtual); ?></code>
+                    </small>
+                  </div>
+                  <input type="hidden" name="update_login" value="1">
+                  <button type="submit" class="btn btn-danger"><i class="fas fa-save mr-2"></i>Salvar proteção do login</button>
+                </form>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <div class="card card-secondary card-outline">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-ban mr-2"></i>Bloqueados agora</h3>
+              </div>
+              <div class="card-body">
+                <?php if (empty($loginBloqueios['contas']) && empty($loginBloqueios['ips'])): ?>
+                  <p class="text-muted mb-0">Nenhuma conta ou IP bloqueado.</p>
+                <?php else: ?>
+                  <table class="table table-sm">
+                    <tbody>
+                      <?php foreach (['contas' => 'conta', 'ips' => 'ip'] as $grupo => $tipo): ?>
+                        <?php foreach ($loginBloqueios[$grupo] as $b): ?>
+                          <tr>
+                            <td class="text-break">
+                              <i class="fas <?php echo $tipo === 'ip' ? 'fa-network-wired' : 'fa-user'; ?> text-muted mr-1"></i>
+                              <?php echo htmlspecialchars($b['alvo']); ?>
+                              <br><small class="text-muted"><?php echo (int)$b['falhas']; ?> erradas, última às <?php echo date('H:i', strtotime($b['ultima'])); ?></small>
+                            </td>
+                            <td class="text-right align-middle">
+                              <form method="POST" action="" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Csrf::getToken()); ?>">
+                                <input type="hidden" name="desbloquear" value="<?php echo $tipo; ?>">
+                                <input type="hidden" name="alvo" value="<?php echo htmlspecialchars($b['alvo']); ?>">
+                                <button type="submit" class="btn btn-xs btn-outline-success" title="Desbloquear"><i class="fas fa-unlock"></i></button>
+                              </form>
+                            </td>
+                          </tr>
+                        <?php endforeach; ?>
+                      <?php endforeach; ?>
+                    </tbody>
+                  </table>
+                  <form method="POST" action="">
+                    <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars(Csrf::getToken()); ?>">
+                    <input type="hidden" name="desbloquear" value="todos">
+                    <button type="submit" class="btn btn-sm btn-success btn-block"><i class="fas fa-unlock-alt mr-1"></i>Desbloquear todos</button>
+                  </form>
+                <?php endif; ?>
               </div>
             </div>
           </div>
@@ -291,8 +439,9 @@ $topDevices = $stmtTopDevices->fetchAll(PDO::FETCH_ASSOC);
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="assets/js/input-limits.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

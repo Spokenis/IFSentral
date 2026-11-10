@@ -1,0 +1,577 @@
+<!--
+  Conteúdo padrão da documentação. Na primeira abertura da página ele é
+  copiado para a tabela documentation_sections; a partir daí o administrador
+  edita pela própria plataforma. "Restaurar padrão" volta ao texto daqui.
+  Placeholders: {{URL_BASE}} = endereço do site (ex.: https://ifsentral.online)
+-->
+
+<section data-slug="mapa" data-titulo="Mapa da Plataforma — Onde Encontrar Cada Coisa" data-icone="fas fa-map-signs" data-cor="success" data-contorno="1">
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead class="thead-light">
+                      <tr><th>Quero...</th><th>Onde ir</th></tr>
+                    </thead>
+                    <tbody>
+                      <tr><td>Ver os projetos dos quais participo</td><td><strong>Meus Projetos</strong> (menu superior)</td></tr>
+                      <tr><td>Encontrar e pedir para entrar em um projeto público de outra pessoa</td><td><strong>Explorar Projetos</strong> (menu superior) — tem busca por nome, tag ou gerente</td></tr>
+                      <tr><td>Ver todos os meus dispositivos, de todos os projetos, de uma vez</td><td><strong>Meu Perfil ▸ Meus Sensores</strong> (menu do avatar, canto superior direito)</td></tr>
+                      <tr><td>Gerenciar um dispositivo específico (payloads, tags, mapeamento de valores, credenciais, excluir)</td><td>Dentro do projeto ▸ aba <strong>Dispositivos</strong> ▸ clique no dispositivo</td></tr>
+                      <tr><td>Ver/aceitar convites recebidos, ou pedir para virar Moderador</td><td><strong>Meu Perfil</strong> (menu do avatar)</td></tr>
+                      <tr><td>Trocar senha, ativar 2FA, editar dados da conta</td><td><strong>Configurações</strong> (menu do avatar) ▸ aba <strong>Segurança</strong></td></tr>
+                      <tr><td>Ver notificações de convites e solicitações pendentes</td><td>Ícone de sino 🔔 no menu superior (fica ao lado do seu avatar)</td></tr>
+                      <tr><td>Convidar alguém, aprovar solicitações de entrada, expulsar/promover membro, excluir o projeto</td><td>Dentro do projeto ▸ abas <strong>Participantes</strong>, <strong>Solicitações</strong> e <strong>Configurações</strong> (só aparecem funcionais se você for Gerente daquele projeto)</td></tr>
+                      <tr><td>Receber dados de sensores LoRaWAN pelo The Things Network</td><td>Dentro do projeto ▸ aba <strong>Configurações</strong> ▸ cartão <strong>The Things Network</strong> (veja o <a href="#ttn">tutorial abaixo</a>)</td></tr>
+                      <tr><td>Gerenciar usuários do sistema, aprovar pedidos de Moderador</td><td><strong>Administração</strong> (menu superior — só visível para Admin)</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              
+</section>
+
+<section data-slug="perfis" data-titulo="Perfis e Permissões" data-icone="fas fa-user-shield" data-cor="primary" data-contorno="1">
+                <p>O sistema tem <strong>dois níveis</strong> de permissão que não devem ser confundidos: o <strong>perfil global</strong> da sua conta, e o <strong>papel</strong> que você tem dentro de <em>cada</em> projeto.</p>
+
+                <h5>1. Perfil Global da Conta</h5>
+                <table class="table table-bordered table-sm">
+                  <thead class="thead-light"><tr><th>Perfil</th><th>O que pode fazer</th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="badge badge-secondary">User</span></td>
+                      <td>Perfil padrão de todo cadastro novo. Pode entrar em projetos (por convite ou solicitação), gerenciar seus próprios dispositivos dentro deles. <strong>Não pode criar projetos novos.</strong></td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-success">Moderator</span></td>
+                      <td>Tudo que User faz, <strong>mais</strong> a permissão de criar novos projetos (e virar Gerente deles). Vira Moderator solicitando em <strong>Meu Perfil</strong> e sendo aprovado por um Admin.</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-danger">Admin</span></td>
+                      <td>Tudo que Moderator faz, mais: gerenciar todos os usuários do sistema (promover/rebaixar perfil, remover conta), aprovar ou rejeitar pedidos de Moderator, e configurar limites de requisição (rate limiting) da plataforma.</td>
+                    </tr>
+                  </tbody>
+                </table>
+
+                <h5 class="mt-4">2. Papel dentro de um Projeto</h5>
+                <p>Ao entrar em um projeto (como convidado ou por solicitação aprovada), você recebe um dos dois papéis abaixo — <strong>independente do seu perfil global</strong>:</p>
+                <table class="table table-bordered table-sm">
+                  <thead class="thead-light"><tr><th>Papel</th><th>O que pode fazer <em>naquele projeto</em></th></tr></thead>
+                  <tbody>
+                    <tr>
+                      <td><span class="badge badge-success">Gerente</span></td>
+                      <td>Quem cria o projeto vira Gerente automaticamente. Pode: editar e excluir o projeto, convidar e expulsar membros, aprovar/rejeitar solicitações de entrada, promover um Participante a Gerente, criar/editar gráficos, gerenciar tags e mapeamento de valores dos dispositivos, e <strong>excluir dispositivos</strong> (permissão <code>canDeleteSensor</code>).</td>
+                    </tr>
+                    <tr>
+                      <td><span class="badge badge-secondary">Participante</span></td>
+                      <td>Pode ver o projeto, os dados e gráficos, e cadastrar novos dispositivos. <strong>Não pode</strong> convidar/expulsar ninguém, editar ou excluir o projeto, nem excluir dispositivos.</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="callout callout-info">
+                  <p class="mb-0"><i class="icon fas fa-info"></i> Ou seja: um <strong>Admin</strong> do sistema pode muito bem ser só <strong>Participante</strong> num projeto específico se foi convidado como tal — os dois níveis são independentes.</p>
+                </div>
+              
+</section>
+
+<section data-slug="entrar-em-projeto" data-titulo="Como Entrar em um Projeto: Convites vs. Solicitações" data-icone="fas fa-user-plus" data-cor="warning" data-contorno="1">
+                <p>Existem <strong>duas formas diferentes</strong> de entrar em um projeto — não confunda:</p>
+
+                <h5><i class="fas fa-envelope mr-1"></i> Convite (quem convida é o Gerente)</h5>
+                <ol>
+                  <li>Um Gerente do projeto te convida pelo seu e-mail, na aba <strong>Participantes</strong> do projeto, escolhendo o papel (Gerente ou Participante) que você vai ter.</li>
+                  <li>Você recebe o convite em <strong>Meu Perfil ▸ Convites Pendentes</strong> (e, se tiver conta cadastrada, também aparece no sino de notificações 🔔). Se o e-mail estiver configurado no servidor, você também recebe um e-mail.</li>
+                  <li>Você pode <strong>Aceitar</strong> (entra no projeto com o papel definido pelo convite) ou <strong>Recusar</strong>.</li>
+                  <li>Convites expiram automaticamente após um tempo — se perder o prazo, peça um novo convite.</li>
+                </ol>
+                <p class="text-muted"><small>Funciona para projetos públicos <strong>e</strong> privados — é a única forma de entrar num projeto privado.</small></p>
+
+                <h5 class="mt-4"><i class="fas fa-hand-paper mr-1"></i> Solicitação de Participação (quem pede é você)</h5>
+                <ol>
+                  <li>Em <strong>Explorar Projetos</strong>, você encontra um projeto <strong>público</strong> que te interessa e clica em "Solicitar Participação".</li>
+                  <li>O pedido cai na aba <strong>Solicitações</strong> do projeto, visível só para o Gerente (com um contador de pendências no menu).</li>
+                  <li>O Gerente aprova ou rejeita. Se aprovado, você entra automaticamente como <strong>Participante</strong>.</li>
+                </ol>
+                <p class="text-muted"><small>Só funciona para projetos marcados como <strong>públicos</strong>. Projetos privados não aparecem em Explorar Projetos.</small></p>
+
+                <div class="callout callout-warning">
+                  <h5><i class="icon fas fa-exclamation-triangle"></i> Resumo</h5>
+                  <p class="mb-0"><strong>Convite</strong> = o Gerente vem até você, funciona pra qualquer projeto, você escolhe o papel. <strong>Solicitação</strong> = você vai até o projeto, só pra projetos públicos, você sempre entra como Participante.</p>
+                </div>
+              
+</section>
+
+<section data-slug="seguranca" data-titulo="Segurança da Conta" data-icone="fas fa-shield-alt" data-cor="info" data-contorno="1">
+                <ul>
+                  <li><strong>Esqueci minha senha:</strong> na tela de login, clique em "Esqueci minha senha" e informe seu e-mail. Um link de redefinição é enviado (só funciona se o servidor tiver e-mail configurado — pergunte ao administrador se não chegar nada).</li>
+                  <li><strong>Autenticação de dois fatores (2FA):</strong> opcional, ativada em <strong>Configurações ▸ Segurança</strong>. Depois de ativada, todo login pede também um código de 6 dígitos do seu aplicativo autenticador (Google Authenticator, Authy, etc). Guarde os códigos de backup mostrados na hora da ativação — cada um só funciona uma vez, e servem pra entrar caso perca acesso ao aplicativo.</li>
+                </ul>
+              
+</section>
+
+<section data-slug="ttn" data-titulo="Integração: The Things Network (TTN)" data-icone="fas fa-broadcast-tower" data-cor="warning" data-contorno="1">
+                <h5>Como funciona</h5>
+                <div class="d-flex flex-wrap align-items-center mb-3">
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Sensor LoRaWAN</span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Gateway</span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">The Things Network<br><small>guarda 24 h (Storage)</small></span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Servidor do IFSCentral busca no TTN<br><small>a cada acesso ao site, no máximo 1×/min</small></span>
+                  <i class="fas fa-arrow-right mx-2 text-muted"></i>
+                  <span class="badge badge-light border p-2" style="font-size: .9rem; font-weight: 600;">Dispositivo no projeto<br><small>payloads e gráficos</small></span>
+                </div>
+                <p>O sensor LoRaWAN transmite pelo ar para um gateway, que repassa ao The Things Network. Com a <strong>Storage Integration</strong> ligada, o TTN guarda cada uplink por <strong>24 horas</strong>. É o próprio servidor do IFSCentral Lite que vai buscar esses uplinks no TTN, pela internet (HTTPS) — por isso <strong>funciona mesmo que o TTN não consiga acessar este servidor</strong>, como numa rede interna do câmpus.</p>
+                <p>Não há nenhum programa rodando em segundo plano no servidor: a busca acontece quando alguém usa o site (qualquer página dispara), no máximo uma vez por minuto para cada projeto. Se ninguém acessar por algumas horas, os uplinks continuam guardados no TTN e entram todos no próximo acesso — cada um com o horário em que o TTN o recebeu, então os gráficos ficam corretos.</p>
+                <p>Cada <strong>projeto</strong> do IFSCentral Lite se liga a uma <strong>aplicação</strong> do TTN, e cada <strong>dispositivo</strong> do projeto se liga a um <strong>end device</strong> dessa aplicação. O que é gravado é o <code>decoded_payload</code> — o objeto que o <em>payload formatter</em> do TTN monta a partir dos bytes que o sensor enviou. As chaves desse objeto (ex.: <code>temperatura</code>) são as variáveis que você escolhe nos gráficos, e os dados aparecem com origem <code>ttn</code>.</p>
+
+                <h5 class="mt-4">Tutorial: do TTN ao gráfico</h5>
+                <p class="text-muted small">Você precisa ser <strong>Gerente</strong> do projeto no IFSCentral Lite e ter acesso à aplicação no console do TTN (<a href="https://console.cloud.thethings.network/" target="_blank" rel="noopener">console.cloud.thethings.network</a>).</p>
+                <ol class="pl-3">
+                  <li class="mb-3"><strong>Tenha a aplicação e o end device no TTN.</strong><br>
+                    Anote o <strong>ID da aplicação</strong> (ex.: <code>estacao-campus</code>), o <strong>cluster</strong> onde ela está (aparece no endereço do console, ex.: <code>eu1</code>) e o <strong>ID de cada end device</strong> (ex.: <code>sensor-sala-204</code>). São IDs em letras minúsculas, números e hífens.</li>
+                  <li class="mb-3"><strong>Configure o payload formatter.</strong><br>
+                    Em <em>Payload formatters → Uplink</em>, escolha <em>Custom Javascript formatter</em> e converta os bytes do sensor em um objeto com nomes legíveis. Exemplo para um sensor que envia temperatura e umidade em 4 bytes:
+                    <pre class="mt-2"><code>function decodeUplink(input) {
+  // bytes 0-1: temperatura × 100 (com sinal); bytes 2-3: umidade × 100
+  var t = (input.bytes[0] &lt;&lt; 8) | input.bytes[1];
+  if (t &gt; 32767) t -= 65536;
+  var u = (input.bytes[2] &lt;&lt; 8) | input.bytes[3];
+  return { data: { temperatura: t / 100, umidade: u / 100 } };
+}</code></pre>
+                    Use nomes curtos (até 40 caracteres) e no máximo 50 campos — os mesmos limites de qualquer payload enviado ao IFSCentral Lite. Sem formatter, o uplink chega sem <code>decoded_payload</code> e é ignorado.</li>
+                  <li class="mb-3"><strong>Ative o Message storage (Storage Integration).</strong><br>
+                    Na aplicação, clique em <em>Message storage</em> no menu lateral (logo abaixo de <em>Webhooks</em>) e ative-o. Em versões antigas do console, o caminho é <em>Integrations → Storage Integration → Activate Storage Integration</em>. Para conferir: na página inicial da aplicação, o cartão <em>Last stored messages</em> não pode mostrar <em>Message storage deactivated</em>. A partir daí o TTN guarda os uplinks por 24 horas — sem isso, o que a ponte não receber em tempo real se perde.</li>
+                  <li class="mb-3"><strong>Crie uma chave de API.</strong><br>
+                    Em <em>API keys → Add API key</em>, dê um nome (ex.: <code>ifscentral</code>), escolha <em>Grant individual rights</em> e marque só <em>Read application traffic (uplink and downlink)</em>. Copie a chave na hora (começa com <code>NNSXS.</code>) — o TTN não a mostra de novo.</li>
+                  <li class="mb-3"><strong>Ligue o projeto à aplicação.</strong><br>
+                    No IFSCentral Lite, abra o projeto → aba <strong>Configurações</strong> → cartão <strong>The Things Network</strong>. Escolha o cluster, informe o ID da aplicação, cole a chave e clique em <strong>Testar e salvar</strong>. O IFSCentral Lite testa a chave no TTN antes de gravar; se algo estiver errado, a mensagem diz o quê. A chave nunca é mostrada de novo, nem para os membros do projeto.</li>
+                  <li class="mb-3"><strong>Ligue cada dispositivo ao seu end device.</strong><br>
+                    Na página de cada dispositivo (aba <strong>Dispositivos</strong> do projeto → <strong>Gerenciar</strong>), no quadro <strong>📡 The Things Network</strong>, digite o ID do end device e clique em <strong>Salvar</strong>. Crie um dispositivo no projeto para cada end device que quiser receber.</li>
+                  <li class="mb-3"><strong>Confira.</strong><br>
+                    Volte ao cartão do projeto e clique em <strong>Buscar agora</strong>. A primeira busca traz o que o TTN guardou nas últimas 24 horas. Os dados aparecem em <strong>Últimos Payloads Recebidos</strong>, na página do dispositivo, e já podem ser usados nos gráficos. Os dados entram na próxima vez que alguém usar o site (no máximo um minuto depois). Uplinks com mais de 24 horas que ainda não tenham sido buscados se perdem.</li>
+                </ol>
+
+                <h5 class="mt-4">O que significa cada resultado do "Buscar agora"</h5>
+                <div class="table-responsive">
+                  <table class="table table-bordered table-sm">
+                    <thead class="thead-light"><tr><th>Mensagem</th><th>O que fazer</th></tr></thead>
+                    <tbody>
+                      <tr><td><em>N novo(s)</em></td><td>Uplinks gravados agora.</td></tr>
+                      <tr><td><em>N já gravado(s)</em></td><td>Nada: o uplink já estava no IFSCentral Lite (cada busca relê os últimos minutos por segurança).</td></tr>
+                      <tr><td><em>de end devices sem dispositivo correspondente</em></td><td>Chegaram uplinks de um end device que nenhum dispositivo do projeto usa. Preencha o ID do TTN no dispositivo certo (passo 6) e busque de novo — enquanto o TTN ainda os guardar (24 h), eles são recuperados.</td></tr>
+                      <tr><td><em>sem decoded_payload</em></td><td>Falta o payload formatter (passo 2), ou ele não devolve <code>data</code>.</td></tr>
+                      <tr><td><em>fora dos limites de payload</em></td><td>O objeto do formatter tem campos demais, nomes longos demais ou textos acima de 255 caracteres.</td></tr>
+                      <tr><td><em>O TTN recusou a chave de API</em></td><td>A chave foi digitada errada, apagada ou revogada no TTN. Crie outra (passo 4) e salve de novo.</td></tr>
+                      <tr><td><em>A chave de API não tem permissão…</em></td><td>A chave não tem o direito <em>Read application traffic</em>.</td></tr>
+                      <tr><td><em>Aplicação não encontrada… ou o Message storage não está ativado</em></td><td>Confira o ID da aplicação e o cluster, e se o Message storage (Storage Integration) está ativado (passo 3).</td></tr>
+                      <tr><td><em>Não foi possível conectar ao TTN</em></td><td>O servidor não está conseguindo acessar a internet por HTTPS (porta 443). Fale com quem administra a rede.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <details class="mt-3">
+                  <summary><strong>Alternativa: Webhook</strong> (só se o TTN conseguir acessar este servidor pela internet)</summary>
+                  <p class="mt-2">No webhook, é o TTN que envia cada uplink ao servidor, na hora. Ele funciona por dispositivo, com o ID e a chave de API do próprio dispositivo no IFSCentral Lite. Pode ser usado junto com a busca: um uplink que chegar pelos dois caminhos é gravado uma vez só.</p>
+                  <ol>
+                    <li>No IFSCentral Lite, copie o <strong>ID do Dispositivo</strong> e a <strong>Chave de API</strong> do dispositivo.</li>
+                    <li>No console do TTN, em <em>Webhooks</em> (menu lateral da aplicação), adicione um webhook do tipo <em>Custom webhook</em>, formato JSON.</li>
+                    <li>Em <strong>Base URL</strong>, coloque o endereço do servidor:
+                      <pre><code>{{URL_BASE}}/</code></pre>
+                    </li>
+                    <li>Marque <strong>Uplink message</strong> e, no caminho, coloque o endpoint com o ID do dispositivo:
+                      <pre><code>api/ttn-webhook?device_id=8</code></pre>
+                    </li>
+                    <li>Em <strong>Additional headers</strong>, adicione <code>X-Api-Key</code> com a chave de API do dispositivo.</li>
+                  </ol>
+                </details>
+              
+</section>
+
+<section data-slug="autenticacao" data-titulo="Autenticação da API de Dispositivos" data-icone="fas fa-key" data-cor="primary" data-contorno="1">
+                <h5>REST API (HTTP)</h5>
+                <p>As rotas de envio e consulta de dados do seu dispositivo usam <code>X-Api-Key</code>:</p>
+                <pre><code>X-Api-Key: SUA_API_KEY_AQUI</code></pre>
+                <p>Os gráficos e estatísticas exibidos no painel do IFSCentral Lite usam sua sessão de navegador logado automaticamente — você não precisa se preocupar com isso ao navegar pelo site.</p>
+              
+</section>
+
+<section data-slug="credenciais" data-titulo="Como Obter Suas Credenciais" data-icone="fas fa-lock" data-cor="warning" data-contorno="1">
+                <h5>No Painel do IFSCentral Lite</h5>
+                <ol>
+                  <li>Acesse <strong>Meus Projetos</strong></li>
+                  <li>Clique no seu projeto</li>
+                  <li>Clique no dispositivo que deseja gerenciar</li>
+                  <li>Localize a seção <strong>"Informações de Acesso (API)"</strong></li>
+                </ol>
+
+                <h5>Informações Disponíveis</h5>
+                <pre><code>📌 API REST
+ID do Dispositivo: 7
+Chave de API (X-Api-Key): a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6...</code></pre>
+              
+</section>
+
+<section data-slug="enviar-dados" data-titulo="Endpoint: Enviar Dados (Padrão)" data-icone="" data-cor="primary" data-contorno="0">
+                <p>Este endpoint é usado para salvar um novo conjunto de leituras (payload) do seu dispositivo no banco de dados.</p>
+                <div class="callout callout-info">
+                  <h5><i class="icon fas fa-info"></i> Novo: Identificação de Origem</h5>
+                  <p>Cada payload agora é marcado com sua origem: <code>http</code> (este endpoint) ou <code>ttn</code>. Isso permite rastrear facilmente de onde vieram seus dados!</p>
+                </div>
+
+                <div class="callout callout-warning">
+                  <h5><i class="icon fas fa-ruler mr-1"></i> Limites do Payload</h5>
+                  <p class="mb-0">Mantenha o payload pequeno e simples: até <strong>2KB</strong> por envio (8KB via TTN), sem aninhamento profundo de objetos e sem chaves/textos muito longos. Payloads fora desses limites são rejeitados com <code>HTTP 400</code> e uma mensagem explicando o motivo.</p>
+                </div>
+
+                <h5><kbd class="bg-primary">POST</kbd> <code>/api/enviar-payload</code></h5>
+                <hr>
+                <h5>Headers HTTP</h5>
+                <pre><code>Content-Type: application/json
+X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
+                <hr>
+                <h5>Corpo (Body) da Requisição (JSON)</h5>
+                <pre><code>{
+  "device_id": 1,
+  "payload": {
+    "temperatura": 25.5,
+    "umidade": 60
+  }
+}</code></pre>
+                <p><strong>Campos opcionais</strong>, para leituras que o dispositivo guardou enquanto estava sem rede: <code>"timestamp"</code> (instante da medição em segundos Unix, até 7 dias atrás; sem ele vale a hora de chegada) e <code>"id"</code> (identificador da leitura, até 100 caracteres). Reenviar o mesmo <code>id</code> responde <code>200</code> sem gravar de novo.</p>
+                <p>Se o servidor não conseguir gravar no momento (banco indisponível, disco cheio), a resposta é <code>503</code> com <code>Retry-After</code>: guarde a leitura e tente de novo.</p>
+                <hr>
+                <h5>Resposta (Sucesso 201 Created)</h5>
+                <pre><code>{
+  "message": "Payload salvo com sucesso!",
+  "payload_id": 42,
+  "device_id": 1,
+  "project_id": 2,
+  "source": "http",
+  "rate_limit": {
+    "requests": 12,
+    "limit": 60,
+    "remaining": 48
+  }
+}</code></pre>
+                <hr>
+                <h5>Exemplos de Código</h5>
+                <div class="card card-primary card-tabs">
+                  <div class="card-header p-0 pt-1 nav-tabs-container">
+                    <ul class="nav nav-tabs" id="tabs-enviar" role="tablist">
+                      <li class="nav-item" role="presentation"><a class="nav-link active" id="tabs-enviar-js-tab" data-toggle="pill" href="#tabs-enviar-js" role="tab">JavaScript (Fetch)</a></li>
+                      <li class="nav-item" role="presentation"><a class="nav-link" id="tabs-enviar-php-tab" data-toggle="pill" href="#tabs-enviar-php" role="tab">PHP (cURL)</a></li>
+                      <li class="nav-item" role="presentation"><a class="nav-link" id="tabs-enviar-esp-tab" data-toggle="pill" href="#tabs-enviar-esp" role="tab">C++ (ESP32/Arduino)</a></li>
+                    </ul>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="tab-content" id="tabs-enviar-content">
+                      <div class="tab-pane fade show active" id="tabs-enviar-js" role="tabpanel">
+<pre><code>const API_URL = '{{URL_BASE}}/api/enviar-payload';
+const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
+const DEVICE_ID = 1;
+
+async function enviarDados(temp, umid) {
+  const dados = {
+    device_id: DEVICE_ID,
+    payload: { temperatura: temp, umidade: umid }
+  };
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': API_KEY
+      },
+      body: JSON.stringify(dados)
+    });
+    const resultado = await response.json();
+    if (!response.ok) throw new Error(resultado.error);
+    console.log('✓ Sucesso:', resultado.message);
+    console.log('  Payload ID:', resultado.payload_id);
+    console.log('  Origem:', resultado.source);  // Agora mostra a origem!
+  } catch (error) {
+    console.error('✗ Erro:', error.message);
+  }
+}
+enviarDados(25.5, 60);</code></pre>
+                      </div>
+                      <div class="tab-pane fade" id="tabs-enviar-php" role="tabpanel">
+<pre><code>&lt;?php
+$apiUrl = '{{URL_BASE}}/api/enviar-payload';
+$apiKey = 'SUA_CHAVE_DE_API_AQUI';
+$deviceId = 1;
+$data = [
+    'device_id' =&gt; $deviceId,
+    'payload' =&gt; ['temperatura' =&gt; 25.5, 'umidade' =&gt; 60]
+];
+$payloadString = json_encode($data);
+$headers = [
+    'Content-Type: application/json',
+    'X-Api-Key: ' . $apiKey,
+    'Content-Length: ' . strlen($payloadString)
+];
+$ch = curl_init();
+curl_setopt($ch, CURLOPT_URL, $apiUrl);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payloadString);
+curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+// Para HTTPS em servidor de teste, pode ser necessário desabilitar verificação SSL
+// curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+// curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+$response = curl_exec($ch);
+$httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+echo "Código HTTP: " . $httpcode . "\n";
+$result = json_decode($response);
+echo "Origem do dado: " . $result-&gt;source . "\n";  // Agora mostra!
+echo "Resposta: " . $response;
+?&gt;</code></pre>
+                      </div>
+                      <div class="tab-pane fade" id="tabs-enviar-esp" role="tabpanel">
+<pre><code>/* Requer HTTPClient.h e ArduinoJson.h */
+#include &lt;WiFi.h&gt;
+#include &lt;HTTPClient.h&gt; // Para HTTP
+#include &lt;WiFiClientSecure.h&gt; // Para HTTPS
+#include &lt;ArduinoJson.h&gt;
+
+const char* serverName = "{{URL_BASE}}/api/enviar-payload";
+const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
+const int deviceId = 1;
+
+// Objeto de cliente seguro
+WiFiClientSecure client;
+
+void enviarDados(float temp, float umid) {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+
+    // NOTA: Para HTTPS, pode ser necessário ignorar a validação SSL
+    client.setInsecure(); // Ignora validação SSL
+    
+    http.begin(client, serverName); // Inicia com o cliente seguro
+    http.addHeader("Content-Type", "application/json");
+    http.addHeader("X-Api-Key", apiKey);
+
+    DynamicJsonDocument doc(256);
+    doc["device_id"] = deviceId;
+    doc["payload"]["temperatura"] = temp;
+    doc["payload"]["umidade"] = umid;
+
+    String jsonBuffer;
+    serializeJson(doc, jsonBuffer);
+
+    int httpResponseCode = http.POST(jsonBuffer);
+    if (httpResponseCode &gt; 0) {
+      Serial.printf("HTTP Response code: %d\n", httpResponseCode);
+      Serial.println(http.getString());
+    } else {
+      Serial.printf("HTTP POST falhou, erro: %s\n", http.errorToString(httpResponseCode).c_str());
+    }
+    http.end();
+  }
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              
+</section>
+
+<section data-slug="buscar-dados" data-titulo="Endpoint: Buscar Últimos Dados (Padrão)" data-icone="" data-cor="success" data-contorno="0">
+                <p>Este endpoint é usado para buscar os últimos payloads registrados por um dispositivo.</p>
+                <h5><kbd class="bg-success">GET</kbd> <code>/api/buscar-payloads</code></h5>
+                <hr>
+                <h5>Headers HTTP</h5>
+                <pre><code>X-Api-Key: SUA_CHAVE_DE_API_AQUI</code></pre>
+                <hr>
+                
+                <h5>Parâmetros (Query String)</h5>
+                <ul>
+                  <li><code>device_id</code> (Obrigatório): O ID do seu dispositivo.</li>
+                  <li><code>limit</code> (Opcional): Número de resultados. (Padrão: 10, máximo 1000).</li>
+                  <li><code>startDate</code> (Opcional): Data de início (Formato: YYYY-MM-DD).</li>
+                  <li><code>endDate</code> (Opcional): Data de fim (Formato: YYYY-MM-DD).</li>
+                </ul>
+                <pre><code>/api/buscar-payloads?device_id=1&amp;limit=50&amp;startDate=2025-11-01</code></pre>
+                
+                <hr>
+                <h5>Exemplos de Código</h5>
+                <div class="card card-success card-tabs">
+                  <div class="card-header p-0 pt-1 nav-tabs-container">
+                    <ul class="nav nav-tabs" id="tabs-buscar" role="tablist">
+                      <li class="nav-item" role="presentation"><a class="nav-link active" id="tabs-buscar-js-tab" data-toggle="pill" href="#tabs-buscar-js" role="tab">JavaScript (Fetch)</a></li>
+                      <li class="nav-item" role="presentation"><a class="nav-link" id="tabs-buscar-php-tab" data-toggle="pill" href="#tabs-buscar-php" role="tab">PHP (cURL)</a></li>
+                      <li class="nav-item" role="presentation"><a class="nav-link" id="tabs-buscar-esp-tab" data-toggle="pill" href="#tabs-buscar-esp" role="tab">C++ (ESP32/Arduino)</a></li>
+                    </ul>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="tab-content" id="tabs-buscar-content">
+                      <div class="tab-pane fade show active" id="tabs-buscar-js" role="tabpanel">
+<pre><code>// Exemplo buscando os últimos 25
+const API_URL = '{{URL_BASE}}/api/buscar-payloads';
+const API_KEY = 'SUA_CHAVE_DE_API_AQUI';
+const DEVICE_ID = 1;
+
+async function buscarDados() {
+  try {
+    const response = await fetch(`${API_URL}?device_id=${DEVICE_ID}&amp;limit=25`, {
+      method: 'GET',
+      headers: { 'X-Api-Key': API_KEY }
+    });
+    // ... (resto do código JS)
+  } catch (error) {
+    console.error('Erro:', error.message);
+  }
+}
+buscarDados();</code></pre>
+                      </div>
+                      <div class="tab-pane fade" id="tabs-buscar-php" role="tabpanel">
+<pre><code>&lt;?php
+$deviceId = 1;
+// Exemplo buscando dados de um período
+$queryParams = http_build_query([
+    'device_id' =&gt; $deviceId,
+    'startDate' =&gt; '2025-11-01',
+    'endDate' =&gt; '2025-11-05'
+]);
+$apiUrl = '{{URL_BASE}}/api/buscar-payloads?' . $queryParams;
+// ... (resto do código PHP)
+?&gt;</code></pre>
+                      </div>
+                      <div class="tab-pane fade" id="tabs-buscar-esp" role="tabpanel">
+<pre><code>// Exemplo buscando os últimos 25
+const char* serverName = "{{URL_BASE}}/api/buscar-payloads";
+const char* apiKey = "SUA_CHAVE_DE_API_AQUI";
+const int deviceId = 1;
+
+void buscarDados() {
+  if (WiFi.status() == WL_CONNECTED) {
+    HTTPClient http;
+    String url = String(serverName) + "?device_id=" + String(deviceId) + "&amp;limit=25";
+    // ... (resto do código C++)
+  }
+}</code></pre>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              
+</section>
+
+<section data-slug="rate-limiting" data-titulo="Rate Limiting" data-icone="fas fa-tachometer-alt" data-cor="danger" data-contorno="0">
+                <p>Para proteger a plataforma, há um limite de requisições por dispositivo:</p>
+                <div class="callout callout-info">
+                  <h5><i class="icon fas fa-info"></i> Limite Padrão</h5>
+                  <p><strong>60 requisições por minuto</strong> por dispositivo</p>
+                </div>
+
+                <h5>Como Funciona</h5>
+                <ul>
+                  <li>Cada dispositivo tem sua própria cota de 60 req/min</li>
+                  <li>Aplica-se apenas ao <strong>envio</strong> de dados (<code>/api/enviar-payload</code> e <code>/api/ttn-webhook</code>) — endpoints de <strong>leitura</strong> como <code>/api/buscar-payloads</code> não têm rate limit por enquanto</li>
+                  <li>O contador reseta a cada minuto</li>
+                  <li>Admins podem aumentar o limite por dispositivo</li>
+                </ul>
+
+                <h5>Quando Você Ultrapassa o Limite</h5>
+                <p>Se ultrapassar 60 requisições/min, você recebe <code>HTTP 429 Too Many Requests</code> com uma mensagem de erro e o campo <code>retry_after</code> indicando em quantos segundos tentar de novo.</p>
+
+                <h5>💡 Como Evitar</h5>
+                <ol>
+                  <li><strong>Combine dados</strong>: Em vez de enviar 10 requisições, envie 1 com 10 dados</li>
+                  <li><strong>Aumente o intervalo</strong>: Se está enviando a cada 1 segundo, tente a cada 2 segundos</li>
+                  <li><strong>Contato admin</strong>: Se precisa de mais, contate o administrador</li>
+                </ol>
+
+                <div class="callout callout-warning">
+                  <h5><i class="icon fas fa-exclamation-triangle"></i> Exemplo do Erro</h5>
+                  <p><strong>❌ Evite:</strong> Enviar temperatura, umidade, pressão em 3 requisições separadas<br>
+                  <strong>✅ Faça:</strong> Enviar os 3 valores em 1 requisição JSON</p>
+                </div>
+
+                <h5>Monitoramento</h5>
+                <p>Toda resposta de sucesso do envio de dados inclui um campo <code>rate_limit</code> mostrando quantas requisições você já usou e quantas ainda restam nesse minuto.</p>
+              
+</section>
+
+<section data-slug="erros" data-titulo="Erros Comuns e Troubleshooting" data-icone="fas fa-exclamation-circle" data-cor="secondary" data-contorno="0">
+                <h5>❌ 401 Unauthorized</h5>
+                <p><strong>Causa</strong>: API Key incorreta ou ausente</p>
+                <p><strong>Solução</strong>:</p>
+                <ol>
+                  <li>Verifique se está usando o header <code>X-Api-Key</code> correto</li>
+                  <li>Copie novamente da página do dispositivo (verifique espaços)</li>
+                  <li>Verifique se o header está sendo enviado</li>
+                </ol>
+
+                <h5>❌ 403 Forbidden</h5>
+                <p><strong>Causa</strong>: Você não tem permissão para acessar este dispositivo</p>
+                <p><strong>Solução</strong>:</p>
+                <ol>
+                  <li>Verifique se você é membro do projeto</li>
+                  <li>Verifique se está usando o <code>device_id</code> correto</li>
+                  <li>Contate o admin se foi descadastrado</li>
+                </ol>
+
+                <h5>❌ 404 Not Found</h5>
+                <p><strong>Causa</strong>: Dispositivo ou endpoint não existe</p>
+                <p><strong>Solução</strong>:</p>
+                <ol>
+                  <li>Verifique se a URL está correta</li>
+                  <li>Verifique se o <code>device_id</code> existe</li>
+                  <li>Verifique se o dispositivo não foi deletado</li>
+                </ol>
+
+                <h5>❌ 429 Too Many Requests</h5>
+                <p><strong>Causa</strong>: Limite de 60 requisições por minuto ultrapassado</p>
+                <p><strong>Solução</strong>: Ver seção de <strong>Rate Limiting</strong> acima</p>
+
+                <h5>❌ 500 Internal Server Error</h5>
+                <p><strong>Causa</strong>: Erro no servidor</p>
+                <p><strong>Solução</strong>:</p>
+                <ol>
+                  <li>Tente novamente em alguns segundos</li>
+                  <li>Verifique seus dados (JSON válido?)</li>
+                  <li>Contate o administrador se persistir</li>
+                </ol>
+
+                <h5>❌ JSON Inválido</h5>
+                <p><strong>Causa</strong>: Seu JSON não é válido</p>
+                <p><strong>Verificar</strong>:</p>
+                <ul>
+                  <li>Aspas duplas (não simples): <code>"temp": 25</code></li>
+                  <li>Sem vírgula no final: <code>{"a": 1, "b": 2}</code></li>
+                  <li>Use <a href="https://jsonlint.com" target="_blank">JSONLint</a> para validar</li>
+                </ul>
+              
+</section>
+
+<section data-slug="recursos" data-titulo="Recursos Adicionais" data-icone="fas fa-book" data-cor="info" data-contorno="0">
+                <h5>Para Usuários Novos</h5>
+                <ul>
+                  <li><a href="api/obter-chaves-dispositivo" target="_blank">🧾 Chaves e acesso do dispositivo</a></li>
+                  <li><a href="documentacao" target="_blank">📘 Esta documentação da API</a></li>
+                </ul>
+
+                <h5>Documentação Técnica</h5>
+                <ul>
+                  <li><a href="https://www.json.org/" target="_blank">JSON.org - Especificação JSON</a></li>
+                  <li><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Status" target="_blank">MDN - HTTP Status Codes</a></li>
+                </ul>
+
+                <h5>Ferramentas Úteis</h5>
+                <ul>
+                  <li><a href="https://www.postman.com/" target="_blank">Postman</a> - Testar APIs</li>
+                  <li><a href="https://jsonlint.com/" target="_blank">JSONLint</a> - Validar JSON</li>
+                </ul>
+
+                <h5>Suporte</h5>
+                <p>Se tiver dúvidas ou encontrar problemas:</p>
+                <ul>
+                  <li>📧 Contate o administrador</li>
+                  <li>💬 Verifique a documentação antes de contatar</li>
+                  <li>🐞 Forneça códigos de erro e print de telas</li>
+                </ul>
+              
+</section>

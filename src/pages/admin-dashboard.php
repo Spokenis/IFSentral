@@ -51,9 +51,9 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Painel Administrativo | IFSCentral Lite</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
   
   <style>
     :root {
@@ -223,6 +223,62 @@ try {
                 </ul>
               </div>
             </div>
+            <div class="card card-outline card-success mt-3" id="card-graficos">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-tachometer-alt mr-1"></i> Desempenho dos gráficos</h3>
+              </div>
+              <div class="card-body">
+                <p class="mb-2 small" id="agreg-status">Verificando…</p>
+                <div class="progress mb-2 d-none" style="height: 8px;" id="agreg-progresso">
+                  <div class="progress-bar bg-success" id="agreg-barra" style="width: 0%"></div>
+                </div>
+                <button type="button" class="btn btn-sm btn-success d-none" id="btn-agreg"><i class="fas fa-bolt mr-1"></i>Preparar agora</button>
+              </div>
+            </div>
+            <script>
+            // Cópia das leituras antigas para as tabelas que deixam os gráficos
+            // rápidos (src/core/Agregados.php). Chama a API até terminar.
+            (function () {
+              const API = 'api/preparar-graficos';
+              const st = document.getElementById('agreg-status');
+              const barra = document.getElementById('agreg-barra');
+              const prog = document.getElementById('agreg-progresso');
+              const btn = document.getElementById('btn-agreg');
+              const json = r => r.json().then(j => { if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status)); return j; });
+              function mostrar(s) {
+                if (s.pronto) {
+                  st.innerHTML = '<i class="fas fa-check-circle text-success mr-1"></i>Os gráficos já usam as tabelas otimizadas (sem leitura de JSON) e o cache de 30 s.';
+                  prog.classList.add('d-none'); btn.classList.add('d-none'); return;
+                }
+                const pct = s.ate ? Math.min(100, Math.round(100 * s.cursor / s.ate)) : 0;
+                st.textContent = s.tabelas
+                  ? `Copiando as leituras antigas: ${pct}% (os gráficos usam o caminho antigo até terminar).`
+                  : 'As tabelas otimizadas ainda não existem. "Preparar agora" cria as tabelas e copia as leituras.';
+                barra.style.width = pct + '%';
+                prog.classList.toggle('d-none', !s.tabelas);
+                btn.classList.remove('d-none');
+              }
+              async function preparar() {
+                btn.disabled = true;
+                try {
+                  const tok = (await json(await fetch(API.replace('preparar-graficos', 'obter-csrf-token'), { credentials: 'include' }))).csrf_token;
+                  let s;
+                  do {
+                    s = await json(await fetch(API, { method: 'POST', credentials: 'include', headers: { 'X-CSRF-Token': tok, 'X-Requested-With': 'XMLHttpRequest' } }));
+                    mostrar(s);
+                    if (s.ocupado) await new Promise(r => setTimeout(r, 3000));
+                  } while (!s.pronto);
+                } catch (e) {
+                  st.textContent = 'Erro: ' + e.message;
+                } finally {
+                  btn.disabled = false;
+                }
+              }
+              btn.addEventListener('click', preparar);
+              fetch(API, { credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(json).then(mostrar)
+                .catch(e => { st.textContent = 'Erro: ' + e.message; });
+            })();
+            </script>
           </div>
 
         </div>
@@ -235,8 +291,9 @@ try {
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

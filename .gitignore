@@ -30,7 +30,7 @@ tmp/
 temp/
 
 # Composer
-vendor/
+/vendor/
 composer.lock
 
 # PHPUnit
@@ -68,3 +68,6 @@ test-*.php
 mqtt_credentials_auto.txt
 src/config/.env
 src/config/env.php
+
+# Sessões dos usuários (criada pelo config.php)
+src/sessoes/

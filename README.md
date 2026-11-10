@@ -75,6 +75,12 @@ php system-check.php
 
 `system-check.php` confirma se a configuração, o banco e as pastas estão corretos.
 
+**Documentação editável (08/11/2026):** um Admin edita a página **Documentação** pela própria plataforma (botão *Editar documentação*). As tabelas `documentation_sections` e `documentation_revisions` são criadas sozinhas na primeira vez que um Admin abre a página; se o usuário do banco não tiver permissão de criar tabelas, importe `src/db/migracoes/2026-11-08_documentacao_editavel.sql` pelo phpMyAdmin. O texto inicial vem de `src/docs/documentacao-padrao.html`. O PHP precisa da extensão `dom` para salvar (para só exibir, não).
+
+**Gráficos mais rápidos (08/11/2026):** cada leitura grava também seus valores numéricos em tabelas próprias (`device_payload_values` e `device_payload_hourly`), e o resultado de cada gráfico fica em cache por 30 s. Depois de enviar os arquivos, entre como Admin em **Administração ▸ Desempenho dos gráficos** e clique em **Preparar agora**: as tabelas são criadas e as leituras antigas copiadas (deixe a página aberta até chegar a 100%). Até lá, os gráficos continuam funcionando pelo caminho antigo. Se o usuário do banco não puder criar tabelas, importe `src/db/migracoes/2026-11-08b_agregados_graficos.sql` pelo phpMyAdmin antes.
+
+**Bibliotecas locais (08/11/2026):** jQuery, Bootstrap, AdminLTE, Font Awesome, Chart.js, SheetJS e as fontes ficam em `src/assets/vendor` (4,7 MB) — envie essa pasta junto. As páginas não usam mais CDN externo, e o `.htaccess` liga a compressão (se a hospedagem tiver `mod_deflate`) e o cache de 1 ano desses arquivos.
+
 **Banco instalado antes de 26/10/2026:** importe uma vez, pelo phpMyAdmin, `src/db/migracoes/2026-10-26_integracao_ttn.sql` (integração com o TTN). Sem ela, o envio de dados continua funcionando, mas a integração com o TTN não, e o `system-check.php` aponta a falta.
 
 ### 6. Acessar a aplicação

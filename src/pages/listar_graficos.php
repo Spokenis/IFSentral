@@ -29,12 +29,15 @@ try {
         exit;
     }
     
-    // Se o projeto não for público, validar se o usuário é participante
+    // Participante vê todos os gráficos; em projeto público, quem não participa
+    // vê só os gráficos públicos (antes recebia também os privados)
+    $authSql = "SELECT 1 FROM users_projects WHERE project_id = ? AND user_id = ?";
+    $authStmt = $conn->prepare($authSql);
+    $authStmt->execute([$project_id, $_SESSION['user_id']]);
+    $is_participant = $authStmt->rowCount() > 0;
+
     if (!$projectData['public']) {
-        $authSql = "SELECT 1 FROM users_projects WHERE project_id = ? AND user_id = ?";
-        $authStmt = $conn->prepare($authSql);
-        $authStmt->execute([$project_id, $_SESSION['user_id']]);
-        if ($authStmt->rowCount() == 0) {
+        if (!$is_participant) {
             http_response_code(403);
             echo json_encode(['error' => 'Permissão negada para ver gráficos deste projeto.']);
             exit;
@@ -59,7 +62,7 @@ try {
         FROM charts c
         LEFT JOIN devices d ON c.device_id = d.id
         LEFT JOIN chart_datasets cd ON c.id = cd.chart_id
-        WHERE c.project_id = ?
+        WHERE c.project_id = ?" . ($is_participant ? "" : " AND c.is_public = 1") . "
         GROUP BY c.id
         ORDER BY c.createdAt DESC
     ";

@@ -117,6 +117,11 @@ define('APP_ENV', env('APP_ENV'));
 // padrão do PHP (display_errors=STDOUT) valeria sem esta linha.
 ini_set('display_errors', APP_ENV === 'production' ? '0' : '1');
 ini_set('log_errors', '1');
+// Fuso horário único para o PHP e para o MySQL (db.php aplica o mesmo na
+// conexão). Sem isso, dentro do Docker os dois ficam em UTC e as telas mostram
+// as horas 3 h adiantadas em relação ao horário de Brasília.
+$fuso = env('TZ', 'America/Sao_Paulo');
+date_default_timezone_set(in_array($fuso, timezone_identifiers_list(), true) ? $fuso : 'America/Sao_Paulo');
 define('APP_URL', env('APP_URL'));
 define('ALLOWED_ORIGINS', env('ALLOWED_ORIGINS'));
 
@@ -151,6 +156,28 @@ if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE && !headers_sent
     ini_set('session.cookie_samesite', SESSION_SAMESITE);
 }
 
+// Sessão: o servidor guarda a sessão por até 30 dias sem uso. Com "Lembrar-me"
+// o cookie também dura 30 dias; sem ele, some ao fechar o navegador. O padrão
+// do PHP (24 min) derrubava o login de quem ficava um tempo sem clicar. Em
+// Debian/Ubuntu, a pasta padrão das sessões é limpa por uma rotina do sistema
+// que usa o limite global e ignora este, por isso a Lite usa uma pasta própria
+// (bloqueada para o navegador) quando consegue criá-la.
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE && !headers_sent()) {
+    ini_set('session.gc_maxlifetime', (string)(30 * 86400));
+    $pasta_sessoes = __DIR__ . '/../sessoes';
+    if (!is_dir($pasta_sessoes)) {
+        @mkdir($pasta_sessoes, 0700);
+    }
+    if (is_dir($pasta_sessoes) && is_writable($pasta_sessoes)) {
+        if (!file_exists($pasta_sessoes . '/.htaccess')) {
+            @file_put_contents($pasta_sessoes . '/.htaccess', "Require all denied\nDeny from all\n");
+        }
+        ini_set('session.save_path', $pasta_sessoes);
+        ini_set('session.gc_probability', '1'); // ninguém mais limpa esta pasta
+        ini_set('session.gc_divisor', '100');
+    }
+}
+
 /**
  * Função para configurar CORS seguro
  */
@@ -160,7 +187,7 @@ function setupSecureCORS() {
     // Reconhece tanto a URL limpa atual quanto o caminho físico antigo
     // (com extensão .php), que o .htaccess mantém ativo por compatibilidade.
     $publicApiPatterns = [
-        '/api/enviar-payload', '/src/api/enviar_payload.php',
+        '/api/enviar-payload', '/api/enviar_payload.php', // o 2º também cobre /src/api/enviar_payload.php
         '/api/buscar-payloads', '/src/api/buscar_payloads.php',
         '/api/ttn-webhook', '/src/api/ttn_webhook.php',
     ];

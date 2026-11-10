@@ -96,7 +96,7 @@ class TtnClient
             case 403:
                 throw new \RuntimeException('A chave de API não tem permissão para ler o tráfego da aplicação.');
             case 404:
-                throw new \RuntimeException('Aplicação não encontrada no TTN, ou a Storage Integration não está ativada nela.');
+                throw new \RuntimeException('Aplicação não encontrada no TTN, ou o Message storage (Storage Integration) não está ativado nela.');
             default:
                 throw new \RuntimeException("O TTN respondeu com HTTP $status.");
         }

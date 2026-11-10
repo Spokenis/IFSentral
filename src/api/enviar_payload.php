@@ -67,6 +67,28 @@ if (!isset($data->device_id) || !is_numeric($data->device_id) || !isset($data->p
     exit;
 }
 
+// Campos opcionais para leituras guardadas pelo dispositivo enquanto estava
+// sem rede: "timestamp" (instante da medição, segundos Unix) e "id"
+// (identificador da leitura; reenviar o mesmo id não grava de novo).
+$instanteMedicao = null;
+if (isset($data->timestamp)) {
+    if (!is_numeric($data->timestamp) || (int) $data->timestamp < time() - 7 * 86400 || (int) $data->timestamp > time() + 300) {
+        http_response_code(400);
+        echo json_encode(['error' => 'timestamp deve ser o instante da medição em segundos Unix, de até 7 dias atrás.']);
+        exit;
+    }
+    $instanteMedicao = (int) $data->timestamp;
+}
+$idLeitura = null;
+if (isset($data->id)) {
+    if (!is_string($data->id) || !preg_match('/^[A-Za-z0-9_.:-]{1,100}$/', $data->id)) {
+        http_response_code(400);
+        echo json_encode(['error' => 'id deve ter de 1 a 100 caracteres: letras, números, _ . : -']);
+        exit;
+    }
+    $idLeitura = $data->id;
+}
+
 $requestedDeviceId = intval($data->device_id);
 if (intval($deviceAuth['id']) !== $requestedDeviceId) {
     http_response_code(403);
@@ -113,9 +135,13 @@ try {
     }
 
     // Salva o payload
-    $result = $handler->savePayload($requestedDeviceId, $deviceAuth['api_key'], $data->payload, 'http');
+    $result = $handler->savePayload($requestedDeviceId, $deviceAuth['api_key'], $data->payload, 'http', $instanteMedicao, $idLeitura);
 
-    if ($result['success']) {
+    if ($result['success'] && !empty($result['duplicate'])) {
+        // Mesmo id já gravado (reenvio depois de uma resposta perdida): sucesso, sem gravar de novo
+        http_response_code(200);
+        echo json_encode(['message' => 'Leitura já recebida antes; não foi gravada de novo.', 'duplicate' => true]);
+    } elseif ($result['success']) {
         http_response_code(201);
         echo json_encode([
             'message' => 'Payload salvo com sucesso!',
@@ -129,6 +155,13 @@ try {
                 'remaining' => $rateCheck['remaining'] - 1
             ]
         ]);
+    } elseif (!empty($result['erro_transitorio'])) {
+        // Problema do servidor (banco fora, disco cheio): o dispositivo deve
+        // tentar de novo. Antes respondia 401, e o firmware entendia que a
+        // chave de API era inválida.
+        http_response_code(503);
+        header('Retry-After: 10');
+        echo json_encode(['error' => 'Servidor temporariamente sem conseguir gravar. Tente de novo em instantes.']);
     } else {
         http_response_code(401);
         echo json_encode(['error' => $result['message']]);

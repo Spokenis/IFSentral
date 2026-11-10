@@ -69,6 +69,8 @@ return [
     'api/2fa-status'                         => 'src/api/2fa_status.php',
     'api/aceitar-convite'                    => 'src/api/aceitar_convite.php',
     'api/admin-usuarios'                     => 'src/api/admin_usuarios.php',
+    'api/documentacao'                       => 'src/api/documentacao.php',
+    'api/preparar-graficos'                  => 'src/api/preparar_graficos.php',
     'api/alterar-visibilidade-grafico'       => 'src/api/alterar_visibilidade_grafico.php',
     'api/alterar-visibilidade-projeto'       => 'src/api/alterar_visibilidade_projeto.php',
     'api/atualizar-grafico-avancado'         => 'src/api/atualizar_grafico_avancado.php',
@@ -80,6 +82,8 @@ return [
     'api/deletar-projeto'                    => 'src/api/deletar_projeto.php',
     'api/enviar-convite'                     => 'src/api/enviar_convite.php',
     'api/enviar-payload'                     => 'src/api/enviar_payload.php',
+    // Endereço usado pela documentação e pelos firmwares antigos
+    'api/enviar_payload.php'                 => 'src/api/enviar_payload.php',
     'api/enviar-solicitacao-participacao'    => 'src/api/enviar_solicitacao_participacao.php',
     'api/exportar-dados-projeto'             => 'src/api/exportar_dados_projeto.php',
     'api/expulsar-participante'              => 'src/api/expulsar_participante.php',

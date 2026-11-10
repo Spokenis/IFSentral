@@ -6,6 +6,8 @@
 
 namespace App\Core;
 
+require_once __DIR__ . '/Agregados.php';
+
 class PayloadHandler
 {
     private $conn;
@@ -93,9 +95,20 @@ class PayloadHandler
             }
             $sql = "INSERT INTO device_payloads (" . implode(', ', $columns) . ") VALUES (" . implode(', ', $values) . ")";
             $stmt = $this->conn->prepare($sql);
+
+            // Dado e status do dispositivo numa transação só: cada COMMIT força
+            // uma escrita no disco, e eram dois por leitura. No teste de carga
+            // de 08/11/2026 (HD), isso era o que limitava o worker MQTT.
+            $abriuTransacao = !$this->conn->inTransaction();
+            if ($abriuTransacao) {
+                $this->conn->beginTransaction();
+            }
             try {
                 $stmt->execute($params);
             } catch (\PDOException $e) {
+                if ($abriuTransacao && $this->conn->inTransaction()) {
+                    $this->conn->rollBack();
+                }
                 // Mesmo dado da origem já gravado (chave única device_id + external_id)
                 if ($external_id !== null && $e->getCode() == '23000') {
                     return [
@@ -115,6 +128,18 @@ class PayloadHandler
 
             $this->atualizarStatusDispositivo($device_id, $payload_data, $received_at);
 
+            // Valores numéricos já extraídos para os gráficos (ver Agregados.php).
+            // Se as tabelas ainda não existem (Lite antes da primeira visita do
+            // admin), a leitura é gravada mesmo assim; a cópia posterior a inclui.
+            try {
+                Agregados::gravar($this->conn, (int) $last_id, Agregados::extrairNumericos($payload_data));
+            } catch (\PDOException $e) {
+                error_log('PayloadHandler: agregados não gravados: ' . $e->getMessage());
+            }
+            if ($abriuTransacao) {
+                $this->conn->commit();
+            }
+
             return [
                 'success' => true,
                 'message' => 'Payload salvo com sucesso',
@@ -125,14 +150,41 @@ class PayloadHandler
             ];
 
         } catch (\PDOException $e) {
+            if (isset($abriuTransacao) && $abriuTransacao && $this->conn->inTransaction()) {
+                $this->conn->rollBack();
+            }
             // A mensagem vai para a resposta da API: o detalhe do banco fica só no log
             error_log('PayloadHandler::savePayload: ' . $e->getMessage());
             return [
                 'success' => false,
                 'message' => 'Erro ao salvar payload',
-                'id' => null
+                'id' => null,
+                // Falha do servidor (banco fora, disco cheio...), não do dado:
+                // vale tentar de novo. O HTTP responde 503 e o worker MQTT não
+                // confirma a mensagem, para o broker reentregá-la.
+                'erro_transitorio' => self::erroTransitorio($e),
             ];
         }
+    }
+
+    /**
+     * O erro do banco é passageiro (conexão perdida, servidor desligando,
+     * disco cheio, somente leitura, bloqueio) ou é do próprio dado (JSON
+     * inválido, chave duplicada...)? Repetir só adianta no primeiro caso.
+     */
+    public static function erroTransitorio(\PDOException $e): bool
+    {
+        $codigo = (int) ($e->errorInfo[1] ?? 0);
+        $transitorios = [
+            2002, 2003, 2006, 2013,   // sem conexão / conexão perdida ("server has gone away")
+            1040, 1053, 1927,         // conexões demais / servidor desligando / conexão encerrada
+            1290, 1836,               // banco em modo somente leitura
+            1114, 1021, 3,            // tabela/disco cheio, erro de escrita
+            1205, 1213,               // espera de bloqueio esgotada / deadlock
+        ];
+        return in_array($codigo, $transitorios, true)
+            || stripos($e->getMessage(), 'gone away') !== false
+            || stripos($e->getMessage(), 'Lost connection') !== false;
     }
 
     /**

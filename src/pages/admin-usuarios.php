@@ -29,9 +29,9 @@ if ($profile_logado !== 'Admin') {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Admin - Gerenciar Usuários | IFSCentral Lite</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
 
   <style>
     :root {
@@ -123,7 +123,7 @@ if ($profile_logado !== 'Admin') {
               </table>
             </div>
           </div>
-          <div class="card-footer d-flex justify-content-center align-items-center" id="users-pagination" style="display:none; gap: 12px;">
+          <div class="card-footer d-none justify-content-center align-items-center" id="users-pagination" style="gap: 12px;">
             <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-users-pagina-anterior"><i class="fas fa-chevron-left mr-1"></i>Anterior</button>
             <span id="users-pagination-info" class="text-muted"></span>
             <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-users-proxima-pagina">Próxima<i class="fas fa-chevron-right ml-1"></i></button>
@@ -137,9 +137,9 @@ if ($profile_logado !== 'Admin') {
   <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -213,7 +213,7 @@ if ($profile_logado !== 'Admin') {
   }
 
   async function answerRequest(requestId, status) {
-    if (!confirm(`Confirmar que deseja marcar a solicitação como ${status}?`)) return;
+    if (!(await ifsConfirmar(`Confirmar que deseja marcar a solicitação como ${status}?`, { confirmar: 'Confirmar' }))) return;
 
     try {
       const res = await fetch(API_SOLICITACOES_PERFIL, {
@@ -240,6 +240,7 @@ if ($profile_logado !== 'Admin') {
   }
 
   let usersPaginaAtual = 1;
+  let usersTotalPaginas = 1;
   let usersDebounceTimer = null;
 
   function renderUsersPagination(pag) {
@@ -248,12 +249,20 @@ if ($profile_logado !== 'Admin') {
     const btnAnterior = document.getElementById('btn-users-pagina-anterior');
     const btnProxima = document.getElementById('btn-users-proxima-pagina');
 
+    // O rodapé tinha a classe d-flex do Bootstrap, que tem !important: o antigo
+    // style.display = 'none' não escondia nada e, como a função saía antes de
+    // desabilitar os botões, "Próxima" avançava para páginas vazias sem fim.
+    usersTotalPaginas = Math.max(1, (pag && pag.total_pages) || 1);
     if (!pag || pag.total_pages <= 1) {
-      container.style.display = 'none';
+      container.classList.remove('d-flex');
+      container.classList.add('d-none');
+      btnAnterior.disabled = true;
+      btnProxima.disabled = true;
       return;
     }
 
-    container.style.display = 'flex';
+    container.classList.remove('d-none');
+    container.classList.add('d-flex');
     info.textContent = `Página ${pag.page} de ${pag.total_pages} (${pag.total} usuários)`;
     btnAnterior.disabled = pag.page <= 1;
     btnProxima.disabled = pag.page >= pag.total_pages;
@@ -270,7 +279,15 @@ if ($profile_logado !== 'Admin') {
       const resultado = await safeJson(res);
       const users = resultado.data || [];
 
-      renderUsersPagination(resultado.pagination);
+      // Se a página pedida passou da última (ex.: usuários removidos ou nova
+      // busca), volta para a última página que existe
+      const pag = resultado.pagination;
+      if (pag && pag.total_pages >= 1 && usersPaginaAtual > pag.total_pages) {
+        usersPaginaAtual = pag.total_pages;
+        return loadUsers();
+      }
+
+      renderUsersPagination(pag);
 
       if (users.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">Nenhum usuário encontrado.</td></tr>';
@@ -293,7 +310,7 @@ if ($profile_logado !== 'Admin') {
             <td>${name}</td>
             <td>${email}</td>
             <td>
-              <select class="form-control form-control-sm" onchange="updateProfile(${u.id}, this.value)" ${disabledAttr}>
+              <select class="form-control form-control-sm" aria-label="Perfil do usuário" onchange="updateProfile(${u.id}, this.value)" ${disabledAttr}>
                   <option value="Admin" ${u.profile === 'Admin' ? 'selected' : ''}>Admin</option>
                   <option value="Moderator" ${u.profile === 'Moderator' ? 'selected' : ''}>Moderator</option>
                   <option value="User" ${u.profile === 'User' ? 'selected' : ''}>User</option>
@@ -339,7 +356,7 @@ if ($profile_logado !== 'Admin') {
   }
 
   async function deleteUser(userId) {
-    if (!confirm('Atenção: Tem certeza que deseja apagar este usuário do sistema? Todos os dados dele serão ocultados.')) return;
+    if (!(await ifsConfirmar('Atenção: Tem certeza que deseja apagar este usuário do sistema? Todos os dados dele serão ocultados.', { confirmar: 'Apagar', perigo: true }))) return;
     
     try {
       const res = await fetch(API_ADMIN_USUARIOS, {
@@ -378,8 +395,10 @@ if ($profile_logado !== 'Admin') {
   });
 
   document.getElementById('btn-users-proxima-pagina').addEventListener('click', () => {
-    usersPaginaAtual++;
-    loadUsers();
+    if (usersPaginaAtual < usersTotalPaginas) {
+      usersPaginaAtual++;
+      loadUsers();
+    }
   });
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -388,5 +407,6 @@ if ($profile_logado !== 'Admin') {
   });
 </script>
 
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

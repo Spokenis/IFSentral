@@ -13,9 +13,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Meus Dispositivos - IFSCentral Lite</title>
     
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <link rel="stylesheet" href="assets/vendor/fonts/source-sans-pro.css">
+    <link rel="stylesheet" href="assets/vendor/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
     
     <style>
         :root {
@@ -73,8 +73,8 @@ require_once __DIR__ . '/../auth/auth_check.php';
             font-size: 0.8rem;
             font-weight: 600;
         }
-        .role-gerente { background: #28a745; color: white; }
-        .role-participante { background: #6c757d; color: white; }
+        .role-gerente { background: #1e7e34; color: white; }
+        .role-participante { background: #5a6268; color: white; }
         .empty-state {
             text-align: center;
             padding: 60px 20px;
@@ -163,9 +163,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="assets/js/fetch-helpers.js"></script>
 <script src="assets/js/profile-picture-helper.js"></script>
 

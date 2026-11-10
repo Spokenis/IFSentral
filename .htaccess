@@ -49,3 +49,28 @@ Options -Indexes
         Header set X-Content-Type-Options "nosniff"
     </FilesMatch>
 </IfModule>
+
+# JS e CSS do próprio sistema: o navegador confere com o servidor antes de usar
+# a cópia guardada (o servidor responde 304, sem reenviar, se não mudou). Sem
+# isto, depois de uma atualização o navegador podia seguir com o arquivo antigo.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
+# Bibliotecas de src/assets/vendor (08/11/2026): a versão faz parte do caminho e
+# o arquivo nunca muda, então o navegador guarda por 1 ano sem perguntar de novo
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#/assets/vendor/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+</IfModule>
+
+# Compressão das respostas de texto (JSON dos gráficos, CSS, JS), se a
+# hospedagem tiver o mod_deflate
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/css text/plain application/javascript application/json image/svg+xml
+    # Única página com o token CSRF no HTML: sem compressão (ataque BREACH)
+    SetEnvIf Request_URI "admin-rate-limiting" no-gzip=1
+</IfModule>

@@ -52,11 +52,12 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gerenciar Dispositivo | IFSCentral Lite</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
+  <link href="assets/vendor/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+  <link href="assets/vendor/select2-bootstrap4-theme/1.5.2/select2-bootstrap4.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/select2-tags.css">
 
   <style>
     :root {
@@ -306,11 +307,11 @@ try {
     const DEVICE_ID = <?php echo $device_id_from_url; ?>;
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="assets/js/input-limits.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+<script src="assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="assets/vendor/select2/4.1.0-rc.0/js/select2.full.min.js"></script>
 <script src="assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -591,7 +592,7 @@ try {
     });
 
     async function removerMapeamento(mappingId) {
-        if (!confirm('Remover este mapeamento?')) return;
+        if (!(await ifsConfirmar('Remover este mapeamento?', { confirmar: 'Remover', perigo: true }))) return;
 
         try {
             const response = await fetch(API_MAPEAMENTOS, {
@@ -604,7 +605,7 @@ try {
             await carregarMapeamentos();
             await carregarPayloads();
         } catch (error) {
-            alert('Erro ao remover mapeamento: ' + error.message);
+            await ifsAlerta('Erro ao remover mapeamento: ' + error.message, { tipo: 'erro' });
         }
     }
 
@@ -667,7 +668,7 @@ try {
 
     // Função 4: Exclui o dispositivo (exige permissão canDeleteSensor no papel do usuário)
     document.getElementById('btn-excluir-dispositivo').addEventListener('click', async function() {
-        if (!confirm('Tem certeza que deseja excluir este dispositivo? Essa ação não pode ser desfeita.')) {
+        if (!(await ifsConfirmar('Tem certeza que deseja excluir este dispositivo? Essa ação não pode ser desfeita.', { confirmar: 'Excluir', perigo: true }))) {
             return;
         }
 
@@ -683,11 +684,11 @@ try {
             });
             const resultado = await safeJson(response);
 
-            alert(resultado.message);
+            await ifsAlerta(resultado.message, { tipo: 'sucesso' });
             window.location.href = `projeto?id=${PROJECT_ID}`;
 
         } catch (error) {
-            alert('Erro ao excluir dispositivo: ' + error.message);
+            await ifsAlerta('Erro ao excluir dispositivo: ' + error.message, { tipo: 'erro' });
             btn.disabled = false;
         }
     });
@@ -699,5 +700,6 @@ try {
         inicializarTagsDispositivo();
     });
 </script>
+<script src="assets/js/profile-picture-helper.js"></script>
 </body>
 </html>
