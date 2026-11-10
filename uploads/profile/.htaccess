@@ -1,15 +1,12 @@
-# Impede execução de arquivos PHP dentro de uploads/profile
-# Apache 2.4 syntax
-<IfModule mod_php7.c>
-    <FilesMatch "\.(php|phtml|php3|php4|php5|phar)$">
-        Require all denied
-    </FilesMatch>
-</IfModule>
+# Fotos de perfil: nenhum script pode rodar nesta pasta, qualquer que seja a
+# forma de rodar o PHP (mod_php, PHP-FPM ou CGI). Antes o bloqueio ficava
+# dentro de <IfModule mod_php7.c> e não valia com PHP 8 nem com PHP-FPM.
+<FilesMatch "\.(php[0-9]?|phtml|pht|phps|phar|cgi|pl|py|sh)$">
+    Require all denied
+</FilesMatch>
 
-# Caso não esteja usando mod_php (CGI/FastCGI), igualmente desassocia handlers
 <IfModule mod_mime.c>
-    RemoveHandler .php .phtml .php3 .php4 .php5 .phar
+    RemoveHandler .php .phtml .php3 .php4 .php5 .php7 .php8 .phar
 </IfModule>
 
-# Evita execução de CGI
 Options -ExecCGI
