@@ -24,9 +24,15 @@ if ($profile_logado === 'Admin') $badgeClass = 'badge-danger';
 if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
 ?>
 
+  <!-- Ajustes visuais comuns às páginas logadas -->
+  <link rel="stylesheet" href="/assets/css/ifscentral.css">
+  <link rel="stylesheet" href="/assets/css/acessibilidade.css">
+  <!-- Avisos e confirmações da plataforma (no lugar de alert/confirm do navegador) -->
+  <script src="/assets/js/dialogos.js"></script>
+
   <nav class="main-header navbar navbar-expand-md navbar-light navbar-white">
     <div class="container">
-      <a href="/" class="navbar-brand">
+      <a href="/meus-projetos" class="navbar-brand">
         <span class="brand-text font-weight-bold">IFSCentral</span>
       </a>
       <div class="collapse navbar-collapse order-3" id="navbarCollapse">
@@ -44,7 +50,7 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
       </div>
       <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
         <li class="nav-item dropdown">
-          <a class="nav-link" data-toggle="dropdown" href="#" id="notif-bell-link">
+          <a class="nav-link" data-toggle="dropdown" href="#" id="notif-bell-link" aria-label="Notificações" title="Notificações">
             <i class="far fa-bell"></i>
             <span class="badge badge-danger navbar-badge" id="notif-badge" style="display:none;">0</span>
           </a>
@@ -58,11 +64,9 @@ if ($profile_logado === 'Moderator') $badgeClass = 'badge-warning text-dark';
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link navbar-user-avatar d-flex align-items-center" data-toggle="dropdown" href="#">
-            <i class="fas fa-user-circle mr-1" style="font-size: 1.2rem;"></i> 
-            <span><?php echo htmlspecialchars($username_logado ?? 'Usuário'); ?></span>
-            <span class="badge <?php echo $badgeClass; ?> ml-2" style="font-size: 0.70rem; transform: translateY(-1px);">
-              <?php echo $profile_logado; ?>
-            </span>
+            <i class="fas fa-user-circle"></i>
+            <span class="navbar-user-name"><?php echo htmlspecialchars($username_logado ?? 'Usuário'); ?></span>
+            <span class="badge <?php echo $badgeClass; ?> navbar-perfil-badge"><?php echo $profile_logado; ?></span>
           </a>
           <div class="dropdown-menu dropdown-menu-right">
             <a href="/perfil" class="dropdown-item"><i class="fas fa-user mr-2"></i> Meu Perfil</a>

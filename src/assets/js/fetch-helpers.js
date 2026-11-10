@@ -12,8 +12,8 @@
             <h4 style="margin-top:0;margin-bottom:8px;">Sessão expirada</h4>
             <div id="session-expired-message" style="margin-bottom:16px;color:#333;"></div>
             <div style="text-align:right">
-              <a id="session-expired-login" href="/login" style="margin-right:8px;padding:8px 12px;background:#007bff;color:#fff;border-radius:4px;text-decoration:none;">Fazer login</a>
-              <button id="session-expired-close" style="padding:8px 12px;background:#6c757d;color:#fff;border:none;border-radius:4px;">Fechar</button>
+              <a id="session-expired-login" href="/login" style="margin-right:8px;padding:8px 12px;background:#1b7d3d;color:#fff;border-radius:4px;text-decoration:none;">Fazer login</a>
+              <button id="session-expired-close" style="padding:8px 12px;background:#5a6268;color:#fff;border:none;border-radius:4px;">Fechar</button>
             </div>
           </div>
         </div>
@@ -54,8 +54,14 @@
     const isStateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
     const isTokenEndpoint = typeof resource === 'string' && resource.indexOf('/api/obter-csrf-token') !== -1;
 
+    // silenciar401: a página só quer saber se há alguém logado (página
+    // inicial, foto do perfil no menu). Sem isso, o visitante anônimo via
+    // "Sessão expirada" ao abrir a página inicial (teste de 10/11/2026).
+    const silenciar401 = init.silenciar401 === true;
+    delete init.silenciar401;
+
     const doFetch = () => _fetch(resource, init).then(response => {
-      if (response.status === 401) {
+      if (response.status === 401 && !silenciar401) {
         response.clone().json().then(j => {
           const msg = j && j.error ? j.error : 'Não autenticado. Faça login primeiro.';
           window.showSessionExpired(msg);

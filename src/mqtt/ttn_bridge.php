@@ -8,9 +8,14 @@
  * - conecta ao servidor MQTT do TTN (TLS, porta 8883) e grava cada uplink
  *   assim que ele chega. É o servidor que abre a conexão, então funciona sem
  *   que o TTN consiga acessar o IFSCentral (ao contrário do webhook);
- * - a cada BACKFILL_INTERVAL, busca na Storage Integration o que chegou
- *   enquanto a conexão esteve fora. O MQTT do TTN só tem QoS 0 e não guarda
- *   mensagens para quem está desconectado; o Storage guarda por 24 horas.
+ * - a cada BACKFILL_INTERVAL, busca na Storage Integration (no console novo,
+ *   "Message storage") o que chegou enquanto a conexão esteve fora. O MQTT do
+ *   TTN só tem QoS 0 e não guarda mensagens para quem está desconectado; o
+ *   Storage guarda por 24 horas.
+ * - se o MQTT não conecta (rede que bloqueia a porta 8883, como a do câmpus),
+ *   o Storage, que usa HTTPS (443), vira o caminho principal: a busca passa a
+ *   ser a cada BACKFILL_INTERVAL_SEM_MQTT e o MQTT é tentado de novo a cada
+ *   MQTT_RETRY_INTERVAL.
  *
  * Um uplink que chega pelos dois caminhos é gravado uma vez só (TtnSync).
  */
@@ -30,6 +35,8 @@ use App\Core\TtnSync;
 
 const RELOAD_INTERVAL = 60;     // relê ttn_applications (aplicação nova, chave trocada, desativada)
 const BACKFILL_INTERVAL = 300;  // busca no Storage o que a conexão MQTT perdeu
+const BACKFILL_INTERVAL_SEM_MQTT = 60; // sem MQTT, o Storage é o único caminho
+const MQTT_RETRY_INTERVAL = 300; // espera entre tentativas de conectar ao MQTT do TTN
 const TTN_MQTT_PORT = 8883;
 
 function bridge_log($message, $level = 'INFO')
@@ -106,6 +113,8 @@ $clients = [];      // project_id => ['client' => MqttClient, 'signature' => str
 $apps = [];
 $lastReload = 0;
 $lastBackfill = []; // project_id => time()
+$nextMqttTry = [];  // project_id => time() da próxima tentativa de conectar
+$mqttError = [];    // project_id => mensagem da última falha do MQTT
 
 try {
     while (true) {
@@ -130,7 +139,7 @@ try {
 
             // Conecta as que faltam (as que falharam são tentadas de novo no próximo ciclo)
             foreach ($apps as $project_id => $app) {
-                if (isset($clients[$project_id])) {
+                if (isset($clients[$project_id]) || $now < ($nextMqttTry[$project_id] ?? 0)) {
                     continue;
                 }
                 try {
@@ -140,15 +149,21 @@ try {
                     ];
                     bridge_log("Projeto $project_id: conectado ao TTN ({$app['application_id']} em {$app['cluster']})");
                     $lastBackfill[$project_id] = 0; // recupera logo o que chegou enquanto estava fora
+                    unset($mqttError[$project_id], $nextMqttTry[$project_id]);
                 } catch (\Exception $e) {
-                    bridge_log("Projeto $project_id: falha ao conectar ao MQTT do TTN: " . $e->getMessage(), 'ERROR');
-                    record_error($conn, $project_id, 'MQTT do TTN: ' . $e->getMessage());
+                    $nextMqttTry[$project_id] = $now + MQTT_RETRY_INTERVAL;
+                    $mqttError[$project_id] = 'Tempo real indisponível (MQTT do TTN, porta 8883: ' . $e->getMessage()
+                        . '). Os uplinks chegam pelo Storage, a cada ' . BACKFILL_INTERVAL_SEM_MQTT . ' s.';
+                    bridge_log("Projeto $project_id: falha ao conectar ao MQTT do TTN: " . $e->getMessage()
+                        . ' (nova tentativa em ' . MQTT_RETRY_INTERVAL . ' s; até lá, Storage a cada ' . BACKFILL_INTERVAL_SEM_MQTT . ' s)', 'ERROR');
+                    record_error($conn, $project_id, $mqttError[$project_id]);
                 }
             }
         }
 
         foreach ($apps as $project_id => $app) {
-            if ($now - ($lastBackfill[$project_id] ?? 0) < BACKFILL_INTERVAL) {
+            $interval = isset($clients[$project_id]) ? BACKFILL_INTERVAL : BACKFILL_INTERVAL_SEM_MQTT;
+            if ($now - ($lastBackfill[$project_id] ?? 0) < $interval) {
                 continue;
             }
             $lastBackfill[$project_id] = $now;
@@ -159,8 +174,14 @@ try {
             $result = $sync->syncApplication($fresh);
             if (isset($result['error'])) {
                 bridge_log("Projeto $project_id: Storage do TTN: {$result['error']}", 'ERROR');
-            } elseif (!empty($result['saved'])) {
-                bridge_log("Projeto $project_id: Storage do TTN recuperou {$result['saved']} uplink(s)");
+            } else {
+                if (!empty($result['saved'])) {
+                    bridge_log("Projeto $project_id: Storage do TTN recuperou {$result['saved']} uplink(s)");
+                }
+                // A busca limpou last_error; sem MQTT, o aviso continua valendo
+                if (!isset($clients[$project_id]) && isset($mqttError[$project_id])) {
+                    record_error($conn, $project_id, $mqttError[$project_id]);
+                }
             }
         }
 

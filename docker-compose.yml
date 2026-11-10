@@ -1,8 +1,18 @@
+# Logs do Docker com rotação: sem isto o arquivo de cada contêiner crescia até
+# encher o disco (o broker, com log detalhado, gerava milhares de linhas por
+# minuto sob carga). 3 arquivos de 10 MB por contêiner.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 # Configuração comum aos dois contêineres web (web e web-2). Ficam atrás do
 # proxy: na atualização (manutencao/atualizar.sh) são trocados um de cada vez,
 # e o site não sai do ar.
 x-web: &web
   image: ifsentral-app:latest
+  logging: *logging
   environment:
     - ROLE=web
     - DB_HOST=${DB_HOST:-db}
@@ -17,7 +27,11 @@ x-web: &web
     # redirect HTTP->HTTPS com a porta correta quando o Apache é acessado
     # sem o proxy).
     - HTTPS_PORT=${HOST_HTTPS_PORT:-8443}
+    # Conexão persistente com o MySQL em cada processo do Apache (ver src/config/db.php)
+    - DB_PERSISTENT=1
   volumes:
+    # Configuração (.env) montada somente leitura: fica fora da imagem (ver .dockerignore)
+    - ./.env:/var/www/html/.env:ro
     - ./logs:/var/www/html/logs
     - ./uploads:/var/www/html/uploads
     # Sessões compartilhadas pelos dois contêineres web (ver Dockerfile)
@@ -64,6 +78,7 @@ services:
     depends_on:
       - web
       - web-2
+    logging: *logging
     restart: unless-stopped
 
   # 2. Web Server (PHP/Apache) — duas cópias iguais atrás do proxy
@@ -94,6 +109,7 @@ services:
       - MQTT_USERNAME=${MQTT_USERNAME:-admin}
       - MQTT_PASSWORD=${MQTT_PASSWORD:-ifsentral_admin_2024}
     volumes:
+      - ./.env:/var/www/html/.env:ro
       - ./logs:/var/www/html/logs
       - mqtt_config:/mosquitto/config
       - /etc/ifsentral:/etc/ifsentral:ro
@@ -102,12 +118,27 @@ services:
         condition: service_healthy
       mosquitto:
         condition: service_started
+    logging: *logging
     restart: unless-stopped
     # O PHP (PID 1) ignora o SIGTERM, e o docker stop esperaria 10 s à toa.
     # Encerrar na hora é seguro: o broker reentrega o que não foi confirmado
     # (worker) e a ponte recupera pelo Storage do TTN (ttn-bridge).
     stop_grace_period: 3s
     command: ["docker-entrypoint.sh"]
+    # O worker toca /tmp/worker-vivo a cada iteração do laço MQTT (no máximo
+    # a cada 30 s). Se o arquivo envelhecer 2 min, o laço travou: o contêiner
+    # fica "unhealthy" no docker compose ps e o atualizar.sh desfaz a troca.
+    healthcheck:
+      test: ["CMD-SHELL", "test $$(( $$(date +%s) - $$(stat -c %Y /tmp/worker-vivo 2>/dev/null || echo 0) )) -lt 120"]
+      interval: 15s
+      timeout: 5s
+      retries: 2
+      start_period: 60s
+
+  # (Houve um segundo worker, com assinatura compartilhada $share/...; foi
+  # retirado em 09/11/2026: o Mosquitto não restaura assinaturas
+  # compartilhadas quando reinicia, e o worker único com assinatura comum não
+  # perde mensagens nesse caso. Ver src/mqtt/mqtt_subscriber.php.)
 
   # 4. Ponte com o The Things Network (MQTT do TTN + Storage Integration -> banco)
   # Só faz algo para projetos com a integração TTN configurada.
@@ -122,10 +153,12 @@ services:
       - DB_USER=${DB_USER:-ifsentral_user}
       - DB_PASS=${DB_PASS:-secretpassword}
     volumes:
+      - ./.env:/var/www/html/.env:ro
       - /etc/ifsentral:/etc/ifsentral:ro
     depends_on:
       db:
         condition: service_healthy
+    logging: *logging
     restart: unless-stopped
     # O PHP (PID 1) ignora o SIGTERM, e o docker stop esperaria 10 s à toa.
     # Encerrar na hora é seguro: o broker reentrega o que não foi confirmado
@@ -137,8 +170,35 @@ services:
   db:
     image: mysql:8.0
     container_name: ifsentral_db
+    # --skip-log-bin: o log binário (padrão do MySQL 8) só serve para
+    # replicação e recuperação ponto a ponto, que não são usadas (o backup é
+    # por mysqldump); ele dobrava as escritas em disco de cada gravação. No
+    # teste de carga de 08/11/2026 a latência p95 do envio HTTP caiu de 820
+    # para 287 ms e o worker MQTT gravou o dobro por segundo.
+    # --max-connections: os dois web têm até 60 processos cada (ver
+    # docker/apache/mpm-limites.conf), mais workers, ponte TTN e backup — com o
+    # padrão (151) o excedente virava HTTP 500 sob pico.
+    # --innodb-buffer-pool-size: cache dos dados e índices na memória. O
+    # padrão (128 MB) é pouco para meses de leituras; com 1 GB os gráficos
+    # leem da memória em vez do disco. Num servidor com pouca RAM, ajuste
+    # DB_BUFFER_POOL no .env (ex.: 512M).
+    # --innodb-flush-log-at-trx-commit=2: cada COMMIT vai para o sistema
+    # operacional na hora, mas a escrita física no disco acontece 1x por
+    # segundo (com 1, o padrão, era uma escrita física por COMMIT). Se o
+    # MySQL cair, nada se perde; numa QUEDA DE ENERGIA perde-se até ~1 s de
+    # leituras. Por isso pressupõe nobreak no servidor. Para voltar ao modo
+    # mais seguro (e mais lento em disco mecânico): DB_FLUSH_LOG=1 no .env.
+    # --thread-cache-size / --back-log: cada requisição do PHP abre e fecha uma
+    # conexão; a ~1.000 req/s (teste de carga com leitura e escrita juntas) o
+    # MySQL, que guardava só 10 threads para reuso, criava uma por conexão, as
+    # conexões se acumulavam até o limite e o excedente virava HTTP 500.
+    # Com 128 threads reaproveitadas, fila de entrada maior e limite de 300.
+    command: ["--skip-log-bin", "--max-connections=300", "--thread-cache-size=128", "--back-log=512", "--innodb-buffer-pool-size=${DB_BUFFER_POOL:-1G}", "--innodb-flush-log-at-trx-commit=${DB_FLUSH_LOG:-2}"]
+    # Só na própria máquina: o Docker publica portas passando por cima do
+    # firewall (UFW), e no teste de 09/11/2026 o MySQL respondia pelo IP de
+    # rede. Para acessar de outro computador, use um túnel SSH.
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASS:-rootpassword}
       MYSQL_DATABASE: ${DB_NAME:-ifsentral_bd}
@@ -160,7 +220,11 @@ services:
       # bem mais que os 30s antigos. Um start_period curto demais faz o
       # docker compose desistir e abortar web/worker com "dependency failed
       # to start: container ifsentral_db is unhealthy" no meio da importação.
-      start_period: 180s
+      # Num HD a primeira subida levou ~8 min (teste de 09/11/2026) e 180 s
+      # não bastavam; durante o start_period as falhas não contam e o banco
+      # fica "healthy" assim que responde, então um prazo longo não atrasa nada.
+      start_period: 900s
+    logging: *logging
     restart: unless-stopped
 
   # 6. MQTT Broker (Mosquitto)
@@ -178,7 +242,8 @@ services:
     ports:
       - "1883:1883"
       - "8883:8883"
-      - "9001:9001"
+      # WebSocket sem TLS: nada na plataforma usa; fica só na própria máquina
+      - "127.0.0.1:9001:9001"
     volumes:
       - ./mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
       - ./mosquitto-entrypoint.sh:/usr/local/bin/mosquitto-entrypoint.sh:ro
@@ -200,6 +265,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+    logging: *logging
     restart: unless-stopped
 
   # 7. Backup automático do banco e das fotos de perfil (ver README, "Backup automático")
@@ -229,6 +295,7 @@ services:
       interval: 10m
       timeout: 10s
       retries: 1
+    logging: *logging
     restart: unless-stopped
 
 volumes:

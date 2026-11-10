@@ -8,9 +8,9 @@ require '../auth/auth_check.php';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Meu Perfil | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
 
   <style>
     :root {
@@ -130,9 +130,9 @@ require '../auth/auth_check.php';
 
 <script src="/assets/js/fetch-helpers.js"></script>
 <script src="/assets/js/profile-picture-helper.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 
 <script>
   $(function () {
@@ -226,7 +226,7 @@ require '../auth/auth_check.php';
       const button = document.getElementById('btn-solicitar-moderador');
       if (button) button.disabled = true;
 
-      const motivo = prompt('Por favor, descreva brevemente por que você precisa criar projetos:');
+      const motivo = await ifsPerguntar('Por favor, descreva brevemente por que você precisa criar projetos:', { titulo: 'Pedir para virar Moderador', multilinha: true, confirmar: 'Enviar pedido', maxLength: 2000 });
       if (motivo === null) {
         if (button) button.disabled = false;
         return;
@@ -241,7 +241,7 @@ require '../auth/auth_check.php';
         });
 
         const data = await safeJson(res);
-        alert(data.success ? data.message : data.error);
+        await ifsAlerta(data.success ? data.message : data.error, { tipo: data.success ? 'sucesso' : 'erro' });
 
         if (button && data.success) {
           button.textContent = 'Solicitação enviada. Aguarde...';
@@ -249,7 +249,7 @@ require '../auth/auth_check.php';
           button.classList.add('btn-success');
         }
       } catch (err) {
-        alert('Erro de conexão ao enviar solicitação.');
+        await ifsAlerta('Erro de conexão ao enviar solicitação.', { tipo: 'erro' });
       } finally {
         if (button) button.disabled = false;
       }

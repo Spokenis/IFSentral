@@ -64,6 +64,13 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute([$project_id]);
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    // Foto registrada cujo arquivo sumiu: responde como sem foto (iniciais)
+    foreach ($results as &$participante) {
+        if (!empty($participante['profile_picture']) && !is_file(__DIR__ . '/../../' . $participante['profile_picture'])) {
+            $participante['profile_picture'] = null;
+        }
+    }
+    unset($participante);
     
     echo json_encode($results);
 

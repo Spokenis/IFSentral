@@ -100,6 +100,24 @@ if [[ "$ROLE" == "ttn-bridge" ]]; then
 fi
 
 if [[ "$ROLE" == "web" ]]; then
+    # Pasta das fotos de perfil (volume ./uploads do host): criada pelo usuário
+    # do host, o Apache (www-data) não conseguia gravar nela e o envio de foto
+    # dava "Erro ao salvar o arquivo" (teste de 10/11/2026)
+    mkdir -p /var/www/html/uploads/profile
+    chown www-data:www-data /var/www/html/uploads /var/www/html/uploads/profile 2>/dev/null || true
+    chmod 755 /var/www/html/uploads /var/www/html/uploads/profile 2>/dev/null || true
+
+    # Cópia das leituras antigas para as tabelas dos gráficos (src/core/Agregados.php),
+    # em segundo plano para não atrasar o site. Depois de concluída uma vez, cada
+    # início só confere e sai; com os dois contêineres web ao mesmo tempo, uma
+    # trava no MySQL faz só um trabalhar. Tenta por ~2 min caso o banco demore.
+    (
+        for _ in $(seq 1 12); do
+            sleep 10
+            php /var/www/html/src/db/preencher-agregados.php && break
+        done
+    ) >> /var/www/html/logs/agregados.log 2>&1 &
+
     echo "[ENTRYPOINT] Iniciando servidor web..."
     exec apache2-foreground
 fi

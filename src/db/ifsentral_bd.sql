@@ -829,6 +829,71 @@ INSERT INTO `users` VALUES
 UNLOCK TABLES;
 
 --
+-- Table structure for tables `device_payload_values` and `device_payload_hourly`
+-- (valores já extraídos para os gráficos; ver src/core/Agregados.php)
+--
+
+DROP TABLE IF EXISTS `device_payload_values`;
+DROP TABLE IF EXISTS `device_payload_hourly`;
+CREATE TABLE `device_payload_values` (
+  `device_id` int(10) unsigned NOT NULL,
+  `variavel` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL,
+  `payload_id` bigint(20) unsigned NOT NULL,
+  `valor` double NOT NULL,
+  PRIMARY KEY (`device_id`,`variavel`,`created_at`,`payload_id`),
+  KEY `idx_values_payload` (`payload_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Uma linha por variável numérica de cada leitura (gráficos de até 7 dias)';
+
+CREATE TABLE `device_payload_hourly` (
+  `device_id` int(10) unsigned NOT NULL,
+  `variavel` varchar(100) NOT NULL,
+  `hora` int(10) unsigned NOT NULL COMMENT 'FLOOR(UNIX_TIMESTAMP(created_at) / 3600)',
+  `soma` double NOT NULL,
+  `qtd` int(10) unsigned NOT NULL,
+  `minimo` double NOT NULL,
+  `maximo` double NOT NULL,
+  PRIMARY KEY (`device_id`,`variavel`,`hora`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci COMMENT='Soma e quantidade por hora (gráficos de mais de 7 dias)';
+
+--
+-- Table structure for tables `documentation_sections` and `documentation_revisions`
+-- (conteúdo inicial: src/docs/documentacao-padrao.html, copiado na primeira abertura)
+--
+
+DROP TABLE IF EXISTS `documentation_revisions`;
+DROP TABLE IF EXISTS `documentation_sections`;
+CREATE TABLE `documentation_sections` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `slug` varchar(80) NOT NULL COMMENT 'Âncora da seção na página (/documentacao#slug)',
+  `title` varchar(150) NOT NULL,
+  `icon` varchar(60) NOT NULL DEFAULT '' COMMENT 'Classes do Font Awesome, ex.: fas fa-key',
+  `color` enum('primary','secondary','success','info','warning','danger') NOT NULL DEFAULT 'primary',
+  `outline` tinyint(1) NOT NULL DEFAULT 1 COMMENT '1 = só a borda superior colorida',
+  `content` mediumtext NOT NULL COMMENT 'HTML já sanitizado',
+  `position` int(11) NOT NULL DEFAULT 0,
+  `visible` tinyint(1) NOT NULL DEFAULT 1,
+  `updated_by` int(10) unsigned DEFAULT NULL,
+  `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updatedAt` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_documentation_slug` (`slug`),
+  KEY `idx_documentation_position` (`position`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `documentation_revisions` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `section_id` int(10) unsigned NOT NULL,
+  `title` varchar(150) NOT NULL,
+  `content` mediumtext NOT NULL COMMENT 'Versão anterior à edição',
+  `edited_by` int(10) unsigned DEFAULT NULL,
+  `createdAt` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `idx_documentation_revisions_section` (`section_id`,`id`),
+  CONSTRAINT `documentation_revisions_ibfk_1` FOREIGN KEY (`section_id`) REFERENCES `documentation_sections` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
 -- Table structure for table `email_verifications`
 --
 
@@ -969,6 +1034,13 @@ ALTER TABLE `devices`
 ALTER TABLE `device_payloads`
   ADD COLUMN `external_id` varchar(100) DEFAULT NULL COMMENT 'Identificador do dado na origem (evita gravar o mesmo uplink duas vezes)' AFTER `source`,
   ADD UNIQUE KEY `uq_payload_external` (`device_id`,`external_id`);
+
+-- Momento de chegada de cada leitura (09/11/2026; ver src/db/migracoes/2026-11-09_inserido_em.sql)
+ALTER TABLE `device_payloads`
+  ADD COLUMN `inserido_em` timestamp NULL DEFAULT NULL COMMENT 'Quando a leitura chegou ao servidor (o limite de requisições conta por aqui; NULL = leitura anterior a 09/11/2026)',
+  ADD KEY `idx_device_inserido` (`device_id`,`inserido_em`);
+ALTER TABLE `device_payloads`
+  MODIFY COLUMN `inserido_em` timestamp NULL DEFAULT current_timestamp() COMMENT 'Quando a leitura chegou ao servidor (o limite de requisições conta por aqui; NULL = leitura anterior a 09/11/2026)';
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

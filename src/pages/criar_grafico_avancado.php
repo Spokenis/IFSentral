@@ -51,11 +51,11 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Criar Gráfico Avançado | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/select2/4.1.0-rc.0/css/select2.min.css">
+  <link rel="stylesheet" href="/assets/vendor/tempusdominus-bootstrap-4/5.39.0/css/tempusdominus-bootstrap-4.min.css">
   
   <style>
     :root {
@@ -298,13 +298,13 @@ try {
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/input-limits.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="/assets/vendor/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="/assets/vendor/moment/2.29.4/moment.min.js"></script>
+<script src="/assets/vendor/tempusdominus-bootstrap-4/5.39.0/js/tempusdominus-bootstrap-4.min.js"></script>
+<script src="/assets/vendor/chart.js/3.9.1/chart.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -406,7 +406,7 @@ function adicionarDataset() {
   const color = $('#variable-color').val();
   
   if (!deviceId || !variableName) {
-    alert('Selecione um dispositivo e uma variável');
+    ifsAlerta('Selecione um dispositivo e uma variável', { tipo: 'aviso' });
     return;
   }
   
@@ -528,7 +528,7 @@ async function salvarGrafico() {
   const chartType = $('#chart-type').val();
   
   if (!chartName || datasets.length === 0) {
-    alert('Preencha o nome e adicione pelo menos um dataset');
+    await ifsAlerta('Preencha o nome e adicione pelo menos um dataset', { tipo: 'aviso' });
     return;
   }
   
@@ -551,13 +551,14 @@ async function salvarGrafico() {
     });
     
     const result = await safeJson(response);
-    alert('Gráfico salvo com sucesso!');
+    await ifsAlerta('Gráfico salvo com sucesso!', { tipo: 'sucesso' });
     window.location.href = `/projeto?id=${PROJECT_ID}`;
   } catch (error) {
-    alert('Erro ao salvar: ' + error.message);
+    await ifsAlerta('Erro ao salvar: ' + error.message, { tipo: 'erro' });
   }
 }
 </script>
 
+<script src="/assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

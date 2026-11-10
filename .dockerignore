@@ -6,3 +6,8 @@ logs/*.log
 !logs/.gitkeep
 # Backups (dados do banco) nunca entram na imagem
 backups/
+# Segredos nunca entram na imagem (o teste de 09/11/2026 achou o .env dentro
+# dela): o .env é montado somente leitura pelo docker-compose.yml
+.env
+src/config/.env
+uploads/profile/*

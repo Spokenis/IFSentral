@@ -8,9 +8,9 @@ require '../auth/auth_check.php';
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Explorar Projetos | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
   
   <style>
     :root {
@@ -71,7 +71,7 @@ require '../auth/auth_check.php';
                     <div class="input-group">
                         <input type="search" id="search-input" class="form-control form-control-lg" placeholder="Buscar por nome, tag ou gerente...">
                         <div class="input-group-append">
-                            <button type="submit" class="btn btn-lg btn-default"><i class="fa fa-search"></i></button>
+                            <button type="submit" class="btn btn-lg btn-default" aria-label="Buscar" title="Buscar"><i class="fa fa-search"></i></button>
                         </div>
                     </div>
                 </form>
@@ -86,7 +86,8 @@ require '../auth/auth_check.php';
         </div>
 
         <div class="row">
-            <div class="col-12 d-flex justify-content-center align-items-center" id="pagination-container" style="display: none; gap: 12px;">
+            <!-- Sem a classe d-flex: ela tem !important e impedia o JS de esconder a barra -->
+            <div class="col-12 justify-content-center align-items-center mt-2 mb-4" id="pagination-container" style="display: none; gap: 12px;">
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-pagina-anterior"><i class="fas fa-chevron-left mr-1"></i>Anterior</button>
                 <span id="pagination-info" class="text-muted"></span>
                 <button type="button" class="btn btn-outline-secondary btn-sm" id="btn-proxima-pagina">Próxima<i class="fas fa-chevron-right ml-1"></i></button>
@@ -101,9 +102,9 @@ require '../auth/auth_check.php';
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -117,6 +118,7 @@ require '../auth/auth_check.php';
     const btnProximaPagina = document.getElementById('btn-proxima-pagina');
 
     let paginaAtual = 1;
+    let totalPaginas = 1;
     let debounceTimer = null;
 
     function escapeHtml(str) {
@@ -216,6 +218,9 @@ require '../auth/auth_check.php';
     }
 
     function renderizarPaginacao(pag) {
+        totalPaginas = pag ? Math.max(1, pag.total_pages) : 1;
+        btnPaginaAnterior.disabled = !pag || pag.page <= 1;
+        btnProximaPagina.disabled = !pag || pag.page >= pag.total_pages;
         if (!pag || pag.total_pages <= 1) {
             paginationContainer.style.display = 'none';
             return;
@@ -246,8 +251,15 @@ require '../auth/auth_check.php';
             const resultado = await safeJson(response);
             if (resultado.error) throw new Error(resultado.error);
 
+            // Página que deixou de existir (ex.: a busca reduziu o total): vai para a última
+            const pag = resultado.pagination;
+            if (pag && pag.total > 0 && pag.page > pag.total_pages) {
+                irParaPagina(pag.total_pages);
+                return;
+            }
+
             renderizarProjetos(resultado.data);
-            renderizarPaginacao(resultado.pagination);
+            renderizarPaginacao(pag);
 
         } catch (error) {
             statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
@@ -274,7 +286,7 @@ require '../auth/auth_check.php';
     });
 
     btnProximaPagina.addEventListener('click', function () {
-        irParaPagina(paginaAtual + 1);
+        if (paginaAtual < totalPaginas) irParaPagina(paginaAtual + 1);
     });
 </script>
 <script src="/assets/js/profile-picture-helper.js"></script>

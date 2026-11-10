@@ -13,9 +13,9 @@ require_once __DIR__ . '/../auth/auth_check.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Configurações - IFSCentral</title>
     
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+    <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+    <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
     
     <style>
         :root {
@@ -336,10 +336,10 @@ require_once __DIR__ . '/../auth/auth_check.php';
     <?php require_once __DIR__ . '/../includes/footer.php'; ?>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/input-limits.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 <script src="/assets/js/profile-picture-helper.js"></script>
 
@@ -413,13 +413,10 @@ require_once __DIR__ . '/../auth/auth_check.php';
             inputEmail.value = user.email || '';
             inputUsername.value = user.username || '';
             
-            if (user.profile_picture) {
-                previewFoto.src = '/' + user.profile_picture;
-                btnDeletarFoto.disabled = false;
-            } else {
-                previewFoto.src = '/assets/img/default-avatar.svg';
-                btnDeletarFoto.disabled = true;
-            }
+            // Sem foto (ou com o arquivo perdido, que a API devolve como null): iniciais
+            aplicarFotoPerfil(previewFoto, user.profile_picture, user.name);
+            btnDeletarFoto.disabled = !user.profile_picture;
+            updateProfilePictureElements(user.profile_picture, user.name); // menu do topo
             
             infoUserId.textContent = user.id;
             
@@ -601,7 +598,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
     }
     
     async function deletarFoto() {
-        if (!confirm('Tem certeza que deseja remover sua foto de perfil?')) {
+        if (!(await ifsConfirmar('Tem certeza que deseja remover sua foto de perfil?', { confirmar: 'Remover', perigo: true }))) {
             return;
         }
         
@@ -658,7 +655,7 @@ require_once __DIR__ . '/../auth/auth_check.php';
             twofaSetupStatus.innerHTML = '';
             mostrarView2fa(twofaSetupView);
         } catch (error) {
-            alert('Erro ao iniciar configuração do 2FA: ' + error.message);
+            await ifsAlerta('Erro ao iniciar configuração do 2FA: ' + error.message, { tipo: 'erro' });
         } finally {
             btnIniciar2fa.disabled = false;
         }

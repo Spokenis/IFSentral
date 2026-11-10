@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] != 'GET') {
 }
 
 require '../config/db.php';
+require_once __DIR__ . '/../mqtt/MqttHash.php';
 
 // ===== VALIDAÇÃO DE SEGURANÇA =====
 // Validate API Key from header (não da URL)
@@ -79,6 +80,7 @@ try {
         SELECT 
             mqtt_username,
             mqtt_password,
+            mqtt_password_hash,
             enabled
         FROM mqtt_credentials
         WHERE device_id = ? AND enabled = 1
@@ -113,7 +115,11 @@ try {
                 // 3. [\r\n]+ garante que pegamos a quebra de linha independente do SO
                 $pattern = '/Username:\s*' . preg_quote($mqtt_creds['mqtt_username'], '/') . '\s*[\r\n]+Password:\s*(\S+)/i';
                 
-                if (preg_match($pattern, $backup_contents, $matches)) {
+                // Só aceita a senha do backup se ela for a que o broker confere:
+                // backups antigos ficavam com senhas de antes de uma regeração,
+                // e a página passava a mostrar uma senha recusada ("not authorised")
+                if (preg_match($pattern, $backup_contents, $matches)
+                    && mqtt_senha_confere(trim($matches[1]), (string) $mqtt_creds['mqtt_password_hash'])) {
                     $mqtt_password = trim($matches[1]);
                     
                     // Atualiza o BD para não precisar ler arquivo novamente

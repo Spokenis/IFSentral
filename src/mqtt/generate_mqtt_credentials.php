@@ -93,17 +93,19 @@ try {
         if ($existStmt->rowCount() > 0) {
             // Atualiza
             $updateStmt = $conn->prepare(
-                "UPDATE mqtt_credentials SET mqtt_password_hash = ?, updated_at = NOW() WHERE device_id = ?"
+                // Senha junto com o hash (só o hash deixava a página mostrando
+                // uma senha que o broker recusava)
+                "UPDATE mqtt_credentials SET mqtt_password = ?, mqtt_password_hash = ?, updated_at = NOW() WHERE device_id = ?"
             );
-            $updateStmt->execute([$password_hash, $device_id]);
+            $updateStmt->execute([$mqtt_password, $password_hash, $device_id]);
             $updated++;
             echo "🔄 Atualizado: Device #$device_id → $mqtt_username\n";
         } else {
             // Insere novo
             $insertStmt = $conn->prepare(
-                "INSERT INTO mqtt_credentials (device_id, mqtt_username, mqtt_password_hash, enabled) VALUES (?, ?, ?, 1)"
+                "INSERT INTO mqtt_credentials (device_id, mqtt_username, mqtt_password, mqtt_password_hash, enabled) VALUES (?, ?, ?, ?, 1)"
             );
-            $insertStmt->execute([$device_id, $mqtt_username, $password_hash]);
+            $insertStmt->execute([$device_id, $mqtt_username, $mqtt_password, $password_hash]);
             $generated++;
             echo "✅ Criado: Device #$device_id → $mqtt_username\n";
         }

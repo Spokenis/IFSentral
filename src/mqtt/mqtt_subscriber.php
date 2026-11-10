@@ -26,7 +26,41 @@ require_once SRC_DIR . '/core/PayloadHandler.php';
 require_once SRC_DIR . '/core/RateLimiter.php';
 
 use PhpMqtt\Client\MqttClient;
+use PhpMqtt\Client\Message;
+use PhpMqtt\Client\MessageType;
 use PhpMqtt\Client\ConnectionSettings;
+
+/**
+ * Cliente MQTT que só confirma (PUBACK) uma mensagem QoS 1 DEPOIS que ela foi
+ * processada. A biblioteca confirma antes de entregar a mensagem ao código:
+ * se o banco caísse ou o worker morresse nesse meio-tempo, o broker já tinha
+ * descartado a mensagem e ela se perdia (teste de falhas de 09/11/2026: 400
+ * leituras perdidas com o banco 10 s sem gravar). Agora, se a gravação falhar
+ * por um problema passageiro, o callback encerra o processo sem confirmar, o
+ * Docker sobe outro worker e o broker reentrega a mensagem (sessão persistente).
+ * Efeito colateral aceito: se o worker morrer entre gravar e confirmar, a
+ * mensagem é gravada de novo (entrega "pelo menos uma vez", como o QoS 1 define).
+ */
+class ClienteConfirmaDepoisDeGravar extends MqttClient
+{
+    protected function handleMessage(Message $message): void
+    {
+        if ($message->getType()->equals(MessageType::PUBLISH())
+            && $message->getQualityOfService() === self::QOS_AT_LEAST_ONCE) {
+            $this->deliverPublishedMessage($message->getTopic(), $message->getContent(), $message->getQualityOfService(), $message->getRetained());
+            $this->sendPublishAcknowledgement($message->getMessageId());
+            return;
+        }
+        parent::handleMessage($message);
+    }
+}
+
+/** Falha passageira na gravação: encerra SEM confirmar, para o broker reentregar */
+function encerrarSemConfirmar(string $motivo): void
+{
+    mqtt_log("Falha passageira ao gravar ($motivo). Encerrando sem confirmar a mensagem; o broker vai reentregá-la ao worker que o Docker subir.", 'ERROR');
+    exit(1);
+}
 use PhpMqtt\Client\Repositories\MemoryRepository;
 use PhpMqtt\Client\Subscription;
 use App\Core\PayloadHandler;
@@ -46,6 +80,21 @@ function mqtt_log($message, $level = 'INFO')
     $log_message = "[$timestamp] [$level] $message\n";
     
     echo $log_message;  // Também mostra no console
+    // Rotação: no teste de 10 h (20 msg/s) o arquivo chegou a 100 MB. Ao passar
+    // de 10 MB vira .1 (e o .1 vira .2, ... até .3); ocupa no máximo ~40 MB.
+    static $verificado = 0;
+    if (time() - $verificado >= 60) {
+        $verificado = time();
+        clearstatcache(true, $log_file);
+        if (is_file($log_file) && filesize($log_file) > 10 * 1024 * 1024) {
+            for ($i = 2; $i >= 1; $i--) {
+                if (is_file("$log_file.$i")) {
+                    @rename("$log_file.$i", "$log_file." . ($i + 1));
+                }
+            }
+            @rename($log_file, "$log_file.1");
+        }
+    }
     file_put_contents($log_file, $log_message, FILE_APPEND);
 }
 
@@ -66,11 +115,13 @@ function publishWorkerOnlineStatus(MqttClient $client, string $topic, string $wo
 // ==========================================
 // FUNÇÃO DE PROTEÇÃO DO BANCO DE DADOS
 // ==========================================
+// Devolve true se a conexão precisou ser recriada (quem usa a antiga, como o
+// RateLimiter, deve ser recriado também)
 function ensureDbConnection(&$conn) {
     try {
         // Tenta executar uma query levíssima para testar a conexão
         $conn->query('SELECT 1');
-        return true;
+        return false;
     } catch (\PDOException $e) {
         mqtt_log("Conexão com o banco perdida: " . $e->getMessage() . ". Tentando reconectar...", 'WARN');
         
@@ -88,6 +139,7 @@ function ensureDbConnection(&$conn) {
                         \PDO::ATTR_EMULATE_PREPARES => false
                     ]
                 );
+                $conn->exec("SET time_zone = '" . date('P') . "'"); // mesmo fuso de db.php
                 mqtt_log("Banco de dados reconectado com sucesso na tentativa $i.", 'INFO');
                 return true;
             } catch (\PDOException $err) {
@@ -180,12 +232,37 @@ try {
                 $payload_data = ['value' => $message];
             }
 
-            // --- PROTEÇÃO DO BANCO DE DADOS ---
-            // Verifica a vitalidade e reconecta se necessário antes de qualquer transação
-            ensureDbConnection($conn);
+            // Envelope opcional para leituras guardadas pelo dispositivo enquanto
+            // estava sem rede: {"timestamp": <instante da medição, s Unix>,
+            // "id": "<identificador da leitura>", "payload": {...}}. O mesmo id
+            // reenviado não grava de novo. Mensagem sem envelope: como sempre.
+            $instanteMedicao = null;
+            $idLeitura = null;
+            if (is_array($payload_data) && isset($payload_data['payload']) && is_array($payload_data['payload'])
+                && !array_diff(array_keys($payload_data), ['payload', 'timestamp', 'id'])) {
+                $ts = $payload_data['timestamp'] ?? null;
+                $idEnv = $payload_data['id'] ?? null;
+                if (($ts !== null && (!is_numeric($ts) || (int) $ts < time() - 7 * 86400 || (int) $ts > time() + 300))
+                    || ($idEnv !== null && (!is_string($idEnv) || !preg_match('/^[A-Za-z0-9_.:-]{1,100}$/', $idEnv)))) {
+                    mqtt_log("Envelope inválido no tópico $real_topic (timestamp de até 7 dias atrás; id com até 100 caracteres) - descartado", 'WARN');
+                    return;
+                }
+                $instanteMedicao = $ts !== null ? (int) $ts : null;
+                $idLeitura = $idEnv;
+                $payload_data = $payload_data['payload'];
+            }
 
-            // Se a conexão foi recriada, precisamos atualizar o limitador com a nova instância
-            $rateLimiter = new RateLimiter($conn);
+            // --- PROTEÇÃO DO BANCO DE DADOS ---
+            // Verifica a vitalidade e reconecta se necessário antes de qualquer transação.
+            // O RateLimiter lê as configurações do banco ao ser criado: antes era
+            // recriado a cada mensagem (uma consulta a mais por leitura); agora só
+            // quando a conexão muda ou a cada 60 s (para valer o que o admin
+            // mudar no painel).
+            static $limiterCriadoEm = 0;
+            if (ensureDbConnection($conn) || time() - $limiterCriadoEm >= 60) {
+                $rateLimiter = new RateLimiter($conn);
+                $limiterCriadoEm = time();
+            }
             // ----------------------------------
 
             $apiKeySql = "SELECT api_key FROM devices WHERE id = ? AND project_id = ?";
@@ -200,8 +277,14 @@ try {
                     $rateCheck = $rateLimiter->checkLimit($device_id, 'mqtt', 'mqtt_local');
 
                     if (!$rateCheck['allowed']) {
-                        mqtt_log("Rate limit excedido - Device: $device_id, Requests: {$rateCheck['requests']}, Limit: {$rateCheck['limit']}", 'WARN');
-                        return; 
+                        // Uma linha de log por dispositivo a cada minuto (antes era
+                        // uma por mensagem recusada: milhares por minuto)
+                        static $ultimoAvisoLimite = [];
+                        if (time() - ($ultimoAvisoLimite[$device_id] ?? 0) >= 60) {
+                            mqtt_log("Rate limit excedido - Device: $device_id, Requests: {$rateCheck['requests']}, Limit: {$rateCheck['limit']} (mensagens acima do limite são descartadas; próximo aviso em 1 min)", 'WARN');
+                            $ultimoAvisoLimite[$device_id] = time();
+                        }
+                        return;
                     }
 
                     // Passamos a conexão garantida para o handler
@@ -216,8 +299,11 @@ try {
                         return;
                     }
 
-                    $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt');
+                    $result = $handler->savePayload($device_id, $api_key, $payload_data, 'mqtt', $instanteMedicao, $idLeitura);
 
+                    if (!$result['success'] && !empty($result['erro_transitorio'])) {
+                        encerrarSemConfirmar('device ' . $device_id);
+                    }
                     if ($result['success']) {
                         mqtt_log("Payload salvo com sucesso - ID: {$result['id']}, Device: $device_id, Project: $project_id", 'INFO');
                     } else {
@@ -226,6 +312,12 @@ try {
                 } else {
                     mqtt_log("Dispositivo não encontrado - Device ID: $device_id, Project ID: $project_id", 'WARN');
                 }
+            } catch (\PDOException $e) {
+                // Banco fora no meio do processamento: não confirmar
+                if (PayloadHandler::erroTransitorio($e)) {
+                    encerrarSemConfirmar($e->getMessage());
+                }
+                mqtt_log("Erro de banco ao processar payload (mensagem descartada): " . $e->getMessage(), 'ERROR');
             } catch (\Exception $e) {
                 mqtt_log("Exceção ao processar payload: " . $e->getMessage(), 'ERROR');
             }
@@ -239,17 +331,31 @@ try {
     // biblioteca só ativa uma assinatura quando chega o SUBACK, e descarta
     // (já confirmando ao broker) o que chega antes — por isso as assinaturas
     // são registradas no repositório antes de conectar.
+    // Assinatura COMUM (não $share/...): o Mosquitto guarda as assinaturas
+    // comuns da sessão persistente e as restaura quando reinicia; as
+    // compartilhadas, não — no teste de falhas de 09/11/2026, reiniciar o
+    // broker perdia tudo o que chegava até o worker assinar de novo (293
+    // leituras). Por isso há um worker só (dois com assinatura comum gravariam
+    // cada leitura duas vezes); ele grava ~250 msg/s, bem acima do necessário.
     $repository = new MemoryRepository();
     foreach (MQTT_TOPICS as $topic) {
-        $repository->addSubscription(new Subscription('$share/' . $worker_group . '/' . $topic, 1, $onMessage));
+        $repository->addSubscription(new Subscription($topic, 1, $onMessage));
     }
 
     // Cria cliente MQTT
-    $client = new MqttClient(MQTT_HOST, MQTT_PORT, $unique_client_id, MqttClient::MQTT_3_1, $repository);
+    $client = new ClienteConfirmaDepoisDeGravar(MQTT_HOST, MQTT_PORT, $unique_client_id, MqttClient::MQTT_3_1, $repository);
 
     // Callback para mensagens recebidas
+    // Batimento para o healthcheck do Docker (docker-compose.yml): o laço
+    // toca /tmp/worker-vivo no máximo a cada 30 s. Se o laço travar, o
+    // arquivo envelhece e o contêiner fica "unhealthy".
+    @touch('/tmp/worker-vivo');
     $client->registerLoopEventHandler(function (MqttClient $client, $elapsed) {
-        // Callback acionado a cada iteração do loop interno
+        static $ultimoBatimento = 0;
+        if (time() - $ultimoBatimento >= 30) {
+            @touch('/tmp/worker-vivo');
+            $ultimoBatimento = time();
+        }
     });
 
     // Conecta ao broker
@@ -259,42 +365,31 @@ try {
 
     // Subscreve tópicos
     foreach (MQTT_TOPICS as $topic) {
-        
-        // Adiciona o prefixo de assinatura compartilhada do Mosquitto
-        $shared_topic = '$share/' . $worker_group . '/' . $topic;
-        
-        $client->subscribe($shared_topic, $onMessage, 1);  // QoS 1
+        // Versões anteriores assinavam $share/cluster_db/...; a sessão
+        // persistente guardaria as duas assinaturas e cada mensagem chegaria
+        // duas vezes. Remover a antiga é inofensivo se ela não existir.
+        $client->unsubscribe('$share/' . $worker_group . '/' . $topic);
+        $client->subscribe($topic, $onMessage, 1);  // QoS 1
     }
 
     mqtt_log('Subscrito aos tópicos com sucesso', 'INFO');
     mqtt_log('Aguardando mensagens...', 'INFO');
 
-    // Loop para manter a conexão ativa
-    $reconnect_attempts = 0;
-    while (true) {
-        try {
-            $client->loop(true);
-        } catch (\Exception $e) {
-            mqtt_log("Erro no loop: " . $e->getMessage(), 'ERROR');
-            
-            $reconnect_attempts++;
-            if ($reconnect_attempts > MQTT_MAX_RECONNECT_ATTEMPTS) {
-                mqtt_log("Máximo de tentativas de reconexão atingido. Encerrando.", 'ERROR');
-                break;
-            }
-            
-            mqtt_log("Tentando reconectar MQTT em " . MQTT_RECONNECT_DELAY . "s (tentativa $reconnect_attempts)...", 'INFO');
-            sleep(MQTT_RECONNECT_DELAY);
-            
-            try {
-                $client->connect($connectionSettings);
-                mqtt_log("Reconectado ao broker com sucesso", 'INFO');
-                publishWorkerOnlineStatus($client, $lwt_topic, $unique_client_id);
-                $reconnect_attempts = 0;
-            } catch (\Exception $e) {
-                mqtt_log("Falha na reconexão MQTT: " . $e->getMessage(), 'ERROR');
-            }
-        }
+    // Loop para manter a conexão ativa.
+    //
+    // Se a conexão com o broker cai (ex.: o mosquitto foi reiniciado), o
+    // processo ENCERRA e o Docker sobe outro (restart: unless-stopped). Antes
+    // ele reconectava aqui mesmo, mas sem refazer a assinatura $share/...: ficava
+    // "conectado" e não recebia mais nada até alguém reiniciar o worker à mão.
+    // Refazer a assinatura neste processo duplicaria o registro no repositório
+    // (cada mensagem seria gravada duas vezes); o processo novo já começa com a
+    // assinatura pré-registrada e a sessão persistente traz o que ficou na fila.
+    try {
+        $client->loop(true);
+    } catch (\Exception $e) {
+        mqtt_log("Conexão com o broker perdida: " . $e->getMessage() . ". Encerrando para o Docker reiniciar o worker.", 'ERROR');
+        sleep(2); // não martela o broker se ele ainda estiver subindo
+        exit(1);
     }
 
 } catch (\Exception $e) {

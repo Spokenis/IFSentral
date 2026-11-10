@@ -30,7 +30,7 @@ tmp/
 temp/
 
 # Composer
-vendor/
+/vendor/
 composer.lock
 
 # PHPUnit

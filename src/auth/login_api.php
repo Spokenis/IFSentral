@@ -56,9 +56,14 @@ $loginCheck = $rateLimiter->checkLoginAttempts($data->email, $client_ip);
 
 if (!$loginCheck['allowed']) {
     http_response_code(429);
+    $minutos = (int)($loginCheck['janela_minutos'] ?? 15);
     echo json_encode([
-        'error' => 'Muitas tentativas de login. Tente novamente mais tarde.',
-        'retry_info' => "Limite de {$loginCheck['max_attempts']} tentativas excedido."
+        'error' => ($loginCheck['motivo'] ?? '') === 'ip'
+            ? "Muitas tentativas de login erradas a partir desta rede. Tente novamente em até $minutos minutos ou peça a um administrador para desbloquear."
+            : "Muitas tentativas de login erradas nesta conta. Tente novamente em até $minutos minutos ou peça a um administrador para desbloquear.",
+        'retry_info' => ($loginCheck['motivo'] ?? '') === 'ip'
+            ? 'Limite de tentativas por rede excedido.'
+            : "Limite de {$loginCheck['max_attempts']} tentativas excedido."
     ]);
     exit;
 }

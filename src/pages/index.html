@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bem-vindo ao IFSCentral - Hub IoT para Smart Campus</title>
+  <meta name="description" content="IFSCentral: plataforma do câmpus que recebe, guarda e mostra em gráficos as leituras dos dispositivos IoT dos projetos, por HTTP, MQTT e The Things Network.">
+  <title>Bem-vindo ao IFSCentral - Dados de sensores do campus</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/css/acessibilidade.css">
   
   <style>
     :root {
@@ -20,15 +22,46 @@
     .content-wrapper { flex: 1; }
     .hero-section {
       background-color: #f4f6f9;
-      padding: 6rem 0;
+      padding: 3.5rem 0 2.5rem;
       text-align: center;
     }
     .feature-icon {
       font-size: 3rem;
       color: var(--ifsc-primary);
     }
+
+    .hero-section h1, .hero-section .lead { text-wrap: balance; }
+    .hero-section h1 { margin-bottom: .75rem; }
+
+    /* Seção "O que é o IFSCentral?" */
+    .sobre { padding: 2rem 0 .5rem; }
+    .sobre-intro { max-width: 700px; margin: 0 auto 3rem; text-align: center; }
+    .sobre-intro h2 { font-weight: 600; margin-bottom: .75rem; }
+    .sobre-intro .lead { color: #555; text-wrap: balance; }
+    .recurso {
+      height: 100%;
+      background: #fff;
+      border: 1px solid #e5e9ed;
+      border-radius: 12px;
+      padding: 2rem 1.75rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .04);
+      transition: box-shadow .2s, transform .2s;
+    }
+    .recurso:hover { box-shadow: 0 6px 18px rgba(0, 0, 0, .08); transform: translateY(-2px); }
+    .recurso-icone {
+      width: 72px; height: 72px;
+      margin: 0 auto 1.25rem;
+      border-radius: 50%;
+      background: #e8f3ec;
+      color: var(--ifsc-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.9rem;
+    }
+    .recurso h3 { font-size: 1.35rem; font-weight: 600; margin-bottom: .75rem; }
+    .recurso p { color: #555; line-height: 1.6; margin-bottom: 0; text-wrap: pretty; }
     .card .badge { color: white !important; }
-    .badge-warning { color: #212529 !important; }
+    .badge-warning, .card .badge-warning { color: #212529 !important; }
     #status-msg { margin-top: 15px; }
     
     /* Theme Colors */
@@ -76,7 +109,7 @@
       <div class="collapse navbar-collapse order-3" id="navbarCollapse">
       </div>
 
-      <ul class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
+      <ul id="menu-conta" class="order-1 order-md-3 navbar-nav navbar-no-expand ml-auto">
         <li class="nav-item">
           <a href="/login" class="nav-link">Login</a>
         </li>
@@ -91,43 +124,53 @@
     
     <div class="hero-section">
       <div class="container">
-        <h1 class="display-4">O Hub de Dados do seu Smart Campus</h1>
-        <p class="lead">Centralize a coleta, o armazenamento e a distribuição de informações de qualquer sensor IoT em uma infraestrutura única e confiável.</p>
-        <a href="/registrar" class="btn btn-primary btn-lg mt-3">Comece a Integrar</a>
-        <a href="/login" class="btn btn-outline-secondary btn-lg mt-3">Acessar a Plataforma</a>
+        <h1 class="display-4">Os dados dos sensores do campus em um só lugar</h1>
+        <p class="lead">Receba, guarde e consulte as leituras dos dispositivos IoT dos projetos do campus em uma única plataforma.</p>
+        <div id="acoes-inicio">
+          <a href="/registrar" class="btn btn-primary btn-lg mt-3">Comece a Integrar</a>
+          <a href="/login" class="btn btn-outline-secondary btn-lg mt-3">Acessar a Plataforma</a>
+        </div>
       </div>
     </div>
     
     <section class="content">
       <div class="container">
         
-        <div class="row text-center py-5">
-          <div class="col-lg-12">
+        <div class="sobre">
+          <div class="sobre-intro">
             <h2>O Que é o IFSCentral?</h2>
-            <p class="lead">Uma plataforma de infraestrutura projetada para unificar as medições de dispositivos conectados e sustentar o desenvolvimento de um campus inteligente.</p>
+            <p class="lead">Uma plataforma que reúne as medições dos dispositivos conectados dos projetos do campus e serve de base para iniciativas de campus inteligente.</p>
           </div>
-          <div class="col-lg-4">
-            <i class="fas fa-microchip feature-icon mb-3"></i>
-            <h3>Compatibilidade Universal</h3>
-            <p>Conecte qualquer tipo de sensor. Seja para monitorar fluxo de pessoas, temperatura ou consumo energético, nossa arquitetura está pronta para receber dados de diversas fontes.</p>
-          </div>
-          <div class="col-lg-4">
-            <i class="fas fa-server feature-icon mb-3"></i>
-            <h3>Núcleo Centralizado</h3>
-            <p>Elimine silos de informação. A plataforma funciona como o coração tecnológico do campus, garantindo um histórico seguro e disponibilizando os dados facilmente via API.</p>
-          </div>
-          <div class="col-lg-4">
-            <i class="fas fa-layer-group feature-icon mb-3"></i>
-            <h3>Gestão Estruturada</h3>
-            <p>Organize seus fluxos de informação agrupando os dispositivos por escopo de pesquisa ou setor, facilitando a governança e o acesso das equipes aos dados necessários.</p>
+          <div class="row">
+            <div class="col-lg-4 mb-4">
+              <div class="recurso">
+                <div class="recurso-icone"><i class="fas fa-microchip"></i></div>
+                <h3>Vários tipos de dispositivo</h3>
+                <p>Qualquer dispositivo que envie suas leituras em JSON pode ser conectado, por HTTP, MQTT ou pelo The Things Network (LoRaWAN). Temperatura, consumo de energia ou fluxo de pessoas entram do mesmo&nbsp;jeito.</p>
+              </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+              <div class="recurso">
+                <div class="recurso-icone"><i class="fas fa-server"></i></div>
+                <h3>Dados reunidos</h3>
+                <p>Em vez de cada projeto guardar seus dados em um lugar diferente, as leituras ficam reunidas na plataforma, com histórico armazenado e acesso pela API.</p>
+              </div>
+            </div>
+            <div class="col-lg-4 mb-4">
+              <div class="recurso">
+                <div class="recurso-icone"><i class="fas fa-layer-group"></i></div>
+                <h3>Organização por projetos</h3>
+                <p>Agrupe os dispositivos em projetos, por pesquisa ou por setor, e defina quem da equipe pode ver e alterar os dados de&nbsp;cada&nbsp;um.</p>
+              </div>
+            </div>
           </div>
         </div>
         <hr>
 
-        <div class="row py-5">
+        <div class="row pt-4 pb-5">
           <div class="col-lg-12 text-center">
-            <h2>Iniciativas Integradas</h2>
-            <p class="lead">Explore os agrupamentos de sensores e projetos que já utilizam nosso hub para o monitoramento do campus.</p>
+            <h2>Projetos públicos</h2>
+            <p class="lead">Conheça os projetos que já enviam dados para a plataforma.</p>
           </div>
 
           <div class="row" id="project-list-container">
@@ -147,13 +190,31 @@
 
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
     const API_URL_LISTAR = '/api/listar-projetos-publicos';
+
+    // Quem já está logado vê o caminho para a plataforma, não "Login"
+    let usuarioLogado = false;
+    fetch('/api/obter-perfil-usuario', { credentials: 'include', silenciar401: true, headers: { 'Accept': 'application/json' } })
+      .then(r => r.ok ? r.json() : null)
+      .then(dados => {
+        if (!dados || !dados.user) return;
+        usuarioLogado = true;
+        document.getElementById('menu-conta').innerHTML =
+          `<li class="nav-item d-none d-sm-block"><span class="nav-link">Olá, ${escapeHtml(dados.user.name)}</span></li>`
+          + `<li class="nav-item"><a href="/meus-projetos" class="btn btn-primary">Meus Projetos</a></li>`;
+        document.getElementById('acoes-inicio').innerHTML =
+          `<a href="/meus-projetos" class="btn btn-primary btn-lg mt-3">Ir para Meus Projetos</a>`;
+        document.querySelectorAll('.btn-acessar-dados').forEach(a => {
+          a.href = '/ver-projeto?id=' + a.dataset.projeto;
+        });
+      })
+      .catch(() => {});
     const container = document.getElementById('project-list-container');
     const statusMsg = document.getElementById('status-msg');
 
@@ -182,7 +243,7 @@
             tagsHtml = '<span class="badge badge-secondary">Sem tags</span>';
         }
         
-        const botao = '<a href="/registrar" class="btn btn-primary btn-block">Acessar Dados</a>';
+        const botao = `<a href="${usuarioLogado ? '/ver-projeto?id=' + proj.id : '/registrar'}" data-projeto="${proj.id}" class="btn btn-primary btn-block btn-acessar-dados">Acessar Dados</a>`;
 
         return `
         <div class="col-md-6 col-lg-4 mb-4">

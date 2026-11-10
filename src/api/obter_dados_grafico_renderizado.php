@@ -17,6 +17,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../config/db.php';
 require_once __DIR__ . '/../auth/auth_check.php';
+require_once __DIR__ . '/../core/Agregados.php';
+
+use App\Core\Agregados;
+
+// Cache curto do resultado de cada gráfico. A página do projeto recarrega os
+// gráficos a cada 60 s, e várias pessoas olhando o mesmo projeto pediam o mesmo
+// cálculo; agora ele é feito no máximo uma vez a cada GRAFICO_CACHE_TTL segundos
+// por servidor. Dado novo aparece com até esse atraso.
+const GRAFICO_CACHE_TTL = 30;
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405);
@@ -50,14 +59,15 @@ try {
         exit;
     }
 
-    // Validar permissão
-    // Se o gráfico não é público E o projeto não é público, verificar permissão do usuário
-    if (!$chart['is_public'] && !$chart['project_public'] && $user_id) {
-        // Se não é público, verificar se o usuário é participante do projeto
+    // Validar permissão: participante do projeto vê qualquer gráfico dele; os
+    // demais só veem gráfico público de projeto público. (Antes bastava um dos
+    // dois ser público: o gráfico privado de um projeto público ficava aberto
+    // a quem trocasse o chart_id na URL.)
+    if (!($chart['is_public'] && $chart['project_public'])) {
         $authSql = "SELECT 1 FROM users_projects WHERE project_id = ? AND user_id = ?";
         $authStmt = $conn->prepare($authSql);
         $authStmt->execute([$chart['project_id'], $user_id]);
-        
+
         if (!$authStmt->fetch()) {
             http_response_code(403);
             echo json_encode(['error' => 'Permissão negada']);
@@ -68,19 +78,20 @@ try {
     // --- PROCESSAMENTO E EXTRAÇÃO DIRETA VIA BANCO DE DADOS ---
 
     // 1. Unificar a descoberta de datasets (Multi-dispositivo ou Simples/Legado)
-    $datasets = [];
-    if ($chart['is_multi_device']) {
-        $datasetsSql = "
-            SELECT cd.*, d.name as device_name
-            FROM chart_datasets cd
-            LEFT JOIN devices d ON cd.device_id = d.id
-            WHERE cd.chart_id = ?
-            ORDER BY cd.sort_order
-        ";
-        $datasetsStmt = $conn->prepare($datasetsSql);
-        $datasetsStmt->execute([$chart_id]);
-        $datasets = $datasetsStmt->fetchAll(PDO::FETCH_ASSOC);
-    } else {
+    // As variáveis ficam em chart_datasets também nos gráficos de uma variável
+    // só (com a cor escolhida); só os gráficos mais antigos, sem nenhuma linha
+    // lá, usam as colunas device_id/json_key da tabela charts
+    $datasetsSql = "
+        SELECT cd.*, d.name as device_name
+        FROM chart_datasets cd
+        LEFT JOIN devices d ON cd.device_id = d.id
+        WHERE cd.chart_id = ?
+        ORDER BY cd.sort_order
+    ";
+    $datasetsStmt = $conn->prepare($datasetsSql);
+    $datasetsStmt->execute([$chart_id]);
+    $datasets = $datasetsStmt->fetchAll(PDO::FETCH_ASSOC);
+    if (!$datasets) {
         // Fallback e retrocompatibilidade para gráficos simples que usam colunas da tabela principal
         $chartConfig = json_decode($chart['config'] ?? '{}', true);
         $datasets[] = [
@@ -95,93 +106,208 @@ try {
         ];
     }
 
-    // Sem período definido no gráfico (time_range 'all', o padrão), aplica uma
-    // janela dos últimos 30 dias em vez de agregar o histórico inteiro do
-    // dispositivo a cada carregamento. Isso importa mais aqui do que em outros
-    // endpoints porque o GROUP BY roda ANTES do LIMIT — ou seja, sem um bound
-    // de data o custo da query cresce com o volume TOTAL de dados já
-    // armazenados, não com o que de fato é exibido no gráfico.
-    $effective_date_start = $chart['date_start'];
-    $effective_date_end = $chart['date_end'];
-    if (empty($effective_date_start) && empty($effective_date_end)) {
-        $effective_date_start = date('Y-m-d H:i:s', strtotime('-30 days'));
+    // --- CACHE (depois da checagem de permissão: o resultado não depende de
+    // quem pede, mas só quem pode ver o gráfico chega aqui). A chave inclui a
+    // configuração do gráfico e das séries, então editar o gráfico invalida.
+    $cacheDir = sys_get_temp_dir() . '/ifscentral-graficos';
+    $cacheArq = $cacheDir . '/' . $chart_id . '-' . md5(json_encode([$chart, $datasets])) . '.json';
+    $cacheValido = fn() => is_file($cacheArq) && filemtime($cacheArq) > time() - GRAFICO_CACHE_TTL;
+    if ($cacheValido()) {
+        header('X-Cache: HIT');
+        readfile($cacheArq);
+        exit;
+    }
+    // Um cálculo por vez para cada gráfico: quem chega enquanto ele roda espera
+    // e usa o resultado, em vez de repetir a mesma consulta pesada
+    @mkdir($cacheDir, 0700, true);
+    $cacheTrava = @fopen($cacheDir . '/' . $chart_id . '.lock', 'c');
+    if ($cacheTrava) {
+        flock($cacheTrava, LOCK_EX);
+        clearstatcache(true, $cacheArq);
+        if ($cacheValido()) {
+            flock($cacheTrava, LOCK_UN);
+            header('X-Cache: HIT');
+            readfile($cacheArq);
+            exit;
+        }
     }
 
-    // 2. Mapeamento, Bucketing e extração dos pontos das séries
+    // Período do gráfico, em segundos desde 1970 (independe do fuso do PHP e do
+    // MySQL). Datas personalizadas têm prioridade; senão vale o botão escolhido
+    // ao criar o gráfico (24h, 7d, 30d), recalculado a cada carregamento para a
+    // janela acompanhar o tempo. "Todos" usa os últimos 30 dias, para não
+    // agregar o histórico inteiro do dispositivo a cada carregamento (o GROUP
+    // BY roda ANTES do LIMIT).
+    $now = time();
+    $range_start = null;
+    $range_end = null;
+    if (!empty($chart['date_start']) || !empty($chart['date_end'])) {
+        $range_start = !empty($chart['date_start']) ? strtotime($chart['date_start']) : null;
+        $range_end = !empty($chart['date_end']) ? strtotime($chart['date_end']) : null;
+    } else {
+        // "Todos": sem limite de data (antes eram só os últimos 30 dias, e um
+        // dispositivo parado há mais tempo deixava o gráfico em branco). O
+        // custo fica limitado pelos 2000 blocos mais recentes, abaixo.
+        $ranges = ['24h' => 86400, '7d' => 7 * 86400, '30d' => 30 * 86400];
+        $periodo = $ranges[$chart['time_range'] ?? 'all'] ?? null;
+        $range_start = $periodo ? $now - $periodo : null;
+    }
+
+    $device_ids = array_values(array_unique(array_map(function ($ds) {
+        return (int)$ds['device_id'];
+    }, $datasets)));
+
+    // Tamanho do bloco de agregação, pelo trecho que TEM dados: um dispositivo
+    // novo num gráfico de 30 dias tem pontos de minuto em minuto, não médias
+    // de 2 horas. Um bloco só para todas as séries, para que se alinhem.
+    $bucket_seconds = 60;
+    if ($device_ids) {
+        $spanSql = "SELECT MIN(UNIX_TIMESTAMP(created_at)), MAX(UNIX_TIMESTAMP(created_at)) FROM device_payloads
+                    WHERE device_id IN (" . implode(',', array_fill(0, count($device_ids), '?')) . ")";
+        $spanParams = $device_ids;
+        if ($range_start !== null) {
+            $spanSql .= " AND created_at >= FROM_UNIXTIME(?)";
+            $spanParams[] = $range_start;
+        }
+        if ($range_end !== null) {
+            $spanSql .= " AND created_at <= FROM_UNIXTIME(?)";
+            $spanParams[] = $range_end;
+        }
+        $spanStmt = $conn->prepare($spanSql);
+        $spanStmt->execute($spanParams);
+        [$first, $last] = $spanStmt->fetch(PDO::FETCH_NUM) ?: [null, null];
+        if ($first !== null) {
+            $span_hours = ((int)$last - (int)$first) / 3600;
+            if ($span_hours > 24 * 31) {        // mais de um mês -> 1 dia
+                $bucket_seconds = 86400;
+            } elseif ($span_hours > 24 * 7) {   // mais de 7 dias -> 1 hora
+                $bucket_seconds = 3600;
+            } elseif ($span_hours > 24) {       // mais de 1 dia -> 15 minutos
+                $bucket_seconds = 900;
+            } elseif ($span_hours > 6) {        // mais de 6 horas -> 5 minutos
+                $bucket_seconds = 300;
+            }
+        }
+    }
+
+    // 2. Extração dos pontos das séries
+    // Média de uma variável em cada bloco de tempo: [bloco => valor]
+    // Tabelas de valores já extraídos (ver core/Agregados.php), quando a cópia
+    // dos dados antigos já terminou: blocos de 1 h ou mais vêm das somas por
+    // hora; blocos menores, dos valores numéricos. Sem JSON em nenhum dos dois.
+    $usarAgregados = Agregados::prontos($conn);
+    $serie = function ($device_id, $var_name) use ($conn, $bucket_seconds, $range_start, $range_end, $usarAgregados) {
+        if ($usarAgregados) {
+            if ($bucket_seconds >= 3600) {
+                $sql = "SELECT FLOOR(hora * 3600 / ?) AS bucket, SUM(soma) / SUM(qtd) AS y
+                        FROM device_payload_hourly WHERE device_id = ? AND variavel = ?";
+                $params = [$bucket_seconds, $device_id, $var_name];
+                if ($range_start !== null) {
+                    $sql .= " AND hora >= FLOOR(? / 3600)";
+                    $params[] = $range_start;
+                }
+                if ($range_end !== null) {
+                    $sql .= " AND hora <= FLOOR(? / 3600)";
+                    $params[] = $range_end;
+                }
+            } else {
+                $sql = "SELECT FLOOR(UNIX_TIMESTAMP(created_at) / ?) AS bucket, AVG(valor) AS y
+                        FROM device_payload_values WHERE device_id = ? AND variavel = ?";
+                $params = [$bucket_seconds, $device_id, $var_name];
+                if ($range_start !== null) {
+                    $sql .= " AND created_at >= FROM_UNIXTIME(?)";
+                    $params[] = $range_start;
+                }
+                if ($range_end !== null) {
+                    $sql .= " AND created_at <= FROM_UNIXTIME(?)";
+                    $params[] = $range_end;
+                }
+            }
+            // Os 2000 blocos mais recentes, em ordem cronológica (como no caminho antigo)
+            $sql = "SELECT * FROM ($sql GROUP BY bucket ORDER BY bucket DESC LIMIT 2000) AS ultimos ORDER BY bucket ASC";
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+            $valores = [];
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+                if ($row['y'] !== null) {
+                    $valores[(int)$row['bucket']] = (float)$row['y'];
+                }
+            }
+            return $valores;
+        }
+
+        $data_sql = "
+            SELECT
+                MIN(FLOOR(UNIX_TIMESTAMP(dp.created_at) / ?)) AS bucket,
+                AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) AS DECIMAL(16,4))) AS y
+            FROM
+                device_payloads dp
+            WHERE
+                dp.device_id = ?
+                AND JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) REGEXP '^-?[0-9]+([.][0-9]+)?([eE][-+]?[0-9]+)?$'
+        ";
+        // Só valores numéricos: texto (ex.: "status": "ok") virava zero na média
+        $params = [$bucket_seconds, $var_name, $device_id, $var_name];
+        if ($range_start !== null) {
+            $data_sql .= " AND dp.created_at >= FROM_UNIXTIME(?)";
+            $params[] = $range_start;
+        }
+        if ($range_end !== null) {
+            $data_sql .= " AND dp.created_at <= FROM_UNIXTIME(?)";
+            $params[] = $range_end;
+        }
+        // Os 2000 blocos mais recentes, em ordem cronológica
+        $data_sql = "SELECT * FROM (" . $data_sql . "
+            GROUP BY FLOOR(UNIX_TIMESTAMP(dp.created_at) / ?)
+            ORDER BY bucket DESC
+            LIMIT 2000
+        ) AS ultimos ORDER BY bucket ASC";
+        $params[] = $bucket_seconds;
+
+        $stmt = $conn->prepare($data_sql);
+        $stmt->execute($params);
+        $valores = [];
+        foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $row) {
+            if ($row['y'] !== null) {
+                $valores[(int)$row['bucket']] = (float)$row['y'];
+            }
+        }
+        return $valores;
+    };
+    // Instante do bloco em ISO 8601 UTC: o navegador mostra no fuso local
+    $instante = fn($bucket) => gmdate('Y-m-d\TH:i:s\Z', $bucket * $bucket_seconds);
+
+    // Variável no eixo X (gráfico X-Y, ex.: temperatura x pressão) ou o tempo
+    // Só é X-Y o gráfico salvo com x_axis_var (opção "Outra variável"). Gráficos
+    // antigos tinham um campo de eixo por variável que não valia nada: os
+    // marcados com "X" continuam desenhados no tempo, como sempre foram.
+    $eixo_x = null;
+    foreach ($datasets as $dataset) {
+        if (!empty($chart['x_axis_var']) && ($dataset['axis'] ?? 'y') === 'x'
+            && preg_match('/^[a-zA-Z0-9_]+$/', $dataset['variable_name'])) {
+            $eixo_x = $dataset;
+        }
+    }
+    $valores_x = $eixo_x ? $serie($eixo_x['device_id'], $eixo_x['variable_name']) : null;
+
     $rendered_datasets = [];
     foreach ($datasets as $dataset) {
         $var_name = $dataset['variable_name'];
 
         // Proteção contra caminhos maliciosos ou injeção de caracteres no path do JSON
-        if (!preg_match('/^[a-zA-Z0-9_]+$/', $var_name)) {
+        if (!preg_match('/^[a-zA-Z0-9_]+$/', $var_name) || ($eixo_x && $dataset === $eixo_x)) {
             continue;
         }
 
-        // Determinar o intervalo do bucket (em segundos) com base no período efetivo
-        $bucket_seconds = 60; // Padrão: 1 minuto
-
-        if (!empty($effective_date_start)) {
-            $start = strtotime($effective_date_start);
-            $end = !empty($effective_date_end) ? strtotime($effective_date_end) : time();
-            $diff_hours = ($end - $start) / 3600;
-
-            if ($diff_hours > 720) {       // Mais de 30 dias -> buckets de 1 dia
-                $bucket_seconds = 86400;
-            } elseif ($diff_hours > 168) { // Mais de 7 dias -> buckets de 2 horas
-                $bucket_seconds = 7200;
-            } elseif ($diff_hours > 24) {  // Mais de 1 dia -> buckets de 30 minutos
-                $bucket_seconds = 1800;
-            } elseif ($diff_hours > 6) {   // Mais de 6 horas -> buckets de 5 minutos
-                $bucket_seconds = 300;
+        $data_points = [];
+        foreach ($serie($dataset['device_id'], $var_name) as $bucket => $valor) {
+            if ($eixo_x === null) {
+                $data_points[] = ['x' => $instante($bucket), 'y' => $valor];
+            } elseif (isset($valores_x[$bucket])) {
+                // Par de leituras do mesmo instante (mesmo bloco de tempo)
+                $data_points[] = ['x' => $valores_x[$bucket], 'y' => $valor, 't' => $instante($bucket)];
             }
         }
-
-        // Query com agrupamento temporal, retornando a HORA EXATA da leitura
-        // (MIN do bucket) e a média do valor no bucket
-        $data_sql = "
-            SELECT
-                MIN(dp.created_at) AS x,
-                AVG(CAST(JSON_UNQUOTE(JSON_EXTRACT(dp.payload, CONCAT('$.', ?))) AS DECIMAL(10,4))) AS y
-            FROM
-                device_payloads dp
-            WHERE
-                dp.device_id = ?
-                AND JSON_EXTRACT(dp.payload, CONCAT('$.', ?)) IS NOT NULL
-        ";
-
-        $params = [
-            $var_name,
-            $dataset['device_id'],
-            $var_name
-        ];
-
-        // Filtros temporais (do gráfico, ou a janela padrão de 30 dias acima)
-        if (!empty($effective_date_start)) {
-            $data_sql .= " AND dp.created_at >= ?";
-            $params[] = $effective_date_start;
-        }
-        if (!empty($effective_date_end)) {
-            $data_sql .= " AND dp.created_at <= ?";
-            $params[] = $effective_date_end;
-        }
-
-        // Agrupa pelos blocos de tempo calculados
-        $data_sql .= "
-            GROUP BY FLOOR(UNIX_TIMESTAMP(dp.created_at) / ?)
-            ORDER BY x ASC
-            LIMIT 2000
-        ";
-        $params[] = $bucket_seconds;
-
-        $data_stmt = $conn->prepare($data_sql);
-        $data_stmt->execute($params);
-        $data_points = $data_stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Garante a tipagem correta do valor numérico (útil após o AVG retornar string no PDO em alguns drivers)
-        foreach ($data_points as &$point) {
-            $point['y'] = $point['y'] !== null ? (float)$point['y'] : null;
-        }
-        unset($point);
 
         $rendered_datasets[] = [
             'id' => $dataset['id'],
@@ -191,19 +317,78 @@ try {
             'alias' => $dataset['alias'] ?? $var_name,
             'color' => $dataset['color'],
             'line_style' => $dataset['line_style'] ?? 'solid',
-            'axis' => $dataset['axis'] ?? 'y',
+            'axis' => 'y',
             'data' => $data_points,
             'data_count' => count($data_points)
         ];
     }
 
+    // Nada para desenhar: diz o porquê, para a página não mostrar um quadro em branco
+    $aviso = null;
+    if (!array_filter($rendered_datasets, fn($ds) => $ds['data_count'] > 0)) {
+        $nomes_periodo = ['24h' => 'nas últimas 24 horas', '7d' => 'nos últimos 7 dias', '30d' => 'nos últimos 30 dias'];
+        $periodo_txt = (!empty($chart['date_start']) || !empty($chart['date_end'])) ? 'no período escolhido'
+            : ($nomes_periodo[$chart['time_range'] ?? 'all'] ?? null);
+        foreach ($datasets as $dataset) {
+            if (!preg_match('/^[a-zA-Z0-9_]+$/', $dataset['variable_name'])) {
+                continue;
+            }
+            // A variável existe nas leituras, mas não é número?
+            $q = "SELECT COUNT(*) FROM device_payloads WHERE device_id = ? AND JSON_EXTRACT(payload, CONCAT('$.', ?)) IS NOT NULL";
+            $qp = [$dataset['device_id'], $dataset['variable_name']];
+            if ($range_start !== null) { $q .= " AND created_at >= FROM_UNIXTIME(?)"; $qp[] = $range_start; }
+            if ($range_end !== null) { $q .= " AND created_at <= FROM_UNIXTIME(?)"; $qp[] = $range_end; }
+            $st = $conn->prepare($q);
+            $st->execute($qp);
+            if ((int)$st->fetchColumn() > 0 && !$eixo_x) {
+                $aviso = "A variável \"{$dataset['variable_name']}\" não tem valores numéricos para desenhar.";
+                break;
+            }
+        }
+        if ($aviso === null) {
+            if ($eixo_x) {
+                $aviso = 'Nenhum par de leituras no mesmo instante entre a variável do eixo X e as do eixo Y'
+                    . ($periodo_txt ? " $periodo_txt." : '.');
+            } else {
+                $aviso = $periodo_txt ? "Sem leituras $periodo_txt." : 'Ainda não há leituras para este gráfico.';
+            }
+        }
+    }
+
     // 3. Resposta padronizada com o contrato unificado
     http_response_code(200);
-    echo json_encode([
+    $saida = json_encode([
         'success' => true,
         'chart' => $chart,
-        'datasets' => $rendered_datasets
+        'datasets' => $rendered_datasets,
+        'bucket_seconds' => $bucket_seconds,
+        'aviso' => $aviso,
+        // 'tempo': x é o instante; 'xy': x é o valor da variável abaixo
+        'modo' => $eixo_x ? 'xy' : 'tempo',
+        'eixo_x' => $eixo_x ? [
+            'variable_name' => $eixo_x['variable_name'],
+            'alias' => $eixo_x['alias'] ?? $eixo_x['variable_name'],
+            'device_name' => $eixo_x['device_name'] ?? null,
+        ] : null
     ]);
+    // Grava o cache de forma atômica (arquivo temporário + rename) e apaga as
+    // versões de antes de uma edição do gráfico
+    if ($saida !== false && is_dir($cacheDir)) {
+        foreach (glob($cacheDir . '/' . $chart_id . '-*.json') ?: [] as $antigo) {
+            if ($antigo !== $cacheArq) {
+                @unlink($antigo);
+            }
+        }
+        $tmp = $cacheArq . '.' . getmypid() . '.tmp';
+        if (@file_put_contents($tmp, $saida) !== false) {
+            @rename($tmp, $cacheArq);
+        }
+    }
+    if (!empty($cacheTrava)) {
+        flock($cacheTrava, LOCK_UN);
+    }
+    header('X-Cache: MISS');
+    echo $saida;
     exit;
 
     } catch (PDOException $e) {

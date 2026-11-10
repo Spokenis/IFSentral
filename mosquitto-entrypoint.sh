@@ -70,10 +70,15 @@ INTERVALO="${MQTT_RELOAD_INTERVAL:-2}"
         atual="$(assinatura)"
         if [ "$atual" != "$ultima" ]; then
             # Espera os arquivos pararem de mudar: senhas e ACL são gravadas em
-            # dois passos, e recarregar entre eles aplicaria só metade da mudança
+            # dois passos, e recarregar entre eles aplicaria só metade da mudança.
+            # No máximo 5 s: num cadastro em sequência (ex.: 200 dispositivos
+            # pelo preparar_cenario.py) os arquivos mudam o tempo todo, e sem
+            # teto nenhum dispositivo novo conectava até o último ser criado.
             sleep 1
-            while [ "$(assinatura)" != "$atual" ]; do
+            espera=0
+            while [ "$(assinatura)" != "$atual" ] && [ "$espera" -lt 5 ]; do
                 atual="$(assinatura)"
+                espera=$((espera + 1))
                 sleep 1
             done
             ajustar_permissoes

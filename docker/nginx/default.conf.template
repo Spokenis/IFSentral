@@ -11,6 +11,11 @@
 # abaixo faz o nginx perceber isso sozinho
 resolver 127.0.0.11 valid=5s ipv6=off;
 
+# Não anuncia a versão do nginx (cabeçalho Server e páginas de erro), nem a do
+# PHP que o Apache manda em X-Powered-By
+server_tokens off;
+proxy_hide_header X-Powered-By;
+
 upstream ifsentral_web {
     zone ifsentral_web 64k;
     server web:80 resolve max_fails=1 fail_timeout=5s;
@@ -21,7 +26,26 @@ upstream ifsentral_web {
 server {
     listen 80;
     server_name _;
-    return 301 https://$host:${HTTPS_PORT}$request_uri;
+
+    # Exceção: envio de leituras pelos dispositivos. Um POST redirecionado com
+    # 301 não é refeito pelo HTTPClient do ESP32/ESP8266 (a leitura se perdia),
+    # e placas sem TLS enviam por http://IP:8080 na rede local — mesmo nível de
+    # exposição do MQTT na 1883. O .htaccess tem a exceção correspondente.
+    location ~ ^/(src/)?api/enviar(-payload|_payload\.php)$ {
+        proxy_pass http://ifsentral_web;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto http;
+        proxy_next_upstream error timeout http_502 http_503;
+        proxy_next_upstream_tries 2;
+        proxy_connect_timeout 3s;
+    }
+
+    location / {
+        return 301 https://$host:${HTTPS_PORT}$request_uri;
+    }
 }
 
 server {
@@ -32,9 +56,34 @@ server {
     ssl_certificate     /etc/ssl/certs/ifsentral-chain.crt;
     ssl_certificate_key /etc/ssl/private/ifsentral.key;
     ssl_protocols       TLSv1.2 TLSv1.3;
+    # Só cifras com sigilo futuro (ECDHE) e AEAD (GCM/ChaCha20) — perfil
+    # "intermediate" da Mozilla. O testssl de 09/11/2026 achou CBC (LUCKY13) e
+    # troca de chave RSA estática. ESP32 (mbedTLS) e ESP8266 (BearSSL) negociam
+    # ECDHE-RSA-AES128-GCM-SHA256, que continua na lista.
+    ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305;
+    ssl_prefer_server_ciphers off;
 
     # Foto de perfil vai até 5 MB
     client_max_body_size 8m;
+
+    # Compressão: a resposta de um gráfico (~235 KB de JSON) cai para ~30 KB,
+    # e as bibliotecas (AdminLTE, SheetJS...) para uma fração. Não há segredo
+    # junto de texto controlado pelo usuário na mesma resposta (o token CSRF
+    # vem sozinho de /api/obter-csrf-token), então o ataque BREACH não se aplica.
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types application/json application/javascript text/css text/plain image/svg+xml application/xml;
+
+    # Segunda barreira (a primeira é o .htaccess): arquivos internos nunca
+    # chegam ao Apache — .env, dump do banco, logs, scripts, configuração
+    location ~ (^|/)\.(?!well-known/) { return 404; }
+    location ~ ^/(vendor|tests|logs|docs|backups|docker|manutencao|node_modules)(/|$) { return 404; }
+    location ~ ^/src/(config|core|db|mqtt|includes|docs)(/|$) { return 404; }
+    location ~ ^/[^/]+\.(md|json|lock|xml|sql|log|sh|ya?ml|conf|template|pdf|dist|env|bak|ini|txt)$ { return 404; }
+    location ~ ^/(Dockerfile|bootstrap\.php|system-check\.php|setup-security-tables\.php)$ { return 404; }
 
     location / {
         proxy_pass http://ifsentral_web;
@@ -48,6 +97,22 @@ server {
         proxy_set_header X-Forwarded-Proto https;
 
         # Se um contêiner web estiver reiniciando, tenta o outro
+        proxy_next_upstream error timeout http_502 http_503;
+        proxy_next_upstream_tries 2;
+        proxy_connect_timeout 3s;
+        proxy_read_timeout 120s;
+    }
+
+    # Única página que traz o token CSRF no próprio HTML (formulário do rate
+    # limiting): sem compressão, para nunca haver segredo + compressão juntos
+    location = /admin/rate-limiting {
+        gzip off;
+        proxy_pass http://ifsentral_web;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "";
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
         proxy_next_upstream error timeout http_502 http_503;
         proxy_next_upstream_tries 2;
         proxy_connect_timeout 3s;

@@ -10,12 +10,42 @@ RewriteEngine On
 # docker/apache/ifsentral-ssl.conf) em vez de reaproveitar a porta do
 # Host: original — HTTP e HTTPS podem estar mapeados a portas diferentes
 # no host (ex.: 8080/8443 em ambientes de teste local).
+#
+# Exceção: o endpoint de envio dos dispositivos. Um POST redirecionado com 301
+# não é refeito pelo HTTPClient do ESP32/ESP8266 (o firmware recebia 301 e a
+# leitura se perdia), e placas sem TLS precisam enviar por http://IP:8080 na
+# rede local — o mesmo nível de exposição do MQTT na 1883.
 RewriteCond %{HTTPS} !=on
 RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteCond %{REQUEST_URI} !^/(src/)?api/enviar(-payload|_payload\.php)$
 RewriteCond %{HTTP_HOST} ^([^:]+)
 RewriteRule ^ https://%1:%{ENV:HTTPS_PORT}%{REQUEST_URI} [L,R=301]
 
 Options -Indexes
+
+##########################################
+# Bloqueia acesso direto a código, configuração e arquivos internos.
+# O teste de segurança de 09/11/2026 baixou pelo navegador o .env (senhas do
+# banco e do broker), o docker-compose.yml, o dump do banco, o log do worker e
+# os scripts de manutenção, e executou scripts de linha de comando
+# (system-check.php, setup-security-tables.php). Só fica público o que o site
+# usa: as rotas abaixo, /assets/, /uploads/profile/, /favicon.ico e o envio
+# antigo dos dispositivos (/src/api/enviar_payload.php).
+# (REDIRECT_STATUS vazio = pedido original do navegador, não uma reescrita
+# interna feita pelas regras de URL limpa.)
+##########################################
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule ^src/api/enviar_payload\.php$ - [L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule ^(src|vendor|tests|logs|docs|backups|docker|manutencao|node_modules)(/|$) - [R=404,L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule ^uploads/(?!profile/[^/]+$) - [R=404,L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule (^|/)\.(?!well-known/) - [R=404,L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule ^(?!index\.php$)[^/]+\.php$ - [R=404,L]
+RewriteCond %{ENV:REDIRECT_STATUS} ^$
+RewriteRule (^Dockerfile$|\.(md|json|lock|xml|sql|log|sh|ya?ml|conf|template|pdf|dist|env|bak|ini|txt)$) - [R=404,L]
 
 ##########################################
 # URLs limpas — mapeia caminho público (sem pasta/extensão) para o arquivo
@@ -98,6 +128,8 @@ RewriteRule ^api/deletar-foto-perfil$ src/api/deletar_foto_perfil.php [L,QSA]
 RewriteRule ^api/deletar-projeto$ src/api/deletar_projeto.php [L,QSA]
 RewriteRule ^api/enviar-convite$ src/api/enviar_convite.php [L,QSA]
 RewriteRule ^api/enviar-payload$ src/api/enviar_payload.php [L,QSA]
+# Endereço usado pela documentação e pelos firmwares antigos (sem esta linha dava 404)
+RewriteRule ^api/enviar_payload\.php$ src/api/enviar_payload.php [L,QSA]
 RewriteRule ^api/enviar-solicitacao-participacao$ src/api/enviar_solicitacao_participacao.php [L,QSA]
 RewriteRule ^api/exportar-dados-projeto$ src/api/exportar_dados_projeto.php [L,QSA]
 RewriteRule ^api/expulsar-participante$ src/api/expulsar_participante.php [L,QSA]
@@ -123,6 +155,8 @@ RewriteRule ^api/salvar-grafico-avancado$ src/api/salvar_grafico_avancado.php [L
 RewriteRule ^api/solicitacoes-perfil$ src/api/solicitacoes_perfil.php [L,QSA]
 RewriteRule ^api/ttn-webhook$ src/api/ttn_webhook.php [L,QSA]
 RewriteRule ^api/saude$ src/api/saude.php [L,QSA]
+RewriteRule ^api/documentacao$ src/api/documentacao.php [L,QSA]
+RewriteRule ^api/preparar-graficos$ src/api/preparar_graficos.php [L,QSA]
 RewriteRule ^api/ttn-configuracao$ src/api/ttn_configuracao.php [L,QSA]
 RewriteRule ^api/ttn-dispositivo$ src/api/ttn_dispositivo.php [L,QSA]
 RewriteRule ^api/ttn-sincronizar$ src/api/ttn_sincronizar.php [L,QSA]
@@ -148,9 +182,27 @@ RewriteRule ^api/upload-foto-perfil$ src/api/upload_foto_perfil.php [L,QSA]
     Header always set X-Download-Options "noopen"
     Header always set X-Permitted-Cross-Domain-Policies "none"
 
-    # Content Security Policy - permissive for CDNs (Google Fonts, Cloudflare, JSDelivr)
-    Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; connect-src 'self' ws: wss:;"
+    # Content Security Policy. Bibliotecas e fontes ficam em src/assets/vendor
+    # (08/11/2026): nenhum CDN externo é necessário nem permitido
+    Header always set Content-Security-Policy "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; font-src 'self' data:; connect-src 'self' ws: wss:;"
 </IfModule>
 
 # If allowed, hide directory listings and disable execution in uploads by placing
 # a more restrictive .htaccess inside uploads/ (already added for uploads/profile)
+
+# JS e CSS do próprio sistema: o navegador confere com o servidor antes de usar
+# a cópia guardada (o servidor responde 304, sem reenviar, se não mudou). Sem
+# isto, depois de uma atualização o navegador podia seguir com o arquivo antigo.
+<IfModule mod_headers.c>
+    <FilesMatch "\.(js|css)$">
+        Header set Cache-Control "no-cache"
+    </FilesMatch>
+</IfModule>
+
+# Bibliotecas de src/assets/vendor (08/11/2026): a versão faz parte do caminho e
+# o arquivo nunca muda, então o navegador guarda por 1 ano sem perguntar de novo
+<IfModule mod_headers.c>
+    <If "%{REQUEST_URI} =~ m#/assets/vendor/#">
+        Header set Cache-Control "public, max-age=31536000, immutable"
+    </If>
+</IfModule>

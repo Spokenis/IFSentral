@@ -102,9 +102,11 @@ try {
         
         // Atualiza no banco
         $updateStmt = $conn->prepare(
-            "UPDATE mqtt_credentials SET mqtt_password_hash = ?, updated_at = NOW() WHERE id = ?"
+            // Grava a senha junto com o hash: só o hash deixava a página do
+            // dispositivo mostrando uma senha que o broker recusava
+            "UPDATE mqtt_credentials SET mqtt_password = ?, mqtt_password_hash = ?, updated_at = NOW() WHERE id = ?"
         );
-        $updateStmt->execute([$hash, $cred['id']]);
+        $updateStmt->execute([$password, $hash, $cred['id']]);
         
         // Adiciona ao arquivo passwd
         $passwd_content .= "{$username}:{$hash}\n";

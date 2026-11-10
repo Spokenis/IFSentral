@@ -51,6 +51,15 @@ function validate_chart_datasets(array $datasets) {
             return 'Estilo de linha ou eixo inválido.';
         }
     }
+    // Eixo X: o tempo (nenhuma variável no X) ou UMA variável, contra a qual
+    // as do eixo Y são plotadas (ex.: temperatura x pressão)
+    $no_x = count(array_filter($datasets, fn($ds) => $ds->axis === 'x'));
+    if ($no_x > 1) {
+        return 'Só uma variável pode ficar no eixo X.';
+    }
+    if ($no_x === 1 && count($datasets) < 2) {
+        return 'Com uma variável no eixo X, adicione pelo menos uma no eixo Y.';
+    }
     return null;
 }
 ?>

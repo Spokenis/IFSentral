@@ -1,0 +1,93 @@
+/*
+ * Cartões "card-outline" com cabeçalho verde. O estilo outline do AdminLTE foi
+ * feito para cabeçalho branco com texto escuro, mas as páginas pintam o
+ * cabeçalho de verde: o texto ficava escuro sobre o verde, o botão verde sumia
+ * no fundo, e título e botões (alinhados por float) ficavam desnivelados.
+ */
+.card-primary.card-outline > .card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+    color: #fff;
+}
+.card-primary.card-outline > .card-header::after {
+    display: none; /* clearfix do float, desnecessário com flex */
+}
+.card-primary.card-outline > .card-header > .card-title {
+    float: none;
+    margin: 0;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+.card-primary.card-outline > .card-header > .card-tools {
+    float: none;
+    margin: 0 0 0 auto;
+}
+.card-primary.card-outline > .card-header > .form-control {
+    flex: 1 1 auto;
+}
+/* Botão principal sobre o verde: branco com texto verde */
+.card-primary.card-outline > .card-header .card-tools .btn-primary {
+    background-color: #fff !important;
+    border-color: #fff !important;
+    color: #1B7D3D !important;
+    font-weight: 600;
+}
+.card-primary.card-outline > .card-header .card-tools .btn-primary:hover,
+.card-primary.card-outline > .card-header .card-tools .btn-primary:focus {
+    background-color: #e6f2ea !important;
+    border-color: #e6f2ea !important;
+    color: #0D4620 !important;
+}
+/* Com cabeçalho verde, a borda verde do topo do outline sobra: as duas curvas
+   dos cantos deixavam um fio branco entre elas */
+.card-primary.card-outline:has(> .card-header) {
+    border-top: 0 !important;
+}
+
+/* Menu do usuário no topo: sino, avatar, nome e perfil na mesma linha */
+.main-header .navbar-nav .nav-link#notif-bell-link,
+.main-header .navbar-nav .navbar-user-avatar {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+.main-header .navbar-user-avatar {
+    gap: .5rem;
+}
+.main-header .navbar-user-avatar .navbar-avatar-img,
+.main-header .navbar-user-avatar .fa-user-circle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    object-fit: cover;
+    font-size: 30px;
+    line-height: 1;
+}
+.main-header .navbar-user-name {
+    line-height: 1;
+}
+.main-header .navbar-perfil-badge {
+    padding: .3em .5em;
+    font-size: .68rem;
+    line-height: 1;
+}
+
+/* Gráfico sem dados: o motivo no lugar do quadro em branco */
+.aviso-grafico {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    min-height: 220px;
+    padding: 1rem;
+    color: #6c757d;
+    text-align: center;
+}
+.aviso-grafico i {
+    font-size: 2rem;
+    color: #c3e0cc;
+}

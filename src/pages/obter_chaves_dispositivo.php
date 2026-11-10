@@ -51,8 +51,9 @@ try {
         exit;
     }
     
-    // Pega TODOS os payloads do dispositivo (não apenas o último)
-    $sql_payload = "SELECT payload FROM device_payloads WHERE device_id = ? ORDER BY id ASC";
+    // Variáveis das 500 leituras mais recentes: ler o histórico inteiro a cada
+    // escolha de dispositivo ficava lento com meses de dados
+    $sql_payload = "SELECT payload FROM device_payloads WHERE device_id = ? ORDER BY id DESC LIMIT 500";
     $stmt_payload = $conn->prepare($sql_payload);
     $stmt_payload->execute([$device_id]);
     $payloads = $stmt_payload->fetchAll(PDO::FETCH_COLUMN);

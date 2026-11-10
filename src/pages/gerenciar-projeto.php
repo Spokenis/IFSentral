@@ -51,10 +51,10 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gerenciar Projeto | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/css/select2.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/select2/4.1.0-rc.0/css/select2.min.css">
   
   <style>
       :root {
@@ -108,6 +108,23 @@ try {
       .card-primary .card-header {
         background-color: var(--ifsc-primary) !important;
       }
+      /* A regra acima pinta de verde também os cartões dentro das abas; o texto
+         deles ficava escuro e o botão verde sumia no fundo */
+      .card-primary .card-header,
+      .card-primary .card-header .card-title {
+        color: #fff;
+      }
+      /* Título e botões do cabeçalho na mesma altura (o float os desalinhava) */
+      .tab-pane .card-header:has(> .card-tools) { display: flex; align-items: center; }
+      .tab-pane .card-header:has(> .card-tools)::after { display: none; }
+      .tab-pane .card-header:has(> .card-tools) > .card-title { float: none; margin: 0; }
+      .tab-pane .card-header:has(> .card-tools) > .card-tools { float: none; margin: 0 0 0 auto; }
+      .card-primary .card-header .card-tools .btn-primary {
+        background-color: #fff !important;
+        border-color: #fff !important;
+        color: var(--ifsc-primary) !important;
+        font-weight: 600;
+      }
       
       .card-primary {
         border-top-color: var(--ifsc-primary) !important;
@@ -124,20 +141,56 @@ try {
         margin-bottom: 0.4rem;
       }
 
-      /* Ajuste de Altura e Borda do Select2 para alinhar com inputs padrão */
-      .select2-container .select2-selection--single {
-        height: 38px !important;
+      /* Select2 com a mesma altura, borda e recuo dos outros campos (o AdminLTE
+         soma o próprio padding ao do Select2 e o texto ficava recuado) */
+      .select2-container--default .select2-selection--single {
+        height: calc(2.25rem + 2px) !important;
+        padding: 0 .75rem !important;
         border: 1px solid #ced4da !important;
-        border-radius: 0.25rem !important;
+        border-radius: .25rem !important;
         box-shadow: none !important;
       }
       .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 36px !important;
+        padding: 0 1.5rem 0 0 !important;
+        line-height: calc(2.25rem) !important;
         color: #495057 !important;
-        padding-left: 12px !important;
       }
       .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 36px !important;
+        top: 0 !important;
+        right: .5rem !important;
+        height: calc(2.25rem + 2px) !important;
+      }
+      .select2-container--default.select2-container--focus .select2-selection--single,
+      .select2-container--default.select2-container--open .select2-selection--single {
+        border-color: #80bdff !important;
+      }
+      .select2-container--default .select2-results__option--highlighted[aria-selected] {
+        background-color: var(--ifsc-primary) !important;
+      }
+      #form-grafico select.form-control:disabled {
+        background-color: #f8f9fa;
+        color: #6c757d;
+      }
+      /* Campo de cor: amostra arredondada em vez de uma barra grossa */
+      #variable-color {
+        padding: .3rem;
+        cursor: pointer;
+      }
+      #variable-color::-webkit-color-swatch-wrapper { padding: 0; }
+      #variable-color::-webkit-color-swatch { border: 0; border-radius: .2rem; }
+      #variable-color::-moz-color-swatch { border: 0; border-radius: .2rem; }
+      /* Cartões dos gráficos salvos: cabeçalho claro dentro da seção verde */
+      #graficos-salvos-container .card .card-header {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #e3e7ea !important;
+      }
+      #graficos-salvos-container .card-header h5 { color: #343a40; font-size: 1.05rem; }
+      #graficos-salvos-container .card-header h5 i { color: var(--ifsc-primary); }
+      .aviso-preview {
+        margin: .5rem 0 0;
+        color: #6c757d;
+        font-size: .85rem;
+        text-align: center;
       }
       
       /* Estilos para formulário de gráficos */
@@ -245,6 +298,10 @@ try {
         <div class="row mb-2">
           <div class="col-sm-6">
             <h1 id="project-title" style="display: inline-block; margin-right: 15px;">Carregando projeto...</h1>
+            <span class="badge badge-light border align-middle mr-2" style="font-size: .95rem;" title="ID do projeto: vai no tópico MQTT dos dispositivos">
+              ID <span id="project-id-valor"><?php echo $project_id_from_url; ?></span>
+              <button type="button" class="btn btn-link btn-sm p-0 ml-1 btn-copiar-texto" data-texto="<?php echo $project_id_from_url; ?>" title="Copiar o ID do projeto"><i class="fas fa-copy"></i></button>
+            </span>
             <span id="project-tags-container"></span> 
             <p class="text-muted">Retornando de <a href="/meus-projetos">Meus Projetos</a></p>
           </div>
@@ -257,12 +314,12 @@ try {
         <div class="card card-primary card-tabs">
           <div class="card-header p-0 pt-1">
             <ul class="nav nav-tabs" id="project-tabs" role="tablist">
-              <li class="nav-item"><a class="nav-link active" id="tab-geral-tab" data-toggle="pill" href="#tab-geral" role="tab"><i class="fas fa-chart-line mr-1"></i>Visão Geral</a></li>
-              <li class="nav-item"><a class="nav-link" id="tab-graficos-tab" data-toggle="pill" href="#tab-graficos" role="tab"><i class="fas fa-chart-bar mr-1"></i>Gráficos</a></li>
-              <li class="nav-item"><a class="nav-link" id="tab-sensores-tab" data-toggle="pill" href="#tab-sensores" role="tab"><i class="fas fa-microchip mr-1"></i>Dispositivos</a></li>
-              <li class="nav-item"><a class="nav-link" id="tab-participantes-tab" data-toggle="pill" href="#tab-participantes" role="tab"><i class="fas fa-users mr-1"></i>Participantes</a></li>
-              <li class="nav-item"><a class="nav-link" id="tab-solicitacoes-tab" data-toggle="pill" href="#tab-solicitacoes" role="tab"><i class="fas fa-inbox mr-1"></i>Solicitações <span class="badge badge-warning" id="badge-solicitacoes" style="display: none;">0</span></a></li>
-              <li class="nav-item"><a class="nav-link" id="tab-config-tab" data-toggle="pill" href="#tab-config" role="tab"><i class="fas fa-cog mr-1"></i>Configurações</a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link active" id="tab-geral-tab" data-toggle="pill" href="#tab-geral" role="tab"><i class="fas fa-chart-line mr-1"></i>Visão Geral</a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link" id="tab-graficos-tab" data-toggle="pill" href="#tab-graficos" role="tab"><i class="fas fa-chart-bar mr-1"></i>Gráficos</a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link" id="tab-sensores-tab" data-toggle="pill" href="#tab-sensores" role="tab"><i class="fas fa-microchip mr-1"></i>Dispositivos</a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link" id="tab-participantes-tab" data-toggle="pill" href="#tab-participantes" role="tab"><i class="fas fa-users mr-1"></i>Participantes</a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link" id="tab-solicitacoes-tab" data-toggle="pill" href="#tab-solicitacoes" role="tab"><i class="fas fa-inbox mr-1"></i>Solicitações <span class="badge badge-warning" id="badge-solicitacoes" style="display: none;">0</span></a></li>
+              <li class="nav-item" role="presentation"><a class="nav-link" id="tab-config-tab" data-toggle="pill" href="#tab-config" role="tab"><i class="fas fa-cog mr-1"></i>Configurações</a></li>
             </ul>
           </div>
           <div class="card-body">
@@ -286,6 +343,8 @@ try {
                         <div class="row">
                           <div class="col-md-6">
                             <p><strong>Nome:</strong> <span id="geral-proj-name">Carregando...</span></p>
+                            <p><strong>ID do projeto:</strong> <code><?php echo $project_id_from_url; ?></code><br>
+                              <small class="text-muted">Usado no tópico MQTT: <code>mqtt/projects/<?php echo $project_id_from_url; ?>/devices/ID_DO_DISPOSITIVO</code> — o tópico completo de cada dispositivo está na aba <strong>Dispositivos</strong>.</small></p>
                             <p><strong>Descrição:</strong></p>
                             <p id="geral-proj-desc" style="font-style: italic;">Carregando...</p>
                           </div>
@@ -346,7 +405,7 @@ try {
                               <button type="button" class="btn btn-outline-primary time-range-btn" data-range="24h">Últimas 24h</button>
                               <button type="button" class="btn btn-outline-primary time-range-btn" data-range="7d">7 dias</button>
                               <button type="button" class="btn btn-outline-primary time-range-btn" data-range="30d">30 dias</button>
-                              <button type="button" class="btn btn-outline-primary time-range-btn" data-range="all">Todos</button>
+                              <button type="button" class="btn btn-outline-primary time-range-btn active" data-range="all">Todos</button>
                             </div>
                           </div>
                           
@@ -362,7 +421,30 @@ try {
                           </div>
                           
                           <hr class="my-4">
-                          
+
+                          <div class="form-group">
+                            <label>Eixo horizontal (X)</label>
+                            <div class="btn-group d-flex" role="group" id="modo-eixo-x">
+                              <button type="button" class="btn btn-outline-primary w-100 active" data-modo="tempo"><i class="far fa-clock mr-1"></i> Tempo</button>
+                              <button type="button" class="btn btn-outline-primary w-100" data-modo="variavel"><i class="fas fa-ruler-horizontal mr-1"></i> Outra variável</button>
+                            </div>
+                          </div>
+                          <div class="form-row" id="eixo-x-campos" style="display: none;">
+                            <div class="form-group col-md-6">
+                              <label for="x-device">Dispositivo do eixo X</label>
+                              <select id="x-device" class="form-control">
+                                <option value="">-- Escolha um dispositivo --</option>
+                              </select>
+                            </div>
+                            <div class="form-group col-md-6">
+                              <label for="x-variable">Variável do eixo X</label>
+                              <select id="x-variable" class="form-control" disabled>
+                                <option value="">Selecione um dispositivo</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <label class="d-block mb-2" style="font-weight: 600;">Eixo vertical (Y)</label>
                           <div class="form-group">
                             <label for="select-device">Dispositivo</label>
                             <select id="select-device" class="form-control select2" style="width: 100%;">
@@ -370,29 +452,22 @@ try {
                             </select>
                           </div>
                           
-                          <div class="form-group">
-                            <label for="select-variable">Variável</label>
-                            <select id="select-variable" class="form-control" disabled>
-                              <option value="">-- Carregando opções --</option>
-                            </select>
-                          </div>
-                          
                           <div class="form-row">
-                            <div class="form-group col-md-6">
-                              <label for="variable-axis">Eixo de Plotagem</label>
-                              <select id="variable-axis" class="form-control">
-                                <option value="y">Y (Valores / Medições)</option>
-                                <option value="x">X (Tempo / Categoria)</option>
+                            <div class="form-group col-9">
+                              <label for="select-variable">Variável</label>
+                              <select id="select-variable" class="form-control" disabled>
+                                <option value="">Selecione um dispositivo</option>
                               </select>
                             </div>
-                            <div class="form-group col-md-6">
-                              <label for="variable-color">Cor da Linha</label>
-                              <input type="color" id="variable-color" class="form-control p-1" value="#1B7D3D" style="height: 38px;">
+                            <div class="form-group col-3">
+                              <label for="variable-color">Cor</label>
+                              <input type="color" id="variable-color" class="form-control" value="#1B7D3D">
                             </div>
                           </div>
-                          
-                          <button type="button" class="btn btn-info btn-block mt-3" id="btn-add-dataset">
-                            <i class="fas fa-plus mr-2"></i> Adicionar Dataset
+                          <small class="form-text text-muted mt-n2 mb-3" id="dica-eixo">O tempo fica no eixo horizontal; cada variável vira uma linha (ou barra) no gráfico.</small>
+
+                          <button type="button" class="btn btn-primary btn-block" id="btn-add-dataset">
+                            <i class="fas fa-plus mr-2"></i> Adicionar ao gráfico
                           </button>
                           
                         </div>
@@ -409,7 +484,7 @@ try {
                         <div id="preview-message" class="preview-chart">
                           <div class="text-center text-muted">
                             <p><i class="fas fa-chart-line fa-3x mb-3"></i></p>
-                            <p>Adicione datasets para visualizar preview</p>
+                            <p>Adicione variáveis para ver a prévia</p>
                           </div>
                         </div>
                       </div>
@@ -417,10 +492,10 @@ try {
                     
                     <div class="card">
                       <div class="card-header bg-info">
-                        <h3 class="card-title">Datasets Adicionados</h3>
+                        <h3 class="card-title">Variáveis no gráfico</h3>
                       </div>
                       <div class="card-body" id="datasets-list">
-                        <p class="text-muted">Nenhum dataset adicionado ainda.</p>
+                        <p class="text-muted">Nenhuma variável adicionada ainda.</p>
                       </div>
                     </div>
                   </div>
@@ -453,9 +528,9 @@ try {
                   </div>
                   <div class="card-body table-responsive p-0">
                     <table class="table table-hover">
-                      <thead><tr><th>Nome</th><th>Criado por</th><th>ID</th><th>Ações</th></tr></thead>
+                      <thead><tr><th>Nome</th><th>Criado por</th><th>ID</th><th>Tópico MQTT</th><th>Ações</th></tr></thead>
                       <tbody id="sensores-tbody">
-                        <tr><td colspan="4" style="text-align: center;">Carregando dispositivos...</td></tr>
+                        <tr><td colspan="5" style="text-align: center;">Carregando dispositivos...</td></tr>
                       </tbody>
                     </table>
                   </div>
@@ -620,7 +695,7 @@ try {
                       </div>
                       <div class="card-body">
                         <p class="text-muted">A ponte MQTT (contêiner <code>ttn-bridge</code>) recebe os uplinks da aplicação em tempo real, e a <strong>Storage Integration</strong> recupera o que chegar enquanto a ponte estiver parada (o TTN guarda os uplinks por 24 horas). Nos dois casos é o servidor que se conecta ao TTN — funciona mesmo que o TTN não consiga acessar este servidor.</p>
-                        <p class="text-muted small mb-3">No console do TTN: ative a Storage Integration da aplicação (<em>Integrations → Storage Integration</em>), configure um <em>payload formatter</em> para que os uplinks tenham <code>decoded_payload</code> e crie uma chave de API com o direito <em>Read application traffic</em>. Depois, informe o ID do TTN na página de cada dispositivo.</p>
+                        <p class="text-muted small mb-3">No console do TTN: ative o <em>Message storage</em> da aplicação (menu lateral, abaixo de <em>Webhooks</em>; antigo <em>Storage Integration</em>), configure um <em>payload formatter</em> para que os uplinks tenham <code>decoded_payload</code> e crie uma chave de API com o direito <em>Read application traffic</em>. Depois, informe o ID do TTN na página de cada dispositivo.</p>
                         <form id="form-ttn">
                           <div class="form-row">
                             <div class="form-group col-md-4">
@@ -709,15 +784,16 @@ try {
 </script>
 <script src="/assets/js/fetch-helpers.js"></script>
 <script src="/assets/js/profile-picture-helper.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/js/grafico-xy.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/input-limits.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0-rc.0/js/select2.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/chart.js/4.6.1/chart.umd.min.js"></script>
+<script src="/assets/vendor/hammerjs/2.0.8/hammer.min.js"></script>
+<script src="/assets/vendor/chartjs-plugin-zoom/2.0.1/chartjs-plugin-zoom.min.js"></script>
+<script src="/assets/vendor/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="/assets/vendor/select2/4.1.0-rc.0/js/select2.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 
 <script>
   $(function () {
@@ -858,7 +934,7 @@ try {
             sensoresTbody.innerHTML = ''; 
             
             if (projectDevicesList.length === 0) {
-                sensoresTbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">Nenhum dispositivo cadastrado.</td></tr>';
+                sensoresTbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Nenhum dispositivo cadastrado.</td></tr>';
             } else {
                 projectDevicesList.forEach(device => {
                     const row = sensoresTbody.insertRow();
@@ -866,11 +942,16 @@ try {
                         <td>${escapeHtml(device.name)}</td>
                         <td>${escapeHtml(device.user_username)}</td>
                         <td><code>${device.id}</code></td>
+                        <td class="text-nowrap"><code>mqtt/projects/${PROJECT_ID}/devices/${device.id}</code>
+                            <button type="button" class="btn btn-link btn-sm p-0 ml-1 btn-copiar-texto" data-texto="mqtt/projects/${PROJECT_ID}/devices/${device.id}" title="Copiar o tópico"><i class="fas fa-copy"></i></button></td>
                         <td>
                             <a href="/dispositivo?id=${device.id}&project_id=${PROJECT_ID}" class="btn btn-sm btn-info"><i class="fas fa-cog mr-1"></i>Gerenciar</a> 
-                            <a href="#" class="btn btn-sm btn-danger"><i class="fas fa-trash mr-1"></i>Remover</a>
+                            <button type="button" class="btn btn-sm btn-danger btn-remover-dispositivo" data-id="${device.id}" data-nome="${escapeHtml(device.name)}"><i class="fas fa-trash mr-1"></i>Remover</button>
                         </td>
                     `;
+                });
+                sensoresTbody.querySelectorAll('.btn-remover-dispositivo').forEach(btn => {
+                    btn.addEventListener('click', () => removerDispositivo(btn));
                 });
             }
         } catch (error) {
@@ -879,6 +960,55 @@ try {
         }
     }
     
+    // Botões de copiar (ID do projeto, tópico MQTT). navigator.clipboard só
+    // existe em HTTPS/localhost; em http://IP usa o método antigo.
+    document.addEventListener('click', async e => {
+        const btn = e.target.closest('.btn-copiar-texto');
+        if (!btn) return;
+        const texto = btn.dataset.texto;
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(texto);
+            } else {
+                const ta = Object.assign(document.createElement('textarea'), { value: texto });
+                ta.style.position = 'fixed'; ta.style.opacity = '0';
+                document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+            }
+            const original = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check text-success"></i>';
+            setTimeout(() => { btn.innerHTML = original; }, 1500);
+        } catch (err) {
+            ifsAlerta('Não foi possível copiar: ' + err.message, { tipo: 'erro' });
+        }
+    });
+
+    // Remove um dispositivo direto da aba "Dispositivos" (mesma API da página
+    // do dispositivo; exige roles.canDeleteSensor no papel do usuário)
+    async function removerDispositivo(btn) {
+        const nome = btn.dataset.nome;
+        if (!(await ifsConfirmar(`Tem certeza que deseja excluir o dispositivo "${nome}"? Essa ação não pode ser desfeita.`, { confirmar: 'Excluir', perigo: true }))) {
+            return;
+        }
+        const htmlOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>Removendo...';
+        try {
+            const response = await fetch('/api/deletar-dispositivo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ device_id: parseInt(btn.dataset.id, 10) })
+            });
+            await safeJson(response);
+            await carregarDadosPrincipais();
+            if (typeof carregarDispositivosFormulario === 'function') carregarDispositivosFormulario();
+        } catch (error) {
+            await ifsAlerta('Erro ao excluir dispositivo: ' + error.message, { tipo: 'erro' });
+            btn.disabled = false;
+            btn.innerHTML = htmlOriginal;
+        }
+    }
+
     // --- FUNÇÃO 3: Carrega Stats (Info-Boxes) ---
     async function carregarStats() {
         try {
@@ -1115,16 +1245,9 @@ try {
                 li.className = 'list-group-item d-flex justify-content-between align-items-center';
                 const isGerente = membro.role_name === 'Gerente';
                 const roleClass = isGerente ? 'text-success' : 'text-muted';
-                const iniciais = membro.user_name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-                
-                // Usar foto real se disponível, senão usar placeholder com iniciais
-                let avatar;
-                if (membro.profile_picture) {
-                    avatar = `<img src="/${escapeHtml(membro.profile_picture)}" alt="${escapeHtml(membro.user_name)}" class="img-circle img-size-50 mr-3" style="object-fit: cover;">`;
-                } else {
-                    avatar = `<div class="img-circle img-size-50 mr-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; border-radius: 50%; background-color: #007BFF; color: #FFFFFF; font-weight: 600; flex-shrink: 0;" title="${escapeHtml(membro.user_name)}">${escapeHtml(iniciais)}</div>`;
-                }
-                
+                // Foto, ou as iniciais num círculo verde (sem foto ou com o arquivo perdido)
+                const avatar = getAvatarHTML(membro.profile_picture, 50, 'mr-3 flex-shrink-0', membro.user_name);
+
                 // Gerar menu de ações
                 let acoes = '';
                 if (!isGerente) {
@@ -1174,7 +1297,7 @@ try {
     
     // Promover Participante a Gerente
     async function promoverGerente(userId) {
-        if (!confirm('Deseja promover este participante a Gerente?')) return;
+        if (!(await ifsConfirmar('Deseja promover este participante a Gerente?', { confirmar: 'Promover' }))) return;
         
         try {
             const response = await fetch(API_PROMOVER_GERENTE, {
@@ -1190,20 +1313,20 @@ try {
             const result = await safeJson(response);
 
             if (result.success) {
-                alert(result.message);
+                await ifsAlerta(result.message, { tipo: 'sucesso' });
                 carregarParticipantes();
             } else {
-                alert('Erro: ' + (result.error || result.message));
+                await ifsAlerta('Erro: ' + (result.error || result.message), { tipo: 'erro' });
             }
 
         } catch (error) {
-            alert('Erro ao promover participante: ' + error.message);
+            await ifsAlerta('Erro ao promover participante: ' + error.message, { tipo: 'erro' });
         }
     }
     
     // Expulsar Participante
     async function expulsarParticipante(userId) {
-        if (!confirm('Deseja expulsar este participante do projeto?')) return;
+        if (!(await ifsConfirmar('Deseja expulsar este participante do projeto?', { confirmar: 'Expulsar', perigo: true }))) return;
         
         try {
             const response = await fetch(API_EXPULSAR_PARTICIPANTE, {
@@ -1219,14 +1342,14 @@ try {
             const result = await safeJson(response);
 
             if (result.success) {
-                alert(result.message);
+                await ifsAlerta(result.message, { tipo: 'sucesso' });
                 carregarParticipantes();
             } else {
-                alert('Erro: ' + (result.error || result.message));
+                await ifsAlerta('Erro: ' + (result.error || result.message), { tipo: 'erro' });
             }
 
         } catch (error) {
-            alert('Erro ao expulsar participante: ' + error.message);
+            await ifsAlerta('Erro ao expulsar participante: ' + error.message, { tipo: 'erro' });
         }
     }
     
@@ -1235,7 +1358,7 @@ try {
         const sairStatus = document.getElementById('sair-status');
         const btnSair = document.getElementById('btn-sair-projeto');
         
-        if (!confirm('⚠️ Tem certeza que deseja sair deste projeto?')) {
+        if (!(await ifsConfirmar('Tem certeza que deseja sair deste projeto?', { confirmar: 'Sair do projeto', perigo: true }))) {
             return;
         }
         
@@ -1374,15 +1497,15 @@ try {
             const result = await safeJson(response);
 
             if (result.success) {
-                alert(result.message);
+                await ifsAlerta(result.message, { tipo: 'sucesso' });
                 // Recarregar lista
                 carregarSolicitacoes(currentSolicitacoesFilter);
             } else {
-                alert('Erro: ' + (result.error || result.message));
+                await ifsAlerta('Erro: ' + (result.error || result.message), { tipo: 'erro' });
             }
 
         } catch (error) {
-            alert('Erro ao responder solicitação: ' + error.message);
+            await ifsAlerta('Erro ao responder solicitação: ' + error.message, { tipo: 'erro' });
         }
       }
 
@@ -1575,7 +1698,7 @@ try {
       }
 
       async function removerTtn() {
-        if (!confirm('Remover a integração com o TTN? Os dados já recebidos continuam no projeto.')) return;
+        if (!(await ifsConfirmar('Remover a integração com o TTN? Os dados já recebidos continuam no projeto.', { confirmar: 'Remover', perigo: true }))) return;
         const msg = document.getElementById('ttn-msg');
         try {
           const response = await fetch(API_TTN_CONFIG, {
@@ -1595,7 +1718,7 @@ try {
       // --- FUNÇÃO 7: Deletar Projeto ---
       async function deletarProjeto() {
         // Confirmação do usuário
-        if (!confirm('⚠️ Tem certeza que deseja EXCLUIR este projeto?\n\nEsta ação irá:\n• Remover o projeto permanentemente\n• Apagar todos os dados associados\n• Esta ação NÃO pode ser desfeita!\n\nDeseja continuar?')) {
+        if (!(await ifsConfirmar('Tem certeza que deseja EXCLUIR este projeto?\n\nEsta ação irá:\n• Remover o projeto permanentemente\n• Apagar todos os dados associados\n• Esta ação NÃO pode ser desfeita!\n\nDeseja continuar?', { titulo: 'Excluir projeto', confirmar: 'Excluir projeto', perigo: true }))) {
             return;
         }
 
@@ -1729,203 +1852,199 @@ try {
     }
     
     // --- EXPORTAR DADOS DO PROJETO ---
-    // A API agora pagina (era um LIMIT 10000 fixo que truncava projetos
-    // grandes silenciosamente). Aqui buscamos todas as páginas e juntamos
-    // antes de gerar o arquivo, mantendo o "exportar tudo" de um clique só.
+    // A API entrega lotes de até 5000 leituras (paginação por cursor); aqui
+    // buscamos um atrás do outro e geramos o arquivo no navegador.
     const EXPORT_MAX_RECORDS = 500000; // trava de segurança pra não estourar a memória do navegador
+    const EXPORT_META = ['id', 'device_id', 'device_name', 'timestamp'];
 
     async function exportarDados(formato) {
       const statusEl = document.getElementById('export-status');
-      const btnCsv = document.getElementById('btn-export-csv');
-      const btnJson = document.getElementById('btn-export-json');
-      const btnExcel = document.getElementById('btn-export-excel');
-
-      // Desabilitar botões
-      btnCsv.disabled = true;
-      btnJson.disabled = true;
-      btnExcel.disabled = true;
-
+      const botoes = ['btn-export-csv', 'btn-export-json', 'btn-export-excel'].map(id => document.getElementById(id));
+      botoes.forEach(b => { b.disabled = true; });
       statusEl.innerHTML = '<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando dados...</div>';
 
       try {
         let allData = [];
         let projectInfo = null;
         let devicesInfo = null;
-        let page = 1;
-        let totalPages = 1;
+        let total = null;
+        let cursor = null;
         let truncated = false;
 
         do {
-          const response = await fetch(`${API_EXPORTAR_DADOS}?project_id=${PROJECT_ID}&page=${page}&per_page=5000`, {
-            credentials: 'include'
-          });
-          const result = await safeJson(response);
-
+          const url = `${API_EXPORTAR_DADOS}?project_id=${PROJECT_ID}&per_page=5000` + (cursor ? `&cursor=${encodeURIComponent(cursor)}` : '');
+          const result = await safeJson(await fetch(url, { credentials: 'include' }));
           if (!result.success) {
             throw new Error(result.error || 'Falha ao buscar dados');
           }
-
-          if (page === 1) {
+          if (cursor === null) {
             projectInfo = result.project;
             devicesInfo = result.devices;
+            total = result.pagination.total;
           }
-
           allData = allData.concat(result.data);
-          totalPages = result.pagination.total_pages;
+          cursor = result.pagination.next_cursor;
 
           if (allData.length >= EXPORT_MAX_RECORDS) {
-            truncated = true;
+            truncated = cursor !== null;
+            allData = allData.slice(0, EXPORT_MAX_RECORDS);
             break;
           }
-
-          statusEl.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando dados... (${allData.length}/${result.pagination.total})</div>`;
-          page++;
-        } while (page <= totalPages);
+          statusEl.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Buscando dados... (${allData.length.toLocaleString('pt-BR')}${total !== null ? ' de ' + total.toLocaleString('pt-BR') : ''})</div>`;
+        } while (cursor);
 
         if (allData.length === 0) {
           statusEl.innerHTML = '<div class="alert alert-warning mb-0">Nenhum dado disponível para exportar</div>';
           return;
         }
 
-        const result = {
-          project: projectInfo,
-          devices: devicesInfo,
-          data: allData,
-          total_records: allData.length
-        };
-
-        const projectName = result.project.name.replace(/\s+/g, '_');
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const filename = `${projectName}_${timestamp}`;
+        // Nome de arquivo sem caracteres que o sistema de arquivos recusa
+        const nomeSeguro = (projectInfo.name || 'projeto').normalize('NFD').replace(/[̀-ͯ]/g, '')
+          .replace(/[^A-Za-z0-9_-]+/g, '_').replace(/^_+|_+$/g, '') || 'projeto';
+        const filename = `${nomeSeguro}_${new Date().toISOString().slice(0, 10)}`;
 
         statusEl.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-spinner fa-spin mr-2"></i>Gerando arquivo ${formato.toUpperCase()}...</div>`;
+        // Deixa o navegador desenhar o aviso antes do trabalho pesado
+        await new Promise(r => setTimeout(r, 30));
 
         switch (formato) {
           case 'csv':
-            exportarCSV(result.data, filename);
+            exportarCSV(linhasPlanas(allData), filename);
             break;
           case 'json':
-            exportarJSON(result, filename);
+            exportarJSON({ project: projectInfo, devices: devicesInfo, total_records: allData.length, data: allData }, filename);
             break;
           case 'excel':
-            exportarExcel(result.data, filename, result.project.name);
+            exportarExcel(linhasPlanas(allData), filename, projectInfo.name);
             break;
         }
 
         const avisoTruncado = truncated
-          ? ` <strong>Atenção:</strong> há mais de ${EXPORT_MAX_RECORDS.toLocaleString('pt-BR')} registros; a exportação foi limitada a esse total para não travar o navegador. Use um período mais específico para exportar o restante.`
+          ? ` <strong>Atenção:</strong> há mais de ${EXPORT_MAX_RECORDS.toLocaleString('pt-BR')} registros; a exportação foi limitada a esse total para não travar o navegador.`
           : '';
-
-        statusEl.innerHTML = `<div class="alert ${truncated ? 'alert-warning' : 'alert-success'} mb-0"><i class="fas fa-check mr-2"></i>Arquivo exportado com sucesso! (${result.total_records} registros)${avisoTruncado}</div>`;
-
+        statusEl.innerHTML = `<div class="alert ${truncated ? 'alert-warning' : 'alert-success'} mb-0"><i class="fas fa-check mr-2"></i>Arquivo exportado com sucesso! (${allData.length.toLocaleString('pt-BR')} registros)${avisoTruncado}</div>`;
         if (!truncated) {
-          setTimeout(() => {
-            statusEl.innerHTML = '';
-          }, 3000);
+          setTimeout(() => { statusEl.innerHTML = ''; }, 3000);
         }
-
       } catch (error) {
         console.error('Erro ao exportar:', error);
-        statusEl.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-times mr-2"></i>${error.message}</div>`;
+        statusEl.innerHTML = `<div class="alert alert-danger mb-0"><i class="fas fa-times mr-2"></i>${escapeHtml(error.message)}</div>`;
       } finally {
-        // Reabilitar botões
-        btnCsv.disabled = false;
-        btnJson.disabled = false;
-        btnExcel.disabled = false;
+        botoes.forEach(b => { b.disabled = false; });
       }
     }
-    
-    // Exportar como CSV
-    function exportarCSV(data, filename) {
-      if (!data || data.length === 0) return;
-      
-      // Coletar todas as chaves únicas
-      const headers = new Set();
-      data.forEach(row => {
-        Object.keys(row).forEach(key => headers.add(key));
-      });
-      
-      const headersArray = Array.from(headers);
-      
-      // Criar CSV
-      let csv = headersArray.join(',') + '\n';
-      
-      data.forEach(row => {
-        const values = headersArray.map(header => {
-          let value = row[header] !== undefined ? row[header] : '';
-          
-          // Escapar valores com vírgula ou aspas
-          if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
-            value = '"' + value.replace(/"/g, '""') + '"';
+
+    // Uma linha plana por leitura, para CSV e Excel: metadados da plataforma e,
+    // ao lado, os campos do payload. Objetos aninhados viram colunas com ponto
+    // ({"gps": {"lat": 1}} -> gps.lat); listas viram texto JSON. Um campo do
+    // payload com o mesmo nome de um metadado (ex.: "timestamp" enviado pelo
+    // dispositivo) vira "payload.timestamp" em vez de sobrescrever o da plataforma.
+    function linhasPlanas(dados) {
+      return dados.map(item => {
+        const linha = {};
+        EXPORT_META.forEach(k => { linha[k] = item[k]; });
+        const achatar = (valor, prefixo) => {
+          if (valor !== null && typeof valor === 'object' && !Array.isArray(valor)) {
+            Object.keys(valor).forEach(k => achatar(valor[k], prefixo ? `${prefixo}.${k}` : k));
+            return;
           }
-          
-          return value;
-        });
-        
-        csv += values.join(',') + '\n';
+          let chave = prefixo || 'valor';
+          if (EXPORT_META.includes(chave)) chave = 'payload.' + chave;
+          linha[chave] = Array.isArray(valor) ? JSON.stringify(valor) : valor;
+        };
+        if (item.payload !== null && typeof item.payload === 'object' && !Array.isArray(item.payload)) {
+          achatar(item.payload, '');
+        } else {
+          linha['payload'] = typeof item.payload === 'string' ? item.payload : JSON.stringify(item.payload);
+        }
+        return linha;
       });
-      
-      // Download
-      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    }
+
+    // Todas as colunas, na ordem em que aparecem (metadados primeiro)
+    function colunasDe(linhas) {
+      const vistas = new Set(EXPORT_META);
+      const cols = [...EXPORT_META];
+      linhas.forEach(l => Object.keys(l).forEach(k => {
+        if (!vistas.has(k)) { vistas.add(k); cols.push(k); }
+      }));
+      return cols;
+    }
+
+    function baixar(conteudo, tipo, nome) {
+      const blob = new Blob(conteudo, { type: tipo });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = filename + '.csv';
+      link.download = nome;
+      document.body.appendChild(link);
       link.click();
-      URL.revokeObjectURL(link.href);
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(link.href), 1000);
     }
-    
-    // Exportar como JSON
-    function exportarJSON(data, filename) {
-      const json = JSON.stringify(data, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const link = document.createElement('a');
-      link.href = URL.createObjectURL(blob);
-      link.download = filename + '.json';
-      link.click();
-      URL.revokeObjectURL(link.href);
+
+    // Exportar como CSV (RFC 4180, separado por vírgula, UTF-8 com BOM)
+    function exportarCSV(linhas, filename) {
+      if (!linhas.length) return;
+      const cols = colunasDe(linhas);
+      const campo = valor => {
+        if (valor === undefined || valor === null) return '';
+        let s = typeof valor === 'string' ? valor : String(valor);
+        // Texto vindo do dispositivo que começa com = + - @ seria executado
+        // como fórmula ao abrir no Excel/LibreOffice: o apóstrofo neutraliza
+        // (números negativos não são afetados, só texto)
+        if (typeof valor === 'string' && /^[=+\-@\t\r]/.test(s) && isNaN(Number(s))) {
+          s = "'" + s;
+        }
+        return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      const partes = [cols.map(campo).join(',') + '\r\n'];
+      for (const l of linhas) {
+        partes.push(cols.map(c => campo(l[c])).join(',') + '\r\n');
+      }
+      // O BOM faz o Excel reconhecer UTF-8 (sem ele, os acentos saíam trocados)
+      baixar(['﻿', ...partes], 'text/csv;charset=utf-8', filename + '.csv');
     }
-    
+
+    // Exportar como JSON: a estrutura original de cada leitura em "payload"
+    function exportarJSON(dados, filename) {
+      baixar([JSON.stringify(dados, null, 2)], 'application/json', filename + '.json');
+    }
+
     // Exportar como Excel
-    function exportarExcel(data, filename, projectName) {
-      if (!data || data.length === 0) return;
-      
-      // Criar workbook
-      const wb = XLSX.utils.book_new();
-      
-      // Converter dados para worksheet
-      const ws = XLSX.utils.json_to_sheet(data);
-      
-      // Ajustar largura das colunas
-      const colWidths = [];
-      const headers = Object.keys(data[0]);
-      headers.forEach((header, i) => {
-        let maxLen = header.length;
-        data.forEach(row => {
-          const value = String(row[header] || '');
-          if (value.length > maxLen) {
-            maxLen = value.length;
-          }
-        });
-        colWidths.push({ wch: Math.min(maxLen + 2, 50) });
+    function exportarExcel(linhas, filename, projectName) {
+      if (!linhas.length) return;
+      const cols = colunasDe(linhas);
+      // Instante como data de verdade (ordena e filtra como data no Excel);
+      // o texto vem no fuso do servidor, sem fuso explícito
+      const comData = linhas.map(l => {
+        const m = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})$/.exec(l.timestamp || '');
+        return m ? Object.assign({}, l, { timestamp: new Date(+m[1], m[2] - 1, +m[3], +m[4], +m[5], +m[6]) }) : l;
       });
-      ws['!cols'] = colWidths;
-      
-      // Adicionar worksheet ao workbook
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(comData, { header: cols, cellDates: true, dateNF: 'dd/mm/yyyy hh:mm:ss' });
+
+      // Largura das colunas por uma amostra (percorrer 500 mil linhas travava a página)
+      const amostra = linhas.length > 2000 ? linhas.filter((_, i) => i % Math.ceil(linhas.length / 2000) === 0) : linhas;
+      ws['!cols'] = cols.map(c => {
+        let max = c === 'timestamp' ? 19 : c.length;
+        for (const l of amostra) {
+          const v = l[c];
+          if (v !== undefined && v !== null) max = Math.max(max, String(v).length);
+        }
+        return { wch: Math.min(max + 2, 50) };
+      });
+      ws['!autofilter'] = { ref: ws['!ref'] };
       XLSX.utils.book_append_sheet(wb, ws, 'Dados');
-      
-      // Adicionar informações do projeto em outra aba
+
       const info = [
         { Campo: 'Nome do Projeto', Valor: projectName },
         { Campo: 'Data de Exportação', Valor: new Date().toLocaleString('pt-BR') },
-        { Campo: 'Total de Registros', Valor: data.length }
+        { Campo: 'Total de Registros', Valor: linhas.length }
       ];
-      const wsInfo = XLSX.utils.json_to_sheet(info);
-      XLSX.utils.book_append_sheet(wb, wsInfo, 'Informações');
-      
-      // Download
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(info), 'Informações');
       XLSX.writeFile(wb, filename + '.xlsx');
     }
-    
+
     // --- RENDERIZAR GRÁFICO NO CANVAS ---
     // --- RENDERIZAR GRÁFICO NO CANVAS (Refatorado para a nova API) ---
     async function renderizarGraficoNoCanvas(grafico, canvasId) {
@@ -1939,15 +2058,31 @@ try {
         }
         
         const dados = await response.json();
-        
-        // Verifica o novo formato de resposta (baseado em datasets mastigados pelo banco)
-        if (!dados.success || !dados.datasets || dados.datasets.length === 0) {
-          console.warn(`Nenhum dado retornado para o gráfico ${grafico.id}`);
-          return;
-        }
-        
         const canvas = document.getElementById(canvasId);
         if (!canvas) return;
+
+        // Nada para desenhar: mostra o motivo (vindo da API) no lugar do quadro em branco
+        const aviso = dados.aviso || (!dados.success || !dados.datasets || dados.datasets.length === 0
+          ? 'Não há dados para este gráfico.' : null);
+        if (mostrarAvisoGrafico(canvas, aviso)) {
+          window[`chart_${canvasId}`] = null;
+          return;
+        }
+
+        // Gráfico X-Y (variável x variável, ex.: temperatura x pressão)
+        if (dados.modo === 'xy') {
+          const config = montarConfigXY(dados);
+          const anteriorXY = window[`chart_${canvasId}`];
+          if (anteriorXY && anteriorXY.canvas === canvas && anteriorXY.config.type === 'scatter') {
+            if (anteriorXY.isZoomedOrPanned && anteriorXY.isZoomedOrPanned()) return;
+            anteriorXY.data.datasets = config.data.datasets;
+            anteriorXY.update('none');
+            return;
+          }
+          if (anteriorXY) anteriorXY.destroy();
+          window[`chart_${canvasId}`] = new Chart(canvas.getContext('2d'), config);
+          return;
+        }
         
         const chartType = grafico.chart_type;
         const actualChartType = converterTipoGrafico(chartType);
@@ -1971,21 +2106,13 @@ try {
 
         const sortedTimestamps = Array.from(allTimestamps).sort();
 
-// 2. Formatar os rótulos de tempo (Data e Hora) imunes a fuso horário do Navegador
+        // 2. Rótulos de tempo no fuso do navegador (a API manda ISO 8601 em UTC)
         const labels = sortedTimestamps.map(ts => {
-          // ts = "2026-07-08 14:30:00"
-          const parts = ts.split(/[- :]/); // Divide em [Ano, Mês, Dia, Hora, Minuto, Segundo]
-          
-          if (parts.length >= 5) {
-            // O JS espera o mês indexado em 0 (Janeiro = 0, Julho = 6)
-            const date = new Date(parts[0], parts[1] - 1, parts[2], parts[3], parts[4], parts[5] || 0);
-            
-            return date.toLocaleString('pt-BR', {
-              day: '2-digit', month: '2-digit',
-              hour: '2-digit', minute: '2-digit'
-            });
-          }
-          return ts; // Fallback se a string vier num formato bizarro
+          const date = new Date(ts);
+          return isNaN(date) ? ts : date.toLocaleString('pt-BR', {
+            day: '2-digit', month: '2-digit',
+            hour: '2-digit', minute: '2-digit'
+          });
         });
 
         // 3. Montar a configuração de Datasets nativa do Chart.js
@@ -2004,13 +2131,17 @@ try {
              return dataMap[ts] !== undefined ? dataMap[ts] : null;
           });
 
+          // Com mais de uma série, o dispositivo entra no nome (duas "temperatura" ficavam iguais)
+          const nomeSerie = ds.alias || ds.variable_name;
           const datasetConfig = {
-            label: ds.alias || ds.variable_name,
+            label: dados.datasets.length > 1 && ds.device_name ? `${nomeSerie} (${ds.device_name})` : nomeSerie,
             data: alignedValues,
             borderColor: color,
-            backgroundColor: (actualChartType === 'pie' || actualChartType === 'doughnut') ? color : `${color}33`,
+            backgroundColor: (actualChartType === 'pie' || actualChartType === 'doughnut') ? color
+              : (actualChartType === 'bar' ? `${color}B3` : `${color}33`), // barras quase opacas
             borderWidth: 2,
-            tension: 0.4
+            tension: 0.4,
+            spanGaps: true // séries de dispositivos diferentes não têm pontos nos mesmos instantes
           };
 
           // Truques específicos de renderização baseados no tipo original
@@ -2027,9 +2158,18 @@ try {
           return datasetConfig;
         });
 
-        // Destruir gráfico anterior se existir
-        if (window[`chart_${canvasId}`]) {
-          window[`chart_${canvasId}`].destroy();
+        // Atualização periódica: troca só os dados, sem recriar o gráfico. Se o
+        // usuário estiver com zoom, espera ele voltar ao normal
+        const anterior = window[`chart_${canvasId}`];
+        if (anterior && anterior.canvas === canvas && anterior.config.type === actualChartType) {
+          if (anterior.isZoomedOrPanned && anterior.isZoomedOrPanned()) return;
+          anterior.data.labels = labels;
+          anterior.data.datasets = chartDatasets;
+          anterior.update('none');
+          return;
+        }
+        if (anterior) {
+          anterior.destroy();
         }
         
         // 4. Instanciar e renderizar o gráfico
@@ -2133,6 +2273,15 @@ try {
       }
     }
     
+    // Dados novos (MQTT, HTTP ou TTN) entram nos gráficos sem recarregar a página
+    setInterval(() => {
+      if (document.visibilityState !== 'visible') return;
+      (cacheGraficosSalvos || []).forEach(grafico => {
+        const canvasId = `canvas-grafico-${grafico.id}`;
+        if (document.getElementById(canvasId)) renderizarGraficoNoCanvas(grafico, canvasId);
+      });
+    }, 60000);
+
     // --- ALTERNAR VISIBILIDADE DO GRÁFICO ---
     async function alternarVisibilidadeGrafico(grafico) {
       const novoStatus = grafico.is_public ? 0 : 1;
@@ -2140,7 +2289,7 @@ try {
         ? 'Tem certeza que deseja deixar este gráfico PRIVADO?'
         : 'Tem certeza que deseja deixar este gráfico PÚBLICO?';
       
-      if (!confirm(confirmMsg)) {
+      if (!(await ifsConfirmar(confirmMsg, { titulo: 'Visibilidade do gráfico', confirmar: grafico.is_public ? 'Deixar privado' : 'Deixar público' }))) {
         return;
       }
       
@@ -2159,19 +2308,19 @@ try {
         
         if (response.ok) {
           grafico.is_public = novoStatus;
-          alert(result.message);
+          await ifsAlerta(result.message, { tipo: 'sucesso' });
           await carregarGraficosSalvos();
         } else {
-          alert(`Erro: ${result.error}`);
+          await ifsAlerta(`Erro: ${result.error}`, { tipo: 'erro' });
         }
       } catch (error) {
-        alert(`Erro ao alterar visibilidade: ${error.message}`);
+        await ifsAlerta(`Erro ao alterar visibilidade: ${error.message}`, { tipo: 'erro' });
       }
     }
     
     // --- FUNÇÕES DE AÇÃO (Gráficos) ---
     async function apagarGrafico(grafico) {
-        if (!confirm(`Tem certeza que deseja apagar o gráfico "${grafico.name}"?`)) {
+        if (!(await ifsConfirmar(`Tem certeza que deseja apagar o gráfico "${grafico.name}"?`, { confirmar: 'Apagar', perigo: true }))) {
             return;
         }
         
@@ -2184,11 +2333,11 @@ try {
             });
             const resultado = await safeJson(response);
             
-            alert(resultado.message);
+            await ifsAlerta(resultado.message, { tipo: 'sucesso' });
             await carregarGraficosSalvos();
             
         } catch (error) {
-            alert(`Erro ao apagar: ${error.message}`);
+            await ifsAlerta(`Erro ao apagar: ${error.message}`, { tipo: 'erro' });
         }
     }
 
@@ -2197,7 +2346,7 @@ try {
         const novoStatus = grafico.is_public ? 0 : 1;
         const mensagem = novoStatus ? 'Deixar público?' : 'Deixar privado?';
         
-        if (!confirm(mensagem)) {
+        if (!(await ifsConfirmar(mensagem, { titulo: 'Visibilidade do gráfico', confirmar: novoStatus ? 'Deixar público' : 'Deixar privado' }))) {
             return;
         }
         
@@ -2214,7 +2363,7 @@ try {
             await carregarGraficosSalvos();
             
         } catch (error) {
-            alert(`Erro ao alterar visibilidade: ${error.message}`);
+            await ifsAlerta(`Erro ao alterar visibilidade: ${error.message}`, { tipo: 'erro' });
         }
     }
 
@@ -2232,6 +2381,7 @@ try {
         });
         
         $('#select-device').html(html);
+        $('#x-device').html(html);
         $('.select2').trigger('change');
       } catch (error) {
         console.error('Erro ao carregar dispositivos:', error);
@@ -2244,7 +2394,7 @@ try {
       $('#select-variable').html('<option>-- Carregando --</option>').prop('disabled', true);
       
       if (!deviceId) {
-        $('#select-variable').html('<option>Selecione um dispositivo</option>').prop('disabled', true);
+        $('#select-variable').html('<option value="">Selecione um dispositivo</option>').prop('disabled', true);
         return;
       }
       
@@ -2283,15 +2433,84 @@ try {
       }
     }
     
+    // ===== EIXO X: TEMPO OU OUTRA VARIÁVEL =====
+    // Com uma variável no X (ex.: pressão), cada ponto do gráfico é um par de
+    // leituras do mesmo instante; o gráfico vira de dispersão.
+    let modoEixoX = 'tempo';
+    const DICAS_EIXO = {
+      tempo: 'O tempo fica no eixo horizontal; cada variável vira uma linha (ou barra) no gráfico.',
+      variavel: 'Cada ponto é uma leitura: a variável do eixo X na horizontal e esta na vertical, medidas no mesmo instante.'
+    };
+
+    function definirModoEixoX(modo) {
+      modoEixoX = modo;
+      $('#modo-eixo-x .btn').removeClass('active').filter(`[data-modo="${modo}"]`).addClass('active');
+      $('#eixo-x-campos').toggle(modo === 'variavel');
+      $('#dica-eixo').text(DICAS_EIXO[modo]);
+      if (modo === 'variavel') {
+        $('#chart-type').val('scatter').trigger('change.select2').prop('disabled', true);
+      } else {
+        $('#chart-type').prop('disabled', false).trigger('change.select2');
+        $('#x-device').val('');
+        $('#x-variable').html('<option value="">Selecione um dispositivo</option>').prop('disabled', true);
+      }
+      atualizarListaDatasets();
+      atualizarPreview();
+    }
+
+    async function carregarVariaveisEixoX() {
+      const deviceId = $('#x-device').val();
+      const select = $('#x-variable');
+      if (!deviceId) {
+        select.html('<option value="">Selecione um dispositivo</option>').prop('disabled', true);
+        atualizarListaDatasets();
+        return;
+      }
+      select.html('<option value="">-- Carregando --</option>').prop('disabled', true);
+      try {
+        const variables = await safeJson(await fetch(`${API_OBTER_CHAVES}?device_id=${deviceId}`, { credentials: 'include' }));
+        let html = '<option value="">-- Escolha uma variável --</option>';
+        (Array.isArray(variables) ? variables : []).forEach(v => {
+          html += `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`;
+        });
+        select.html(html).prop('disabled', false);
+      } catch (error) {
+        select.html('<option value="">Erro ao carregar variáveis</option>');
+      }
+      atualizarListaDatasets();
+    }
+
+    /** Variável escolhida para o eixo X, ou null */
+    function eixoXEscolhido() {
+      if (modoEixoX !== 'variavel' || !$('#x-device').val() || !$('#x-variable').val()) return null;
+      return {
+        device_id: parseInt($('#x-device').val()),
+        device_name: $('#x-device option:selected').text(),
+        variable_name: $('#x-variable').val()
+      };
+    }
+
+    // Cores sugeridas para cada nova variável do gráfico
+    const CORES_SERIES = ['#1B7D3D', '#1F77B4', '#FF7F0E', '#D62728', '#9467BD', '#17BECF', '#8C564B', '#E377C2'];
+
     // ===== ADICIONAR DATASET =====
     function adicionarDataset() {
       const deviceId = $('#select-device').val();
       const variableName = $('#select-variable').val();
-      const axis = $('#variable-axis').val();
+      const axis = 'y'; // o tempo é sempre o eixo X
       const color = $('#variable-color').val();
       
       if (!deviceId || !variableName) {
-        alert('Selecione um dispositivo e uma variável');
+        ifsAlerta('Selecione um dispositivo e uma variável', { tipo: 'aviso' });
+        return;
+      }
+      const x = eixoXEscolhido();
+      if (x && x.device_id === parseInt(deviceId) && x.variable_name === variableName) {
+        ifsAlerta('Essa variável já está no eixo X. Escolha outra para o eixo Y.', { tipo: 'aviso' });
+        return;
+      }
+      if (datasets.some(ds => ds.device_id === parseInt(deviceId) && ds.variable_name === variableName)) {
+        ifsAlerta('Essa variável deste dispositivo já está no gráfico.', { tipo: 'aviso' });
         return;
       }
       
@@ -2309,11 +2528,10 @@ try {
       
       atualizarListaDatasets();
       
-      // Resetar selects
+      // Resetar selects; a próxima variável já vem com outra cor
       $('#select-device').val('').trigger('change');
       $('#select-variable').val('').prop('disabled', true);
-      $('#variable-axis').val('y');
-      $('#variable-color').val('#1B7D3D');
+      $('#variable-color').val(CORES_SERIES[datasets.length % CORES_SERIES.length]);
       
       atualizarPreview();
     }
@@ -2321,13 +2539,19 @@ try {
     // ===== ATUALIZAR LISTA DE DATASETS =====
     function atualizarListaDatasets() {
       const container = $('#datasets-list');
+      const x = eixoXEscolhido();
+      const htmlEixoX = modoEixoX !== 'variavel' ? ''
+        : `<div class="dataset-item" style="background: #e6f2ea; border-color: #c3e0cc;">
+             <small class="text-muted d-block">Eixo X (horizontal)</small>
+             ${x ? `<strong>${escapeHtml(x.device_name)}</strong> / <code>${escapeHtml(x.variable_name)}</code>` : '<span class="text-muted">Escolha o dispositivo e a variável do eixo X</span>'}
+           </div>`;
       
       if (datasets.length === 0) {
-        container.html('<p class="text-muted">Nenhum dataset adicionado ainda.</p>');
+        container.html(htmlEixoX + '<p class="text-muted">Nenhuma variável adicionada ainda.</p>');
         return;
       }
       
-      let html = '';
+      let html = htmlEixoX;
       datasets.forEach((ds, index) => {
         html += `
           <div class="dataset-item">
@@ -2339,7 +2563,7 @@ try {
                 <strong>${escapeHtml(ds.device_name)}</strong> / <code>${escapeHtml(ds.variable_name)}</code>
                 <div style="margin-top: 5px;">
                   <span style="display: inline-block; width: 20px; height: 20px; background: ${ds.color}; border-radius: 3px; vertical-align: middle; margin-right: 5px;"></span>
-                  <small>Eixo: <strong>${ds.axis.toUpperCase()}</strong></small>
+
                 </div>
               </div>
             </div>
@@ -2365,13 +2589,14 @@ try {
         container.innerHTML = `
           <div class="text-center text-muted">
             <p><i class="fas fa-chart-line fa-3x mb-3"></i></p>
-            <p>Adicione datasets para visualizar preview</p>
+            <p>Adicione variáveis para ver a prévia</p>
           </div>
         `;
         return;
       }
       
-      container.innerHTML = `<canvas id="previewChart" style="min-height: 300px;"></canvas>`;
+      container.innerHTML = `<div style="width: 100%;"><div style="height: 300px;"><canvas id="previewChart"></canvas></div>`
+        + `<p class="aviso-preview"><i class="fas fa-info-circle mr-1"></i>Prévia com dados ilustrativos: o gráfico salvo mostra as leituras reais.</p></div>`;
       
       // Dados fake estruturados corretamente para o eixo X
       const labels = Array.from({length: 10}, (_, i) => `${i + 8}:00`);
@@ -2381,6 +2606,22 @@ try {
       
       if (chartPreview) {
         chartPreview.destroy();
+      }
+
+      // Prévia X-Y: pontos ilustrativos com uma tendência, como numa relação real
+      if (modoEixoX === 'variavel') {
+        const x = eixoXEscolhido();
+        chartPreview = new Chart(document.getElementById('previewChart').getContext('2d'), montarConfigXY({
+          eixo_x: { variable_name: x ? x.variable_name : 'eixo X', device_name: x ? x.device_name : null },
+          datasets: datasets.map((ds, i) => ({
+            alias: ds.alias, variable_name: ds.variable_name, device_name: ds.device_name, color: ds.color,
+            data: Array.from({ length: 25 }, () => {
+              const vx = Math.random() * 100;
+              return { x: vx, y: (0.4 + 0.3 * i) * vx + Math.random() * 20 };
+            })
+          }))
+        }));
+        return;
       }
       
       const datasetConfig = datasets.map(ds => {
@@ -2464,7 +2705,12 @@ try {
       const chartType = $('#chart-type').val();
       
       if (!chartName || datasets.length === 0) {
-        alert('Preencha o nome e adicione pelo menos um dataset');
+        await ifsAlerta('Preencha o nome e adicione pelo menos uma variável', { tipo: 'aviso' });
+        return;
+      }
+      const eixoX = eixoXEscolhido();
+      if (modoEixoX === 'variavel' && !eixoX) {
+        await ifsAlerta('Escolha o dispositivo e a variável do eixo X (ou volte o eixo X para "Tempo").', { tipo: 'aviso' });
         return;
       }
       
@@ -2476,11 +2722,12 @@ try {
         date_start: $('#date-start').val() || null,
         date_end: $('#date-end').val() || null,
         is_public: $('#chart-is-public').is(':checked') ? 1 : 0,
-        datasets: datasets
+        // A variável do eixo X vai junto, marcada com axis 'x'
+        datasets: eixoX ? [{ device_id: eixoX.device_id, variable_name: eixoX.variable_name, alias: eixoX.variable_name, axis: 'x' }].concat(datasets) : datasets
       };
       
-      console.log('Payload enviado:', JSON.stringify(payload));
-      
+      const btnSalvar = document.getElementById('btn-salvar-grafico');
+      btnSalvar.disabled = true;
       try {
         const response = await fetch(API_SALVAR_GRAFICO_FORM, {
           method: 'POST',
@@ -2490,12 +2737,16 @@ try {
         });
         
         const result = await safeJson(response);
-        alert('Gráfico salvo com sucesso!');
+        await ifsAlerta('Gráfico salvo com sucesso!', { tipo: 'sucesso' });
         
-        // Reset do formulário
+        // Reset do formulário (inclusive Select2, intervalo e cor)
         document.getElementById('form-grafico').reset();
         datasets = [];
-        selectedTimeRange = 'all';
+        $('#chart-type').val('line').trigger('change.select2');
+        $('#chart-is-public').prop('checked', false);
+        selecionarIntervaloTempo($('.time-range-btn[data-range="all"]'));
+        definirModoEixoX('tempo');
+        $('#variable-color').val(CORES_SERIES[0]);
         atualizarListaDatasets();
         atualizarPreview();
         
@@ -2506,7 +2757,9 @@ try {
         $('#tab-geral-tab').tab('show');
         
       } catch (error) {
-        alert('Erro ao salvar: ' + error.message);
+        await ifsAlerta('Erro ao salvar: ' + error.message, { tipo: 'erro' });
+      } finally {
+        btnSalvar.disabled = false;
       }
     }
     
@@ -2519,6 +2772,10 @@ try {
     // Event Listeners do formulário de gráficos
     $('#select-device').on('change', carregarVariaveisFormulario);
     $('#btn-add-dataset').on('click', adicionarDataset);
+    $('#chart-type').on('change', atualizarPreview); // a prévia acompanha o tipo escolhido
+    $('#modo-eixo-x .btn').on('click', function () { definirModoEixoX($(this).data('modo')); });
+    $('#x-device').on('change', carregarVariaveisEixoX);
+    $('#x-variable').on('change', function () { atualizarListaDatasets(); atualizarPreview(); });
     $('#btn-salvar-grafico').on('click', salvarGraficoAvancado);
 
     // Event Listener do convite

@@ -52,11 +52,12 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gerenciar Dispositivo | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <link href="https://cdn.jsdelivr.net/npm/@ttskch/select2-bootstrap4-theme@1.5.2/dist/select2-bootstrap4.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
+  <link href="/assets/vendor/select2/4.1.0-rc.0/css/select2.min.css" rel="stylesheet" />
+  <link href="/assets/vendor/select2-bootstrap4-theme/1.5.2/select2-bootstrap4.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="/assets/css/select2-tags.css">
 
   <style>
     :root {
@@ -100,7 +101,11 @@ try {
         padding: 2px 5px;
         border-radius: 3px;
         border: 1px solid #ccc;
+        word-break: break-all;
     }
+    .api-info-box .linha-copia { display: flex; align-items: flex-start; gap: 6px; margin-top: 4px; }
+    .api-info-box .linha-copia kbd { flex: 1; min-width: 0; }
+    .api-info-box .btn-copiar { flex-shrink: 0; }
     /* Estilo para o formulário de filtro */
     #form-filtros label {
         font-weight: 500 !important;
@@ -210,9 +215,14 @@ try {
                 <div class="mb-3">
                   <h5>📌 API REST</h5>
                   <div class="api-info-box">
-                    <strong>ID do Dispositivo: </strong> <kbd id="api-info-id">Carregando...</kbd><br>
-                    <strong class="mt-2 d-block">Chave de API (X-Api-Key): </strong> <kbd id="api-info-key">Carregando...</kbd>
+                    <strong>ID do Dispositivo (device_id):</strong>
+                    <div class="linha-copia"><kbd id="api-info-id">Carregando...</kbd><button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" data-copiar="api-info-id" title="Copiar"><i class="fas fa-copy"></i></button></div>
+                    <strong class="mt-2 d-block">Chave de API (X-Api-Key):</strong>
+                    <div class="linha-copia"><kbd id="api-info-key">Carregando...</kbd><button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" data-copiar="api-info-key" title="Copiar"><i class="fas fa-copy"></i></button></div>
+                    <strong class="mt-2 d-block">Endpoint:</strong>
+                    <div class="linha-copia"><kbd id="api-info-url">POST /api/enviar-payload</kbd><button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" data-copiar="api-info-url" title="Copiar"><i class="fas fa-copy"></i></button></div>
                   </div>
+                  <small class="text-muted d-block mt-2">Corpo: <code>{"device_id": <span class="device-id-txt">ID</span>, "payload": {"temperatura": 25.3}}</code></small>
                 </div>
 
                 <div class="mb-3">
@@ -228,7 +238,10 @@ try {
                 <div class="mb-3">
                   <h5>🔌 MQTT</h5>
                   <div class="api-info-box">
-                    <strong>Username: </strong> <kbd id="mqtt-username">Carregando...</kbd><br>
+                    <strong>Tópico de publicação:</strong>
+                    <div class="linha-copia"><kbd id="mqtt-topico">Carregando...</kbd><button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" data-copiar="mqtt-topico" title="Copiar"><i class="fas fa-copy"></i></button></div>
+                    <strong class="mt-2 d-block">Username:</strong>
+                    <div class="linha-copia"><kbd id="mqtt-username">Carregando...</kbd><button type="button" class="btn btn-sm btn-outline-secondary btn-copiar" data-copiar="mqtt-username" title="Copiar"><i class="fas fa-copy"></i></button></div>
                     <strong class="mt-2 d-block">Password: </strong>
                     <div class="mt-2">
                       <kbd id="mqtt-password" style="word-break: break-all;">Carregando...</kbd>
@@ -241,9 +254,11 @@ try {
                     </div>
                   </div>
                   <small class="text-muted d-block mt-2">
-                    💡 <strong>Host:</strong> localhost (ou seu IP do servidor)<br>
+                    💡 <strong>Host:</strong> <span id="mqtt-host">o mesmo endereço do site</span><br>
                     💡 <strong>Porta:</strong> 1883 (texto puro) ou <strong>8883 (TLS, recomendado fora da rede local)</strong><br>
-                    💡 <strong>Protocolo:</strong> MQTT v3.1.1
+                    💡 <strong>Protocolo:</strong> MQTT v3.1.1<br>
+                    💡 O usuário MQTT é o mostrado acima (não é <code>device_ID</code>); o ID do projeto e do dispositivo vão no tópico.<br>
+                    ⚠️ Se o dispositivo der <code>rc=-2</code> (falha de conexão TCP), a rede está bloqueando a porta do broker. Use o envio por HTTP(S), que passa pela mesma porta do site.
                   </small>
                 </div>
               </div>
@@ -328,11 +343,11 @@ try {
     const DEVICE_ID = <?php echo $device_id_from_url; ?>;
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/input-limits.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.full.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/select2/4.1.0-rc.0/js/select2.full.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -399,6 +414,10 @@ try {
             
             apiInfoId.textContent = device.id;
             apiInfoKey.textContent = device.api_key;
+            document.getElementById('api-info-url').textContent = `POST ${window.location.origin}/api/enviar-payload`;
+            document.querySelectorAll('.device-id-txt').forEach(el => el.textContent = device.id);
+            document.getElementById('mqtt-topico').textContent = `mqtt/projects/${device.project_id ?? PROJECT_ID}/devices/${device.id}`;
+            document.getElementById('mqtt-host').textContent = window.location.hostname;
             document.getElementById('ttn-device-id').value = device.ttn_device_id || '';
             
             await carregarCredenciaisMQTT();
@@ -483,6 +502,38 @@ try {
         });
     }
 
+    // Copia texto com fallback: navigator.clipboard só existe em contexto
+    // seguro (HTTPS ou localhost); acessando por http://IP:8080 ele é undefined
+    async function copiarTexto(texto) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(texto);
+            return;
+        }
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (!ok) throw new Error('o navegador bloqueou a cópia');
+    }
+
+    document.querySelectorAll('.btn-copiar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const texto = document.getElementById(btn.dataset.copiar).textContent.trim();
+            try {
+                await copiarTexto(texto);
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { btn.innerHTML = original; }, 1500);
+            } catch (err) {
+                ifsAlerta('Erro ao copiar: ' + err.message, { tipo: 'erro' });
+            }
+        });
+    });
+
     // Event Listener: Copiar senha MQTT
     if (btnCopyMqttPwd) {
         btnCopyMqttPwd.addEventListener('click', async () => {
@@ -491,7 +542,7 @@ try {
                 const password = await fetchMqttPassword();
                 if (!password) return;
                 
-                await navigator.clipboard.writeText(password);
+                await copiarTexto(password);
                 const originalHTML = btnCopyMqttPwd.innerHTML;
                 btnCopyMqttPwd.innerHTML = '<i class="fas fa-check"></i> Copiado!';
                 setTimeout(() => {
@@ -499,7 +550,7 @@ try {
                     btnCopyMqttPwd.disabled = false;
                 }, 2000);
             } catch (err) {
-                alert('Erro ao copiar: ' + err);
+                ifsAlerta('Erro ao copiar: ' + err, { tipo: 'erro' });
                 btnCopyMqttPwd.disabled = false;
             }
         });
@@ -714,7 +765,7 @@ try {
     });
 
     async function removerMapeamento(mappingId) {
-        if (!confirm('Remover este mapeamento?')) return;
+        if (!(await ifsConfirmar('Remover este mapeamento?', { confirmar: 'Remover', perigo: true }))) return;
 
         try {
             const response = await fetch(API_MAPEAMENTOS, {
@@ -727,7 +778,7 @@ try {
             await carregarMapeamentos();
             await carregarPayloads();
         } catch (error) {
-            alert('Erro ao remover mapeamento: ' + error.message);
+            await ifsAlerta('Erro ao remover mapeamento: ' + error.message, { tipo: 'erro' });
         }
     }
 
@@ -790,7 +841,7 @@ try {
 
     // Função 4: Exclui o dispositivo (exige permissão canDeleteSensor no papel do usuário)
     document.getElementById('btn-excluir-dispositivo').addEventListener('click', async function() {
-        if (!confirm('Tem certeza que deseja excluir este dispositivo? Essa ação não pode ser desfeita.')) {
+        if (!(await ifsConfirmar('Tem certeza que deseja excluir este dispositivo? Essa ação não pode ser desfeita.', { confirmar: 'Excluir', perigo: true }))) {
             return;
         }
 
@@ -806,11 +857,11 @@ try {
             });
             const resultado = await safeJson(response);
 
-            alert(resultado.message);
+            await ifsAlerta(resultado.message, { tipo: 'sucesso' });
             window.location.href = `/projeto?id=${PROJECT_ID}`;
 
         } catch (error) {
-            alert('Erro ao excluir dispositivo: ' + error.message);
+            await ifsAlerta('Erro ao excluir dispositivo: ' + error.message, { tipo: 'erro' });
             btn.disabled = false;
         }
     });
@@ -822,5 +873,6 @@ try {
         inicializarTagsDispositivo();
     });
 </script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

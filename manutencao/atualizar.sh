@@ -112,17 +112,30 @@ dc build web
 passo "Aplicando as migrações do banco"
 dc run --rm --no-deps -T --entrypoint php web src/db/aplicar-migracoes.php || falha "a migração falhou; os contêineres em uso não foram trocados"
 
+# Último id de leitura antes da troca: o que os contêineres antigos gravarem a
+# partir daqui não entra nas tabelas dos gráficos (eles não as conhecem), e é
+# revisado no fim (ver src/core/Agregados.php)
+ID_ANTES=$(dc exec -T db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -N -B "$MYSQL_DATABASE" -e "SELECT COALESCE(MAX(id), 0) FROM device_payloads"' 2>/dev/null | tr -dc '0-9')
+
 for servico in web web-2; do
     passo "Trocando $servico (o outro contêiner atende enquanto isso)"
     trocar_web "$servico" || reverter "$servico não ficou saudável"
 done
 
 passo "Trocando o worker MQTT e a ponte TTN"
-# O worker retoma a sessão persistente no broker (nada se perde), e a ponte
+# Enquanto o worker reinicia, o broker guarda as mensagens na sessão
+# persistente dele (assinatura comum) e entrega quando ele volta; a ponte
 # recupera pelo Storage do TTN o que chegou enquanto reiniciava
-dc up -d --no-deps --no-build worker ttn-bridge
-esperar worker || reverter "o worker MQTT não ficou rodando"
+dc up -d --no-deps --no-build worker
+esperar worker || reverter "o worker MQTT não ficou saudável"
+dc up -d --no-deps --no-build ttn-bridge
 esperar ttn-bridge || reverter "a ponte TTN não ficou rodando"
+
+passo "Revisando as tabelas dos gráficos (leituras gravadas pela versão antiga durante a troca)"
+if [[ -n "$ID_ANTES" ]]; then
+    dc exec -T web php src/db/preencher-agregados.php --revisar-desde-id "$ID_ANTES" \
+        || echo "AVISO: a revisão dos agregados falhou; rode depois: docker compose exec web php src/db/preencher-agregados.php --revisar-desde-id $ID_ANTES"
+fi
 
 passo "Recarregando o proxy (aplica mudanças em docker/nginx, sem derrubar conexões)"
 # Gera de novo a configuração a partir do template; se a nova for inválida,

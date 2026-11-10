@@ -15,7 +15,11 @@ if [ ! -f /etc/ssl/certs/ifsentral-chain.crt ] || [ ! -f /etc/ssl/private/ifsent
     sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout /etc/ssl/private/ifsentral.key \
         -out /etc/ssl/certs/ifsentral-chain.crt \
-        -subj "/C=BR/ST=Distrito Federal/L=Brasilia/O=IFSCentral/CN=ifsentral.online"
+        -subj "/C=BR/ST=Distrito Federal/L=Brasilia/O=IFSCentral/CN=ifsentral.online" \
+        -addext "subjectAltName=DNS:ifsentral.online,DNS:localhost,IP:127.0.0.1${SSL_IP_EXTRA:+,IP:$SSL_IP_EXTRA}"
+    # SAN: navegadores atuais ignoram o CN e exigem o nome/IP no subjectAltName
+    # (o testssl de 09/11/2026 apontou a falta). Para incluir o IP do servidor:
+    #   SSL_IP_EXTRA=10.50.0.30 ./setup-ssl.sh   (depois de apagar o certificado antigo)
     echo "✅ Certificados auto-assinados gerados com sucesso."
 else
     echo "✅ Certificados SSL já existem no host."

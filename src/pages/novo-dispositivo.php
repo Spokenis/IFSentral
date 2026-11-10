@@ -51,9 +51,9 @@ try {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Novo Dispositivo | IFSCentral</title>
 
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/css/adminlte.min.css">
+  <link rel="stylesheet" href="/assets/vendor/fonts/source-sans-pro.css">
+  <link rel="stylesheet" href="/assets/vendor/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="/assets/vendor/admin-lte/3.2.0/css/adminlte.min.css">
   
   <style>
     :root {
@@ -65,18 +65,22 @@ try {
     .wrapper { display: flex; flex-direction: column; min-height: 100vh; }
     .content-wrapper { flex: 1; }
     #status-msg { margin-top: 15px; }
-    .api-key-success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; padding: 15px; border-radius: 5px; }
-    .api-key-success strong { font-family: monospace; font-size: 1.1em; }
-    /* Estilo para destacar o ID */
-    .api-key-success span { 
-        font-family: monospace; 
-        font-size: 1.1em; 
-        font-weight: 600;
-        color: #000;
-        background-color: #fff;
-        padding: 2px 5px;
-        border-radius: 3px;
+    /* Painel exibido após o cadastro: um campo por linha, valor em fonte
+       monoespaçada que quebra linha (a chave de API tem 64 caracteres e
+       estourava a largura do card) e botão de copiar ao lado */
+    .credenciais h5 { font-size: 1rem; font-weight: 700; margin: 18px 0 8px; color: var(--ifsc-secondary); }
+    .credenciais h5:first-of-type { margin-top: 0; }
+    .credencial { margin-bottom: 10px; }
+    .credencial label { display: block; font-size: .85rem; font-weight: 600; color: #555; margin-bottom: 3px; }
+    .credencial .valor { display: flex; align-items: stretch; }
+    .credencial code {
+        flex: 1; min-width: 0;
+        font-size: .95rem; color: #212529;
+        background: #f8f9fa; border: 1px solid #dee2e6; border-right: 0;
+        border-radius: 4px 0 0 4px; padding: 6px 10px;
+        word-break: break-all;
     }
+    .credencial .btn { border-radius: 0 4px 4px 0; }
     
     /* IFSC Theme Colors */
     .btn-primary, .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
@@ -145,6 +149,30 @@ try {
               
               <div id="status-msg" style="padding: 0 20px 20px 20px;"></div>
 
+              <div id="painel-credenciais" class="card-body credenciais" style="display: none;">
+                <div class="alert alert-success"><i class="fas fa-check-circle mr-2"></i><span id="cred-mensagem"></span></div>
+                <p class="text-muted small mb-3">Copie estes dados para o firmware do dispositivo. Eles continuam disponíveis na página do dispositivo (botão <em>Gerenciar</em>).</p>
+
+                <h5><i class="fas fa-globe mr-1"></i> HTTP (API REST)</h5>
+                <div class="credencial"><label>ID do dispositivo (<code>device_id</code>)</label><div class="valor"><code id="cred-device-id"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-device-id" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                <div class="credencial"><label>Chave de API (header <code>X-Api-Key</code>)</label><div class="valor"><code id="cred-api-key"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-api-key" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                <div class="credencial"><label>Endpoint</label><div class="valor"><code id="cred-endpoint"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-endpoint" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+
+                <div id="bloco-mqtt">
+                  <h5><i class="fas fa-broadcast-tower mr-1"></i> MQTT</h5>
+                  <div class="credencial"><label>Tópico de publicação</label><div class="valor"><code id="cred-topico"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-topico" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                  <div class="credencial"><label>Usuário</label><div class="valor"><code id="cred-mqtt-user"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-mqtt-user" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                  <div class="credencial"><label>Senha</label><div class="valor"><code id="cred-mqtt-pass"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-mqtt-pass" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                  <div class="credencial"><label>Host e porta</label><div class="valor"><code id="cred-mqtt-host"></code><button type="button" class="btn btn-outline-secondary btn-sm btn-copiar" data-copiar="cred-mqtt-host" title="Copiar"><i class="fas fa-copy"></i></button></div></div>
+                  <p class="text-muted small mb-0" id="cred-mqtt-nota"></p>
+                </div>
+
+                <div class="mt-4">
+                  <a id="link-dispositivo" href="#" class="btn btn-primary"><i class="fas fa-cog mr-1"></i>Abrir dispositivo</a>
+                  <a href="/projeto?id=<?php echo $project_id_from_url; ?>" class="btn btn-secondary">Voltar ao projeto</a>
+                </div>
+              </div>
+
             </div>
 
           </div>
@@ -161,10 +189,10 @@ try {
     const PROJECT_ID = <?php echo $project_id_from_url; ?>;
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/assets/vendor/jquery/3.7.1/jquery.min.js"></script>
+<script src="/assets/vendor/bootstrap/4.6.2/bootstrap.bundle.min.js"></script>
 <script src="/assets/js/input-limits.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.2.0/js/adminlte.min.js"></script>
+<script src="/assets/vendor/admin-lte/3.2.0/js/adminlte.min.js"></script>
 <script src="/assets/js/fetch-helpers.js"></script>
 
 <script>
@@ -172,6 +200,71 @@ try {
     const statusMsg = document.getElementById('status-msg');
     const cadastrarButton = document.getElementById('cadastrar-button');
     const API_URL = '/api/cadastrar-device'; 
+
+    function preencher(id, texto) {
+        document.getElementById(id).textContent = texto;
+    }
+
+    // Mostra as credenciais no painel (sem redirecionar sozinho: antes a
+    // página voltava ao projeto depois de 10 s, às vezes antes de copiar)
+    function mostrarCredenciais(r) {
+        statusMsg.innerHTML = '';
+        formCadastrar.style.display = 'none';
+        preencher('cred-mensagem', r.message);
+        preencher('cred-device-id', r.insertedId);
+        preencher('cred-api-key', r.api_key);
+        preencher('cred-endpoint', `POST ${window.location.origin}/api/enviar-payload`);
+
+        if (r.mqtt && r.mqtt.username) {
+            preencher('cred-topico', `mqtt/projects/${PROJECT_ID}/devices/${r.insertedId}`);
+            preencher('cred-mqtt-user', r.mqtt.username);
+            preencher('cred-mqtt-pass', r.mqtt.password);
+            preencher('cred-mqtt-host', `${window.location.hostname}:1883 (ou 8883 com TLS)`);
+            preencher('cred-mqtt-nota', r.mqtt.note || '');
+        } else {
+            document.getElementById('bloco-mqtt').innerHTML =
+                '<h5><i class="fas fa-broadcast-tower mr-1"></i> MQTT</h5><p class="text-muted small">' +
+                escapeHtmlSimples((r.mqtt && r.mqtt.error) || 'Credenciais MQTT indisponíveis.') + '</p>';
+        }
+        document.getElementById('link-dispositivo').href = `/dispositivo?id=${r.insertedId}&project_id=${PROJECT_ID}`;
+        document.getElementById('painel-credenciais').style.display = '';
+    }
+
+    function escapeHtmlSimples(t) {
+        const d = document.createElement('div');
+        d.textContent = t;
+        return d.innerHTML;
+    }
+
+    // navigator.clipboard só existe em HTTPS/localhost; em http://IP usa o fallback
+    async function copiarTexto(texto) {
+        if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(texto);
+            return;
+        }
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (!ok) throw new Error('o navegador bloqueou a cópia');
+    }
+
+    document.querySelectorAll('.btn-copiar').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                await copiarTexto(document.getElementById(btn.dataset.copiar).textContent.trim());
+                const original = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                setTimeout(() => { btn.innerHTML = original; }, 1500);
+            } catch (err) {
+                ifsAlerta('Erro ao copiar: ' + err.message, { tipo: 'erro' });
+            }
+        });
+    });
 
     formCadastrar.addEventListener('submit', async function(event) {
         event.preventDefault();
@@ -194,29 +287,13 @@ try {
             });
             const resultado = await safeJson(response);
 
-            // *** ALTERAÇÃO AQUI: Mostra o ID do Dispositivo ***
-            statusMsg.innerHTML = `
-                <div class="api-key-success">
-                    <strong>${resultado.message}</strong><br>
-                    Guarde estas informações com segurança. Elas são necessárias para a API.
-                    <br><br>
-                    <strong>ID do Dispositivo: </strong> <span>${resultado.insertedId}</span><br>
-                    <strong>Chave de API (X-Api-Key): </strong> <strong>${resultado.api_key}</strong>
-                </div>
-            `;
-            
-            formCadastrar.reset();
-            
-            // Aumentei o tempo para 10 segundos para dar tempo de copiar
-            setTimeout(() => {
-                window.location.href = `/projeto?id=${PROJECT_ID}`;
-            }, 10000); // 10 segundos
-
+            mostrarCredenciais(resultado);
         } catch (error) {
             statusMsg.innerHTML = `<span style="color: red;">${error.message}</span>`;
             cadastrarButton.disabled = false;
         }
     });
 </script>
+<script src="/assets/js/profile-picture-helper.js"></script>
 </body>
 </html>

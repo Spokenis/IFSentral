@@ -33,14 +33,22 @@ try {
             projects p ON d.project_id = p.id
         JOIN 
             users u ON d.user_id = u.id
+        JOIN
+            users_projects up ON up.project_id = d.project_id AND up.user_id = ?
         WHERE 
-            d.deletedAt IS NULL
+            d.deletedAt IS NULL AND p.deletedAt IS NULL" . (isset($_GET['project_id']) ? " AND d.project_id = ?" : "") . "
         ORDER BY 
             d.createdAt DESC
     ";
-    
+    // Só dispositivos dos projetos de que o usuário participa (antes vinham os
+    // de todos os projetos, inclusive privados). ?project_id= filtra um projeto.
+    $params = [$_SESSION['user_id']];
+    if (isset($_GET['project_id'])) {
+        $params[] = intval($_GET['project_id']);
+    }
+
     $stmt = $conn->prepare($sql);
-    $stmt->execute();
+    $stmt->execute($params);
     
     $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
     

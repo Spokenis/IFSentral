@@ -51,13 +51,22 @@ COPY . /var/www/html/
 COPY docker/apache/ifsentral-ssl.conf /etc/apache2/sites-available/ifsentral-ssl.conf
 COPY docker/apache/ifsentral-http.conf /etc/apache2/sites-available/ifsentral-http.conf
 RUN a2ensite ifsentral-ssl.conf ifsentral-http.conf || true
+# Processos do Apache abaixo do limite de conexões do MySQL (ver o arquivo)
+COPY docker/apache/mpm-limites.conf /etc/apache2/conf-available/mpm-limites.conf
+RUN a2enconf mpm-limites
 RUN a2dissite 000-default.conf || true
+# Não anuncia versões (Apache nas páginas de erro, PHP em X-Powered-By)
+RUN printf 'ServerTokens Prod\nServerSignature Off\n' > /etc/apache2/conf-available/sem-versao.conf \
+    && a2enconf sem-versao \
+    && printf 'expose_php = Off\n' > /usr/local/etc/php/conf.d/ifscentral-sem-versao.ini
 
 # Sessões PHP fora do contêiner (volume php_sessions, compartilhado pelos dois
 # contêineres web): o usuário continua logado quando o proxy o manda para o
-# outro contêiner e quando os contêineres são recriados numa atualização
+# outro contêiner e quando os contêineres são recriados numa atualização.
+# config.php repete o gc_maxlifetime para os scripts fora desta imagem
 RUN mkdir -p /var/lib/php/sessions && chown www-data:www-data /var/lib/php/sessions \
-    && echo "session.save_path = /var/lib/php/sessions" > /usr/local/etc/php/conf.d/ifscentral-sessoes.ini
+    && printf 'session.save_path = /var/lib/php/sessions\n; 30 dias sem uso (o padrão de 24 min derrubava o login)\nsession.gc_maxlifetime = 2592000\n; Cookie de sessão sempre protegido, mesmo nas páginas que abrem a sessão antes\n; do config.php (o ZAP achou PHPSESSID sem Secure/HttpOnly/SameSite em 10/11/2026).\n; Secure: o navegador só usa HTTPS (o HTTP redireciona; só o envio dos dispositivos fica em HTTP, sem sessão)\nsession.cookie_secure = 1\nsession.cookie_httponly = 1\nsession.cookie_samesite = Lax\nsession.use_strict_mode = 1\nsession.use_only_cookies = 1\n' \
+       > /usr/local/etc/php/conf.d/ifscentral-sessoes.ini
 
 # Ajusta permissões
 RUN chown -R www-data:www-data /var/www/html

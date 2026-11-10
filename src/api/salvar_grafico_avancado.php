@@ -63,6 +63,18 @@ if ($datasetError) {
     exit;
 }
 
+// Variável no eixo X: o gráfico é de dispersão (cada ponto = um par de leituras)
+$x_dataset = null;
+foreach ($data->datasets as $ds) {
+    if ($ds->axis === 'x') {
+        $x_dataset = $ds;
+    }
+}
+if ($x_dataset) {
+    $data->chart_type = 'scatter';
+    $data->x_axis = $x_dataset->variable_name;
+}
+
 // Obter user_id da sessão ou do banco de dados baseado no e-mail
 $user_id = $_SESSION['user_id'] ?? null;
 if (!$user_id && isset($_SESSION['email'])) {
@@ -144,8 +156,11 @@ try {
     
     $stmt = $conn->prepare($sql);
     
-    // Para compatibilidade com campos antigos
+    // Para compatibilidade com campos antigos (primeira variável do eixo Y)
     $first_device = $data->datasets[0];
+    foreach ($data->datasets as $ds) {
+        if ($ds->axis === 'y') { $first_device = $ds; break; }
+    }
     $x_axis = isset($data->x_axis) ? $data->x_axis : null;
     $y_axis_vars = [];
     

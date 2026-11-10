@@ -47,6 +47,12 @@ try {
         echo json_encode(['error' => 'Usuário não encontrado']);
         exit;
     }
+
+    // Foto registrada cujo arquivo sumiu (ex.: pasta uploads não copiada numa
+    // migração): responde como sem foto, e a página mostra as iniciais
+    if (!empty($user['profile_picture']) && !is_file(__DIR__ . '/../../' . $user['profile_picture'])) {
+        $user['profile_picture'] = null;
+    }
     
     http_response_code(200);
     echo json_encode([

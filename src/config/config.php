@@ -91,6 +91,10 @@ define('DB_HOST', env('DB_HOST'));
 define('DB_NAME', env('DB_NAME'));
 define('DB_USER', env('DB_USER'));
 define('DB_PASS', env('DB_PASS'));
+// Conexão persistente com o MySQL (ver config/db.php). Ligada pelo
+// docker-compose.yml nos contêineres web; desligada por padrão porque em
+// hospedagem compartilhada pode esgotar o limite de conexões do provedor.
+define('DB_PERSISTENT', filter_var(env('DB_PERSISTENT', '0'), FILTER_VALIDATE_BOOLEAN));
 define('APP_ENV', env('APP_ENV'));
 
 // Em produção os erros do PHP vão só para o log: exibidos, eles vazam caminhos
@@ -99,6 +103,11 @@ define('APP_ENV', env('APP_ENV'));
 // padrão do PHP (display_errors=STDOUT) valeria sem esta linha.
 ini_set('display_errors', APP_ENV === 'production' ? '0' : '1');
 ini_set('log_errors', '1');
+// Fuso horário único para o PHP e para o MySQL (db.php aplica o mesmo na
+// conexão). Sem isso, dentro do Docker os dois ficam em UTC e as telas mostram
+// as horas 3 h adiantadas em relação ao horário de Brasília.
+$fuso = env('TZ', 'America/Sao_Paulo');
+date_default_timezone_set(in_array($fuso, timezone_identifiers_list(), true) ? $fuso : 'America/Sao_Paulo');
 define('APP_URL', env('APP_URL'));
 define('ALLOWED_ORIGINS', env('ALLOWED_ORIGINS'));
 
@@ -122,6 +131,13 @@ if (env('APP_ENV') === 'production') {
     }
 }
 define('SESSION_SECURE', $session_secure);
+
+// Sessão: o servidor guarda a sessão por até 30 dias sem uso. Com "Lembrar-me"
+// o cookie também dura 30 dias; sem ele, some ao fechar o navegador. O padrão
+// do PHP (24 min) derrubava o login de quem ficava um tempo sem clicar.
+if (PHP_SAPI !== 'cli' && session_status() === PHP_SESSION_NONE) {
+    ini_set('session.gc_maxlifetime', (string)(30 * 86400));
+}
 define('SESSION_HTTPONLY', filter_var(env('SESSION_HTTPONLY'), FILTER_VALIDATE_BOOLEAN));
 define('SESSION_SAMESITE', env('SESSION_SAMESITE'));
 
@@ -134,7 +150,7 @@ function setupSecureCORS() {
     // Reconhece tanto a URL limpa atual quanto o caminho físico antigo
     // (com extensão .php), que o .htaccess mantém ativo por compatibilidade.
     $publicApiPatterns = [
-        '/api/enviar-payload', '/src/api/enviar_payload.php',
+        '/api/enviar-payload', '/api/enviar_payload.php', // o 2º também cobre /src/api/enviar_payload.php
         '/api/buscar-payloads', '/src/api/buscar_payloads.php',
         '/api/ttn-webhook', '/src/api/ttn_webhook.php',
         '/api/get-mqtt-credentials', '/src/pages/get_mqtt_credentials.php',
